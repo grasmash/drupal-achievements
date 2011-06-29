@@ -1,0 +1,129 @@
+<?php
+// $Id: bot.module,v 1.9.2.9.2.5 2008/04/26 01:32:30 morbus Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function achievements_install() {
+  drupal_install_schema('achievements');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function achievements_uninstall() {
+  drupal_uninstall_schema('achievements');
+  variable_del('achievements');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function achievements_schema() {
+
+  // because this is the global table, the user's rank site-wide could change
+  // at any moment. because of this, rank isn't stored in the database table
+  // (too many UPDATEs and logic to recreate) but, rather, in a Drupal cache.
+  $schema['achievement_totals'] = array(
+    'description' => t('A combined leaderboard of point totals across the entire site.'),
+    'fields' => array(
+      'uid' => array(
+        'default'       => 0,
+        'description'   => t('The {users}.uid that is being ranked on the site-wide leaderboard.'),
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
+      'points' => array(
+        'default'       => 0,
+        'description'   => t('The {users}.uid\'s combined achievement point total.'),
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
+      'timestamp' => array(
+        'default'       => 0,
+        'description'   => t('The Unix timestamp when the {users}.uid last received an achievement.'),
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
+    ),
+    'indexes' => array(
+      'uid'             => array('uid'),
+      'points'          => array('points'),
+      'timestamp'       => array('timestamp'),
+    ),
+  );
+
+  // this table not only defines what user has unlocked an achievement, but
+  // also the rank for each particular unlock. since these ranks never
+  // change, the rank is stored right in the table at unlock time.
+  $schema['achievement_unlocks'] = array(
+    'description' => t('Maps users to the achievements they have unlocked.'),
+    'fields' => array(
+      'achievement_id'  => array(
+        'default'       => '',
+        'description'   => t('The ID of the achievement the {users}.uid has unlocked.'),
+        'length'        => 255,
+        'not null'      => TRUE,
+        'type'          => 'varchar',
+      ),
+      'rank' => array(
+        'default'       => 0,
+        'description'   => t('The ranking the {users}.uid earned for unlocking this achievement.'),
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
+      'uid' => array(
+        'default'       => 0,
+        'description'   => t('The {users}.uid that has unlocked the achievement.'),
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
+      'timestamp' => array(
+        'default'       => 0,
+        'description'   => t('The Unix timestamp when the {users}.uid last received an achievement.'),
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
+    ),
+    'indexes' => array(
+      'achievement_id'  => array('achievement_id'),
+      'rank'            => array('rank'),
+      'uid'             => array('uid'),
+      'timestamp'       => array('timestamp'),
+    ),
+  );
+
+  // some achievements only trigger over time - after 10 comments, after 50
+  // page views, etc. this is a simple table for storage of these counters.
+  $schema['achievement_storage'] = array(
+    'description' => t('Provides a general storage area for interim statistical collection.'),
+    'fields' => array(
+      'achievement_id'  => array(
+        'default'       => '',
+        'description'   => t('An identifier for the achievement whose data is being collected.'),
+        'length'        => 255,
+        'not null'      => TRUE,
+        'type'          => 'varchar',
+      ),
+      'uid' => array(
+        'default'       => 0,
+        'description'   => t('The {users}.uid that the stored data relates to.'),
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
+      'data' => array(
+        'description'   => t('A serialized string of the stored data.'),
+        'not null'      => TRUE,
+        'size'          => 'big',
+        'type'          => 'blob',
+      ),
+    ),
+    'indexes' => array(
+      'achievement_id'  => array('achievement_id'),
+      'uid'             => array('uid'),
+    ),
+  );
+
+  return $schema;
+}
+

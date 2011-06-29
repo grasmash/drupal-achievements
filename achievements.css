@@ -1,0 +1,35 @@
+.achievement-leaderboard-detail {
+  font-size:        120%;
+}
+
+.achievement-unlocked {
+  margin-top:       2em;
+}
+
+.achievement-unlocked-first {
+  float:            left;
+  width:            49%;
+}
+
+.achievement-unlocked-recent {
+  float:            right;
+  width:            49%;
+}
+
+td.achievement-points {
+  font-size:        1.8em;
+  font-weight:      bold;
+  width:            60px;
+}
+
+td .achievement-title {
+  font-weight:      bold;
+}
+
+td.achievement-date {
+  width:            150px;
+}
+
+.achievements-admin-list {
+  width:            98%;
+}

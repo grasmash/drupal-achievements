@@ -1,0 +1,4 @@
+; $Id: bot.info,v 1.2.2.1.2.2 2008/04/09 02:02:31 morbus Exp $
+name = Achievements
+description = Earn points based on milestones (similar to Xbox 360 achievements).
+core = 6.x
