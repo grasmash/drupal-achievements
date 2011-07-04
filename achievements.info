@@ -1,4 +1,5 @@
 name = Achievements
 description = "Unlock achievements and earn points based on milestones."
 files[] = achievements.pages.inc
+configure = admin/config/people/achievements
 core = 7.x

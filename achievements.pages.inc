@@ -142,3 +142,28 @@ function achievements_user_page($account) {
   return $render;
 }
 
+/**
+ * Configure achievements.
+ */
+function achievements_settings() {
+  $form['achievements_cache'] = array(
+    '#type'   => 'fieldset', 
+    '#title'  => t('Clear cache'),
+  );
+  $form['achievements_cache']['achievements_clear_info_cache'] = array(
+    '#type'   => 'submit', 
+    '#value'  => t('Clear achievements information cache'),
+    '#submit' => array('achievements_clear_info_cache_submit'),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Submit callback; clear achievement info cache.
+ */
+function achievements_clear_info_cache_submit() {
+  achievements_load(NULL, TRUE);
+  drupal_set_message('Achievements information cache cleared.');
+}
+
