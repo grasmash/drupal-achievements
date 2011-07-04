@@ -80,6 +80,7 @@ function achievements_schema() {
       'uid'             => array('uid'),
       'timestamp'       => array('timestamp'),
     ),
+    'primary key'       => array('achievement_id', 'uid'),
   );
 
   // some achievements only trigger over time - after 10 comments, after 50
@@ -111,6 +112,7 @@ function achievements_schema() {
       'achievement_id'  => array('achievement_id'),
       'uid'             => array('uid'),
     ),
+    'primary key'       => array('achievement_id', 'uid'),
   );
 
   return $schema;

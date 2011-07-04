@@ -1,15 +1,15 @@
-// $Id: INSTALL.txt,v 1.61.2.2 2008/02/07 20:46:56 goba Exp $
 
 CONTENTS OF THIS FILE
 ---------------------
 
  * Introduction
- * Installation
- * API and Examples
+ * Creating achievements
 
 
 INTRODUCTION
 ------------
+
+Current Maintainer: Morbus Iff <morbus@disobey.com>
 
 The Achievements module is intended to emulate Xbox 360 achievements, a
 system whereby gamers are awarded points for the completion of game-specific
@@ -19,13 +19,11 @@ any number of other possibilities.
 
 There are a few conceptual differences between Achievements and User Points:
 
- * Unlike the points of User Points, a user never loses his achievement
-   points for, say, an e-commerce purchase or other redeemable item.
-
- * Unlike the points of User Points, achievement points are based on
-   milestones, not necessarily activity. Whereas, in User Points, a user
-   may get 5 points every time he posts a node, a matching achievement
-   would instead reward 100 points for posting 10 nodes (or 50, etc.)
+ * Achievement points are based on milestones, not activity. Whereas, in User
+   Points, a user may get 5 points every time he posts a node, a matching
+   achievement would instead reward 100 points for posting 10 nodes (or 50,
+   etc.) If there's no achievement for posting 20 nodes, the user receives
+   no further points.
 
  * Since achievements are "milestones", each one has its own leaderboard
    that lists when a user has met (or "unlocked") the goal, and their
@@ -37,39 +35,40 @@ There are a few conceptual differences between Achievements and User Points:
    it until he stumbles upon the discovery himself (either by meeting the
    milestone, asking another user, etc.).
 
- * Unlike User Points, the only achievement data stored in the database
-   is the achievement's internal ID and when the user unlocked it. This
-   allows you to change the achievement details (spelling, name, etc.)
-   without having to issue database updates.
-
- * Achievements are defined via an API hook, like Drupal's menus and forms,
-   and can be enabled or disabled by an admin. This allows modules to ship
-   with dozens of achievements, but gives the admin the ability to shut off
-   specific milestones that may not apply to his user base.
-
  * Achievements are not retroactively applied - you either get them after
    the Achievements module has been enabled, or you don't get them at all.
    Likewise, achievements can not be deleted (but that may change).
 
- * Fundamentally, a user can never go down in score. If you need to "shame"
+ * Unlike the points of User Points, a user never loses his achievement
+   points for, say, an e-commerce purchase or other redeemable item.
+   Fundamentally, a user can never go down in score. If you need to "shame"
    your users, you can create 0 point achievements like "Had 5 comments
-   deleted", "Was blocked", etc. The Achievements module does not ship
-   with any of these shame achievements.
+   deleted", "Was blocked", etc. Shame achievements are not fun.
 
 
-INSTALLATION
-------------
+CREATING ACHIEVEMENTS
+---------------------
 
-1. Copy the files to your sites/SITENAME/modules directory.
-   Or, alternatively, to your sites/all/modules directory.
+I've made two... ... "odd" but entirely deliberate design decisions:
 
-2. Enable the Achievements module at admin/build/modules.
+ 1) No achievements are shipped by default. Why? Earning the same achievement
+    over and over again at dozens of Drupal sites is mind-numbingly not-fun.
+    If you're going to offer achievements, at least _try_ to be creative and
+    make them unique to your site.
 
-3. All achievements start out enabled, but you can disable
-   an individual milestone at admin/settings/achievements.
+ 2) Creating achievements requires custom code. Why? Achievements that can
+    be automated in a user interface tend to be mind-numbingly not-fun and
+    grindish ("when user creates $n comments, do..."). Quality achievements
+    require custom logic tailored to your site.
 
-4. To test an achievement, comment on an existing node.
+I do believe that achievement grinds have their place and I do want to be
+rewarded for posting 1000 comments or 250 nodes. I just don't want to see
+default implementations of those achievements on every site that uses this
+module. It's lazy. It's not-fun. It reflects poorly on my code if I promote
+cookie-cutter gamification on Drupal sites everywhere.
 
+Yes, the above is a barrier to using the module.
 
-API AND EXAMPLES
-----------------
+And, yes, I think it will improve the overall fun-ness of its usage.
+
+To learn how to create achievements, see achievements.api.php.

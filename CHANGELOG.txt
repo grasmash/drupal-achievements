@@ -1,5 +1,4 @@
-// $Id: CHANGELOG.txt,v 1.14.2.16.2.15 2008/07/11 02:47:30 morbus Exp $
 
-Achievements 6.x-1.0, 2008-xx-xx
+Achievements 7.x-1.0, 2011-xx-xx
 --------------------------------
-  * First release for Drupal 6.x.
+  * First release for Drupal 7.x.
