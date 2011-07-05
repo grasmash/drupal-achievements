@@ -12,30 +12,23 @@
  *   Defaults to FALSE; whether this is a block display.
  */
 function achievements_leaderboard_totals($block = FALSE) {
-  $num_ranks = $block ? 5 : 50;
-  $totals = achievements_totals_info();
-  $displayed_ranks = array_slice($totals['by_rank'], 0, $num_ranks);
+  $achievers = achievements_totals($block ? 5 : 50);
   $header = array(t('#'), t('Who'), t('Points'), t('Unlocks'), t('When'));
   $header = $block ? array_slice($header, 0, 3) : $header; // UNIQUEZORS.
   !$block ? drupal_set_title(t('Achievement leaderboard')) : ''; // UNIQUEZORS+.
   drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
 
-  // if the current user isn't in the top $num_ranks, show where they are. appease the downtrodden.
-  if (user_is_logged_in() && isset($totals['by_user'][$GLOBALS['user']->uid]) && $totals['by_user'][$GLOBALS['user']->uid]['rank'] > $num_ranks) {
-    $displayed_ranks[] = $totals['by_user'][$GLOBALS['user']->uid];
-  }
-
   $rows = array();
-  foreach ($displayed_ranks as $displayed_rank) {
+  foreach ($achievers as $achiever) {
     $row = array( // dueling styles for wipe.
-      array('data' => $displayed_rank['rank'], 'class' => array('achievement-leaderboard-rank')),
-      array('data' => theme('username', array('account' => (object)$displayed_rank)), 'class' => array('achievement-leaderboard-username')),
-      array('data' => l($displayed_rank['points'], 'user/' . $displayed_rank['uid'] . '/achievements'), 'class' => array('achievement-leaderboard-points')),
+      array('data' => $achiever->rank, 'class' => array('achievement-leaderboard-rank')),
+      array('data' => theme('username', array('account' => $achiever)), 'class' => array('achievement-leaderboard-username')),
+      array('data' => l($achiever->points, 'user/' . $achiever->uid . '/achievements'), 'class' => array('achievement-leaderboard-points')),
     );
 
     if (!$block) { // full page display comes with a few more columns.
-      $row[] = array('data' => l($displayed_rank['unlocks'], 'user/' . $displayed_rank['uid'] . '/achievements'), 'class' => array('achievement-leaderboard-unlocks'));
-      $row[] = array('data' => format_date($displayed_rank['timestamp'], 'small'), 'class' => array('achievement-leaderboard-when')); // mOOoOdooD for lOoovoe.
+      $row[] = array('data' => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'), 'class' => array('achievement-leaderboard-unlocks'));
+      $row[] = array('data' => format_date($achiever->timestamp, 'small'), 'class' => array('achievement-leaderboard-when')); // mOOoOdooD for lOoovoe.
     }
 
     $rows[] = $row;
@@ -89,7 +82,7 @@ function achievements_leaderboard_for($achievement) {
       $rows[] = array(
         array('data' => $stat->rank, 'class' => array('achievement-leaderboard-rank')),
         array('data' => theme('username', array('account' => $stat)), 'class' => array('achievement-leaderboard-username')),
-        array('data' => l(achievements_totals_info($stat->uid, 'points'), 'user/' . $stat->uid . '/achievements'), 'class' => array('achievement-leaderboard-points')),
+        array('data' => l(achievements_totals_user('points', $stat->uid), 'user/' . $stat->uid . '/achievements'), 'class' => array('achievement-leaderboard-points')),
         array('data' => format_date($stat->timestamp, 'short'), 'class' => array('achievement-leaderboard-when')),
       );
     }
@@ -125,8 +118,8 @@ function achievements_user_page($account) {
     '#prefix' => '<div class="achievement-stats">',
     '#markup' => t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
       '@name'           => $account->name,
-      '@rank'           => achievements_totals_info($account->uid, 'rank'),
-      '@points'         => achievements_totals_info($account->uid, 'points'),
+      '@rank'           => achievements_totals_user('rank', $account->uid),
+      '@points'         => achievements_totals_user('points', $account->uid),
       '@unlocks_count'  => count($unlocks),
       '@total_count'    => count($all_achievements))),
     '#suffix' => '</div>',

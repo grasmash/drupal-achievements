@@ -10,9 +10,7 @@
  */
 function achievements_schema() {
 
-  // this is the global leaderboard, but the user's rank site-wide could change
-  // at any moment. because of this, rank isn't stored in the database table
-  // (too many UPDATEs and logic to recreate) but, rather, in a Drupal cache.
+  // the global leaderboard.
   $schema['achievement_totals'] = array(
     'description' => 'A combined leaderboard of point totals across the entire site.',
     'fields' => array(
@@ -28,6 +26,12 @@ function achievements_schema() {
         'not null'      => TRUE,
         'type'          => 'int',
       ),
+      'unlocks' => array(
+        'default'       => 0,
+        'description'   => "The {users}.uid's total number of achievement unlocks.",
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
       'timestamp' => array(
         'default'       => 0,
         'description'   => 'The Unix timestamp when the {users}.uid last received an achievement.',
@@ -36,8 +40,10 @@ function achievements_schema() {
       ),
     ),
     'indexes' => array(
-      'points'          => array('points'),
-      'timestamp'       => array('timestamp'),
+      'uid_points'        => array('uid', 'points'),
+      'uid_unlocks'       => array('uid', 'unlocks'),
+      'points_timestamp'  => array('points', 'timestamp'),
+      'unlocks_timestamp' => array('unlocks', 'timestamp'),
     ),
     'primary key'       => array('uid'),
   );
@@ -73,6 +79,10 @@ function achievements_schema() {
         'not null'      => TRUE,
         'type'          => 'int',
       ),
+    ),
+    'indexes' => array(
+      'aid_rank'        => array('achievement_id', 'rank'),
+      'uid_timestamp'   => array('uid', 'timestamp'),
     ),
     'primary key'       => array('achievement_id', 'uid'),
   );

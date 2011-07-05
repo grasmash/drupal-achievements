@@ -128,65 +128,71 @@ function achievements_load($achievement_id = NULL, $reset = FALSE) {
 /**
  * Returns all, or per user, achievement totals.
  *
- * @param $uid
- *   Defaults to NULL; the user this request applies against.
- * @param $type
- *   Defaults to 'points'; one of 'points', 'unlocks', or 'rank'.
+ * @param $count
+ *   Defaults to 50; the number of top-ranking users to return.
+ * @param $current_user
+ *   Defaults to TRUE; whether to include the current user's stats in the list,
+ *   even if they're not in the top $count. This is just a friendly "how you
+ *   compare" feature ("I'm rank 52; nearly in the top 50. woot!").
  *
- * @return $integer
- *   If a uid was passed, that user's data for $type.
- *   If no uid was passed, the entire $ranks array.
+ * @return $totals
+ *   An array of totals information for the top $count users.
  */
-function achievements_totals_info($uid = NULL, $type = 'points') {
-  $totals = &drupal_static(__FUNCTION__);
+function achievements_totals($count = 50, $current_user = TRUE) {
+  $query = db_select('achievement_totals', 'at');
+  $query->join('users', 'u', 'u.uid = at.uid');
+  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
+  $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @todo DESC/ASC doesn't index.
+  $achievers = $query->range(0, $count)->execute()->fetchAllAssoc('uid');
 
-  if (!$totals) {
-    if ($cache = cache_get('achievement_totals')) {
-      $totals = $cache->data;
-    }
-    else {
-      $totals = achievements_totals_recreate();
-      // this also sets the cache requested above.
-    }
+  $rank = 1; // add the ranking.
+  foreach ($achievers as $achiever) {
+    $achiever->rank = $rank++;
   }
 
-  return $uid ? (isset($totals['by_user'][$uid][$type]) ? $totals['by_user'][$uid][$type] : 0) : $totals;
+  // if the current user isn't in our top $count, find 'em.
+  if ($current_user && user_is_logged_in() && !isset($achievers[$GLOBALS['user']->uid])) {
+    $achievers[$GLOBALS['user']->uid] = achievements_totals_user('all');
+  }
+
+  return $achievers;
 }
 
 /**
- * Regenerate the site-wide ranking information.
+ * Returns a specific user's achievement totals.
  *
- * This is for the entire totals ranking, which means ranks can change as
- * points or unlocks fluctuate, unlike per-achievement ranks which merely
- * increment by one for each change.
+ * @param $type
+ *   Defaults to 'points'; one of 'points', 'unlocks', 'rank', or 'all'.
+ * @param $uid
+ *   Defaults to current user; the user to return achievement info for.
+ *
+ * @return $integer or $object
+ *   The value of the passed $type. If $type is 'all', the full object.
  */
-function achievements_totals_recreate() {
-  $query = db_select('achievement_totals', 'at');
-  $query->join('achievement_unlocks', 'au', 'au.uid = at.uid');
-  $query->join('users', 'u', 'u.uid = at.uid'); // just for the username.
-  $query->fields('at', array('uid', 'points', 'timestamp'))->fields('u', array('name'));
-  $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp')->groupBy('au.uid');
-  $query->addExpression('COUNT(au.achievement_id)', 'unlocks');
-  $achievers = $query->execute()->fetchAllAssoc('uid');
+function achievements_totals_user($type = 'points', $uid = NULL) {
+  $uid = $uid ? $uid : $GLOBALS['user']->uid;
+  if ($uid < 1) { return; } // huh what now?
 
-  $rank = 1; // YER NUMBAH ONE! GOoOO TEAM RUSSIA! (ITS GOT USA!)
-  $totals = array('by_rank' => array(), 'by_user' => array());
-  foreach ($achievers as $achiever) {
-    $achiever_info = array(
-      'uid'       => $achiever->uid,
-      'name'      => $achiever->name,
-      'points'    => $achiever->points,
-      'unlocks'   => $achiever->unlocks,
-      'timestamp' => $achiever->timestamp,
-      'rank'      => $rank,
-    );
-    $totals['by_rank'][$rank] = $achiever_info;
-    $totals['by_user'][$achiever->uid] = $achiever_info;
-    $rank++;
+  $achievers = &drupal_static(__FUNCTION__);
+  if (!$achievers[$uid]) {
+    $query = db_select('achievement_totals', 'at');
+    $query->join('users', 'u', 'u.uid = at.uid');
+    $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
+    $achievers[$uid] = $query->condition('at.uid', $uid)->execute()->fetchObject();
+
+    // to find the user's rank, count all the users with equal or greater points.
+    // this causes a small disparity: the primary leaderboard ranks are based
+    // on points AND timestamp (i.e., who got there first), but here we're only
+    // counting point values. ideally, this is probably OK - if you're #1412,
+    // it doesn't really matter who got there first - you're still a "loser"
+    // along with all the other people who have the same amount of points.
+    $achievers[$uid]->rank = db_select('achievement_totals')
+      ->condition('uid', $uid, '!=')
+      ->condition('points', $achievers[$uid]->points, '>=')
+      ->countQuery()->execute()->fetchField() + 1;
   }
 
-  cache_set('achievement_totals', $totals);
-  return $totals;
+  return $type == 'all' ? $achievers[$uid] : ($achievers[$uid]->$type ? $achievers[$uid]->$type : 0);
 }
 
 /**
@@ -206,23 +212,28 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
   $achievement = achievements_load($achievement_id, TRUE);
 
   if (isset($achievement) && !achievements_unlocked_already($achievement['id'], $uid)) {
-    // this is for the per-achievement rank. just another minor leaderboard for people to obsess over.
     $last_rank = db_select('achievement_unlocks', 'au')->fields('au', array('rank')) // not. exciting. at. all.
       ->condition('achievement_id', $achievement_id)->orderBy('rank', 'DESC')->range(0, 1)->execute()->fetchField();
 
-    db_insert('achievement_unlocks')->fields(array(
-      'achievement_id'  => $achievement_id,
-      'uid'             => $uid,
-      'rank'            => $last_rank ? $last_rank + 1 : 1,
-      'timestamp'       => REQUEST_TIME,
-    ))->execute();
+    db_insert('achievement_unlocks')
+      ->fields(array(
+        'achievement_id'  => $achievement_id,
+        'uid'             => $uid,
+        'rank'            => $last_rank ? $last_rank + 1 : 1,
+        'timestamp'       => REQUEST_TIME,
+      ))
+      ->execute();
 
-    // and this is for the site-wide ranking.
-    db_merge('achievement_totals')->key(array('uid' => $uid))->fields(array(
-      'points'    => achievements_totals_info($uid, 'points') + $achievement['points'],
-      'timestamp' => REQUEST_TIME,
-    ))->execute(); // set and vet.
-    achievements_totals_recreate();
+    db_merge('achievement_totals')
+      ->key(array('uid' => $uid))
+      ->fields(array(
+        'points'    => $achievement['points'],
+        'unlocks'   => 1, // OMG CONGRATS
+        'timestamp' => REQUEST_TIME,
+      ))
+      ->expression('points', 'points + :points', array(':points' => $achievement['points']))
+      ->expression('unlocks', 'unlocks + :increment', array(':increment' => 1))
+      ->execute();
 
     if ($uid == $GLOBALS['user']->uid) { // only show the unlock if $uid is our viewer.
       drupal_set_message(t('<strong>Achievement unlocked:</strong> @achievement (+@number). !view.',
@@ -306,7 +317,5 @@ function achievements_user_delete($account) {
   db_delete('achievement_totals')->condition('uid', $account->uid)->execute();
   db_delete('achievement_unlocks')->condition('uid', $account->uid)->execute();
   db_delete('achievement_storage')->condition('uid', $account->uid)->execute();
-  achievements_totals_recreate(); // reorders internal ranking for the quitter.
 }
-
 
