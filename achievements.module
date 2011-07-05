@@ -174,22 +174,17 @@ function achievements_totals_user($type = 'points', $uid = NULL) {
   if ($uid < 1) { return; } // huh what now?
 
   $achievers = &drupal_static(__FUNCTION__);
-  if (!$achievers[$uid]) {
+  if (!isset($achievers[$uid])) {
     $query = db_select('achievement_totals', 'at');
     $query->join('users', 'u', 'u.uid = at.uid');
     $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
     $achievers[$uid] = $query->condition('at.uid', $uid)->execute()->fetchObject();
 
-    // to find the user's rank, count all the users with equal or greater points.
-    // this causes a small disparity: the primary leaderboard ranks are based
-    // on points AND timestamp (i.e., who got there first), but here we're only
-    // counting point values. ideally, this is probably OK - if you're #1412,
-    // it doesn't really matter who got there first - you're still a "loser"
-    // along with all the other people who have the same amount of points.
-    $achievers[$uid]->rank = db_select('achievement_totals')
-      ->condition('uid', $uid, '!=')
-      ->condition('points', $achievers[$uid]->points, '>=')
-      ->countQuery()->execute()->fetchField() + 1;
+    // to find the user's rank, count all the users with greater points, add
+    // all the users with equal points but earlier timestamps, and then add 1.
+    $better_points = db_select('achievement_totals')->condition('points', $achievers[$uid]->points, '>')->countQuery()->execute()->fetchField();
+    $earlier_times = db_select('achievement_totals')->condition('points', $achievers[$uid]->points)->condition('timestamp', $achievers[$uid]->timestamp, '<')->countQuery()->execute()->fetchField();
+    $achievers[$uid]->rank = $better_points + $earlier_times + 1;
   }
 
   return $type == 'all' ? $achievers[$uid] : ($achievers[$uid]->$type ? $achievers[$uid]->$type : 0);
