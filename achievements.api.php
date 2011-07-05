@@ -18,7 +18,7 @@
  * @return
  *   An array whose keys are internal achievement IDs and whose values
  *   identify properties of the achievement. These properties are:
- *   - id: (required) The internal ID of the achievement.
+ *   - id: (required) Internal ID of the achievement (32 character max.)
  *   - title: (required) The title of the achievement.
  *   - description: (required) A description of the achievement.
  *   - points: (required) How many points the user will earn when unlocked.
@@ -38,9 +38,9 @@ function hook_achievements_info() {
       'description' => t('But what about the children?!'),
       'points'      => 100,
     ),
-    'monday-monday' => array(
-      'id'          => 'monday-monday',
-      'title'       => t('Created content on two separate Mondays.'),
+    'node-mondays-2' => array(
+      'id'          => 'node-mondays-2',
+      'title'       => t('Created a node on two separate Mondays.'),
       'description' => t('Garfield hates you. Hates youuUUuUuu!'),
       'points'      => 10,
     ),
@@ -50,7 +50,7 @@ function hook_achievements_info() {
 /**
  * Implements hook_comment_insert().
  */
-function example_comments_insert($comment) {
+function example_comment_insert($comment) {
   // Most achievements measure some kind of statistical data that must be
   // aggregated over time. To ease the storage of this data, the achievement
   // module ships with achievement_storage_get() and _set(), which allow you
@@ -79,7 +79,7 @@ function example_comments_insert($comment) {
   // Secondly, the achievements_unlocked() function below will automatically
   // check if the user has unlocked the achievement already, and will not
   // unlock it again if they have. This saves you a small bit of repetitive
-  // coding but you're welcome to use achievement_unlocked_already() should
+  // coding but you're welcome to use achievements_unlocked_already() should
   // the need every arise.
   //
   // Knowing that we currently have 50 and 100 comment achievements, we simply
@@ -87,6 +87,24 @@ function example_comments_insert($comment) {
   foreach (array(50, 100) as $count) {
     if ($current_count == $count) {
       achievements_unlocked('comment-count-' . $count);
+    }
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function example_node_insert($node) {
+  // This is very similar to the comment counting achievement, but shows
+  // storage of an array and a slightly different unlocking check. Yawn.
+  if (format_date(REQUEST_TIME, 'custom', 'D') == 'Mon') {
+    $current_mondays = achievements_storage_get('node-mondays');
+    $current_mondays = is_array($current_mondays) ? $current_mondays : array();
+    $current_mondays[format_date(REQUEST_TIME, 'custom' 'Y-m-d')] = 1;
+    achievements_storage_set('node-mondays', $current_mondays);
+
+    if (count($current_mondays) == 2) {
+      achievements_unlocked('node-mondays-2');
     }
   }
 }
