@@ -104,6 +104,7 @@ function achievements_block_view($delta = '') {
  *   Optional; the achievement this request applies against.
  * @param $reset
  *   Forces a refresh of the cached achievement data.
+ *
  * @return $achievements
  *   An array of all achievements, or just the one passed.
  */
@@ -131,6 +132,7 @@ function achievements_load($achievement_id = NULL, $reset = FALSE) {
  *   Defaults to NULL; the user this request applies against.
  * @param $type
  *   Defaults to 'points'; one of 'points', 'unlocks', or 'rank'.
+ *
  * @return $integer
  *   If a uid was passed, that user's data for $type.
  *   If no uid was passed, the entire $ranks array.
@@ -237,6 +239,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
  *   The achievement this request applies against.
  * @param $uid
  *   Defaults to current user; the user this request applies against.
+ *
  * @return NULL or $unlocked
  *   $unlocked is an array containing rank and timestamp.
  */
@@ -257,6 +260,7 @@ function achievements_unlocked_already($achievement_id, $uid = NULL) {
  *   An identifier for the achievement whose data is being collected.
  * @param $uid
  *   Defaults to current user; the user this stored data applies to.
+ *
  * @return $data
  *   The data stored for this achievement and user (unserialized).
  */

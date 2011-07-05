@@ -51,7 +51,7 @@ function achievements_schema() {
       'achievement_id'  => array(
         'default'       => '',
         'description'   => 'The ID of the achievement the {users}.uid has unlocked.',
-        'length'        => 255,
+        'length'        => 32,
         'not null'      => TRUE,
         'type'          => 'varchar',
       ),
@@ -74,12 +74,6 @@ function achievements_schema() {
         'type'          => 'int',
       ),
     ),
-    'indexes' => array(
-      'achievement_id'  => array('achievement_id'),
-      'rank'            => array('rank'),
-      'uid'             => array('uid'),
-      'timestamp'       => array('timestamp'),
-    ),
     'primary key'       => array('achievement_id', 'uid'),
   );
 
@@ -91,7 +85,7 @@ function achievements_schema() {
       'achievement_id'  => array(
         'default'       => '',
         'description'   => 'An identifier for the achievement whose data is being collected.',
-        'length'        => 255,
+        'length'        => 32,
         'not null'      => TRUE,
         'type'          => 'varchar',
       ),
@@ -107,10 +101,6 @@ function achievements_schema() {
         'size'          => 'big',
         'type'          => 'blob',
       ),
-    ),
-    'indexes' => array(
-      'achievement_id'  => array('achievement_id'),
-      'uid'             => array('uid'),
     ),
     'primary key'       => array('achievement_id', 'uid'),
   );
