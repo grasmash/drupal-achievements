@@ -202,11 +202,13 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
   $uid = $uid ? $uid : $GLOBALS['user']->uid;
   if ($uid < 1) { return; } // anonymous. boo.
 
-  // refresh the achievement data to ensure the user hasn't earned
-  // an achievement before the achievement cache knows about it.
-  $achievement = achievements_load($achievement_id, TRUE);
+  // grab information about the achievement.
+  $achievement = achievements_load($achievement_id);
+  if (!isset($achievement)) { // hrm... try a cache refresh?
+    $achievement = achievements_load($achievement_id, TRUE);
+  }
 
-  if (isset($achievement) && !achievements_unlocked_already($achievement['id'], $uid)) {
+  if (isset($achievement) && !achievements_unlocked_already($achievement_id, $uid)) {
     $last_rank = db_select('achievement_unlocks', 'au')->fields('au', array('rank')) // not. exciting. at. all.
       ->condition('achievement_id', $achievement_id)->orderBy('rank', 'DESC')->range(0, 1)->execute()->fetchField();
 

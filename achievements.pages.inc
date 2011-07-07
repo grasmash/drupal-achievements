@@ -68,12 +68,13 @@ function achievements_leaderboard_for($achievement) {
 
   // get stats for first and most recent unlocks.
   $query = db_select('achievement_unlocks', 'au');
-  $query->join('users', 'u', 'u.uid = au.uid'); // same basic query for both stats.
-  $query->fields('au', array('uid', 'rank', 'timestamp'))->fields('u', array('name'));
+  $query->join('achievement_totals', 'at', 'at.uid = au.uid');
+  $query->join('users', 'u', 'u.uid = au.uid'); // same basic start for both queries.
   $query->condition('achievement_id', $achievement['id']); // ... with a slight tweak.
-  $stats['first'] = $query->condition('rank', 5, '<=')->orderBy('rank')->range(0, 10)->execute()->fetchAllAssoc('rank');
-  array_pop($query->conditions()); $order =& $query->getOrderBy(); $order = NULL; // trickery to save us a few duplicate lines.
-  $stats['recent'] = $query->condition('rank', 1, '>=')->orderBy('timestamp', 'DESC')->range(0, 10)->execute()->fetchAllAssoc('rank');
+  $query->fields('au', array('uid', 'rank', 'timestamp'))->fields('at', array('points', 'unlocks'))->fields('u', array('name'));
+  $query2 = clone $query; // allows us to save a few lines of duplicate query building. never used clone before. awesome.
+  $stats['first']  = $query->condition('rank', 5, '<=')->orderBy('rank')->range(0, 10)->execute()->fetchAllAssoc('rank');
+  $stats['recent'] = $query2->orderBy('timestamp', 'DESC')->range(0, 10)->execute()->fetchAllAssoc('rank');
 
   // both stat tables are displayed similarly.
   foreach (array('first', 'recent') as $type) {
@@ -82,7 +83,7 @@ function achievements_leaderboard_for($achievement) {
       $rows[] = array(
         array('data' => $stat->rank, 'class' => array('achievement-leaderboard-rank')),
         array('data' => theme('username', array('account' => $stat)), 'class' => array('achievement-leaderboard-username')),
-        array('data' => l(achievements_totals_user('points', $stat->uid), 'user/' . $stat->uid . '/achievements'), 'class' => array('achievement-leaderboard-points')),
+        array('data' => l($stat->points, 'user/' . $stat->uid . '/achievements'), 'class' => array('achievement-leaderboard-points')),
         array('data' => format_date($stat->timestamp, 'short'), 'class' => array('achievement-leaderboard-when')),
       );
     }

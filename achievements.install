@@ -44,6 +44,7 @@ function achievements_schema() {
       'uid_unlocks'       => array('uid', 'unlocks'),
       'points_timestamp'  => array('points', 'timestamp'),
       'unlocks_timestamp' => array('unlocks', 'timestamp'),
+      'uid_points_unlocks' => array('uid', 'points', 'unlocks'),
     ),
     'primary key'       => array('uid'),
   );
@@ -82,6 +83,7 @@ function achievements_schema() {
     ),
     'indexes' => array(
       'aid_rank'        => array('achievement_id', 'rank'),
+      'aid_timestamp'   => array('achievement_id', 'timestamp'),
       'uid_timestamp'   => array('uid', 'timestamp'),
     ),
     'primary key'       => array('achievement_id', 'uid'),
