@@ -90,7 +90,7 @@ function achievements_leaderboard_for($achievement) {
 
     $render['achievements']['stats'][$type] = array(
       '#attributes' => array('class' => array('achievement-stats-' . $type)),
-      '#caption'    => t('!type achievement unlocks', array('!type' => drupal_ucfirst($type))),
+      '#caption'    => t('@type achievement unlocks', array('@type' => drupal_ucfirst($type))),
       '#header'     => array(t('#'), t('Who'), t('Points'), t('When')),
       '#empty'      => t('No one has unlocked this yet. Keep trying!'),
       '#rows'       => $rows,

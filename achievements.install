@@ -12,7 +12,7 @@ function achievements_schema() {
 
   // the global leaderboard.
   $schema['achievement_totals'] = array(
-    'description' => 'A combined leaderboard of point totals across the entire site.',
+    'description' => 'A combined leaderboard of totals across the entire site.',
     'fields' => array(
       'uid' => array(
         'default'       => 0,

@@ -1,4 +1,8 @@
 
-Achievements 7.x-1.0, 2011-xx-xx
+Achievements 7.x-1.1, 2011-xx-XX
+--------------------------------
+
+
+Achievements 7.x-1.0, 2011-07-07
 --------------------------------
   * First release for Drupal 7.x.
