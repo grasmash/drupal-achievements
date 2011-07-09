@@ -13,6 +13,9 @@ function achievements_permission() {
     'access achievements' => array(
       'title' => t('Access achievements'),
     ),
+    'earn achievements' => array(
+      'title' => t('Earn achievements'),
+    ),
     'administer achievements' => array(
       'title' => t('Administer achievements'),
     ),
@@ -170,8 +173,8 @@ function achievements_totals($count = 50, $current_user = TRUE) {
  *   The value of the passed $type. If $type is 'all', the full object.
  */
 function achievements_totals_user($type = 'points', $uid = NULL) {
-  $uid = $uid ? $uid : $GLOBALS['user']->uid;
-  if ($uid < 1) { return; } // huh what now?
+  list($uid, $access) = achievements_user_is_achiever($uid);
+  // we don't check for access as this is info grubbing only.
 
   $achievers = &drupal_static(__FUNCTION__);
   if (!isset($achievers[$uid])) {
@@ -199,8 +202,8 @@ function achievements_totals_user($type = 'points', $uid = NULL) {
  *   Defaults to current user; the user to unlock an achievement for.
  */
 function achievements_unlocked($achievement_id, $uid = NULL) {
-  $uid = $uid ? $uid : $GLOBALS['user']->uid;
-  if ($uid < 1) { return; } // anonymous. boo.
+  list($uid, $access) = achievements_user_is_achiever($uid);
+  if (!$access) { return; } // i know you want it, but...
 
   // grab information about the achievement.
   $achievement = achievements_load($achievement_id);
@@ -252,8 +255,8 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
  *   $unlocked is an array containing rank and timestamp.
  */
 function achievements_unlocked_already($achievement_id, $uid = NULL) {
-  $uid = $uid ? $uid : $GLOBALS['user']->uid;
-  if ($uid < 1) { return; } // anonymous?!
+  list($uid, $access) = achievements_user_is_achiever($uid);
+  if (!$access) { return; } // i can't let you in, y'know?
 
   $unlock = db_select('achievement_unlocks', 'au')->fields('au', array('rank', 'timestamp'))
     ->condition('achievement_id', $achievement_id)->condition('uid', $uid)->execute()->fetchAssoc();
@@ -273,8 +276,8 @@ function achievements_unlocked_already($achievement_id, $uid = NULL) {
  *   The data stored for this achievement and user (unserialized).
  */
 function achievements_storage_get($achievement_id = NULL, $uid = NULL) {
-  $uid = $uid ? $uid : $GLOBALS['user']->uid;
-  if ($uid < 1) { return; } // STOP THAT.
+  list($uid, $access) = achievements_user_is_achiever($uid);
+  if (!$access) { return; } // it's not that I don't want to...
 
   return unserialize(db_select('achievement_storage')->fields('achievement_storage', array('data'))
     ->condition('achievement_id', $achievement_id)->condition('uid', $uid)->execute()->fetchField());
@@ -291,13 +294,39 @@ function achievements_storage_get($achievement_id = NULL, $uid = NULL) {
  *   The data being saved (of any type; serialization occurs).
  */
 function achievements_storage_set($achievement_id = NULL, $data = NULL, $uid = NULL) {
-  $uid = $uid ? $uid : $GLOBALS['user']->uid;
-  if ($uid < 1) { return; } // SICK OF YOU.
+  list($uid, $access) = achievements_user_is_achiever($uid);
+  if (!$access) { return; } // I... I'M IN LOVE WITH MORBUS OK?!!?
 
   db_merge('achievement_storage')
     ->key(array('uid' => $uid, 'achievement_id' => $achievement_id))
     ->fields(array('data' => serialize($data))) // it's hot in here.
     ->execute(); // i hate all DBTNG syntax. NEVAH STANDARNDIZEE?Ee1
+}
+
+/**
+ * Determine if a user is able to earn achievements.
+ *
+ * This is a general helper around the core achievements functions and allows
+ * us to default to the global user if a $uid is not passed, but also check
+ * permissions against a user who is not the global user. This allows us to
+ * a) define roles of users that CAN NOT earn achievements and b) manually
+ * unlock achievements for a non-current user.
+ *
+ * @param $uid
+ *   Defaults to current user; the user to check for "earn achievements".
+ *
+ * @return $results
+ *   An array with values of:
+ *   - $uid is the determined user (default: the global user).
+ *   - $access is a TRUE or FALSE as returned by user_access().
+ */
+function achievements_user_is_achiever($uid = NULL) {
+  if (!isset($uid) || $uid == $GLOBALS['user']->uid) {
+    return array($GLOBALS['user']->uid, user_access('earn achievements'));
+  }
+  else {
+    return array($uid, user_access('earn achievements', user_load($uid)));
+  }
 }
 
 /**
