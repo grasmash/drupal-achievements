@@ -64,9 +64,9 @@ function hook_achievements_info() {
  * Implements hook_comment_insert().
  */
 function example_comment_insert($comment) {
-  // Here's a really simple achievement to start with: commenting unlocks.
-  // First, count the number of this user's published comments and add 1.
-  $current_count = db_select('comment')->condition('uid', $comment->uid)->condition('status', 1)->countQuery()->execute()->fetchField() + 1;
+  // A really simple achievement to start with: commenting.
+  // First, count the number of this user's published comments.
+  $current_count = db_select('comment')->condition('uid', $comment->uid)->condition('status', 1)->countQuery()->execute()->fetchField();
 
   // Knowing the user's current count and that we've defined achievements
   // for 50 and 100 comments, we can simply loop through those two numbers

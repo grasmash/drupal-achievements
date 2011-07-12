@@ -141,7 +141,7 @@ function achievements_user_page($account) {
  */
 function achievements_settings() {
   $form['achievements_cache'] = array(
-    '#type'               => 'fieldset', 
+    '#type'               => 'fieldset',
     '#title'              => t('Clear cache'),
   );
   $form['achievements_cache']['achievements_clear_info_cache'] = array(
@@ -153,7 +153,7 @@ function achievements_settings() {
   $form['achievements_manual'] = array(
     '#description'        => t("Taking an achievement from a user will <em>not</em> change other users' unlock ranking. <strong>This functionality should be used sparingly for progress-based achievements as it can create odd inconsistencies in the internal statistics.</strong> For example, giving a user the \"125 comments posted\" achievement does <em>not</em> mean they've actually posted 125 comments - if they've only made 15 legitimate comments, they'll still need to post 235 more to achieve \"250 comments posted\". Similarly, taking away an achievement will delete any relevant internal statistics, causing the user to \"start over\" with that achievement even if applicable and countable data remains."),
     '#title'              => t('Manual achievement overrides'),
-    '#type'               => 'fieldset', 
+    '#type'               => 'fieldset',
   );
   $form['achievements_manual']['achievements_manual_user'] = array(
     '#autocomplete_path'  => 'user/autocomplete',
@@ -188,7 +188,7 @@ function achievements_settings() {
  */
 function achievements_clear_info_cache_submit() {
   achievements_load(NULL, TRUE);
-  drupal_set_message('Achievements information cache cleared.');
+  drupal_set_message(t('Achievements information cache cleared.'));
 }
 
 /**

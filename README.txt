@@ -36,7 +36,7 @@ Current features and design:
 
  * Achievements are not retroactively applied - you either get them after
    the Achievements module has been enabled, or you don't get them at all.
-   Likewise, achievements can not be deleted (but they can be revoked).
+   Likewise, achievements can not be deleted (but they can be taken away).
 
 
 CREATING ACHIEVEMENTS
