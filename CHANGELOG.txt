@@ -16,6 +16,7 @@ Achievements 7.x-1.1, 2011-xx-xx
   * Removing this permission from a role does NOT delete data or ranks.
   * It does stop, however, the collection of new data, points, or unlocks.
  * achievements/leaderboard/NONEXISTENT now returns a 404.
+ * Locked achievements are now displayed on a user's achievements tab.
 
 
 Achievements 7.x-1.0, 2011-07-07

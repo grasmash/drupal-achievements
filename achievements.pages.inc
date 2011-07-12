@@ -111,7 +111,7 @@ function achievements_user_page($account) {
   drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
 
-  $all_achievements = achievements_load();
+  $achievements = achievements_load();
   $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
     ->condition('uid', $account->uid)->orderBy('timestamp', 'DESC')->execute()->fetchAllAssoc('achievement_id');
 
@@ -122,14 +122,25 @@ function achievements_user_page($account) {
       '@rank'           => achievements_totals_user('rank', $account->uid),
       '@points'         => achievements_totals_user('points', $account->uid),
       '@unlocks_count'  => count($unlocks),
-      '@total_count'    => count($all_achievements))),
+      '@total_count'    => count($achievements))),
     '#suffix' => '</div>',
   );
   foreach ($unlocks as $achievement_id => $unlock) {
     $render['achievements']['unlocks'][$achievement_id] = array(
       '#theme'        => 'achievement',
-      '#achievement'  => $all_achievements[$achievement_id],
+      '#achievement'  => $achievements[$achievement_id],
       '#unlock'       => (array)$unlock,
+    );
+
+    // don't show it again in locked loop.
+    unset($achievements[$achievement_id]);
+  }
+
+  // display all the remaining locked achievements.
+  foreach ($achievements as $achievement_id => $achievement) {
+    $render['achievements']['locks'][$achievement_id] = array(
+      '#theme'        => 'achievement',
+      '#achievement'  => $achievement,
     );
   }
 
