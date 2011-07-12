@@ -59,6 +59,13 @@ function achievements_menu() {
     'page arguments'    => array('achievements_settings'),
     'title'             => 'Achievements',
   );
+  $items['achievements/autocomplete'] = array(
+    'access arguments'  => array('access achievements'),
+    'file'              => 'achievements.pages.inc',
+    'page callback'     => 'achievements_autocomplete',
+    'title'             => 'Achievement title autocomplete',
+    'type'              => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -125,7 +132,9 @@ function achievements_load($achievement_id = NULL, $reset = FALSE) {
     }
   }
 
-  return $achievement_id ? $achievements[$achievement_id] : $achievements;
+  return $achievement_id
+    ? (isset($achievements[$achievement_id]) ? $achievements[$achievement_id] : FALSE)
+    : $achievements; // return FALSE to stop bum URLs (via the menu %loader callback).
 }
 
 /**

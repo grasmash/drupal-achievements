@@ -1,12 +1,19 @@
 
-Achievements 7.x-1.1, 2011-xx-XX
+Achievements 7.x-1.1, 2011-xx-xx
 --------------------------------
+ * Administrators can now manually give and take achievements from users.
+  * It's problematic on progression-based achievements and internal statistics.
+  * hook_achievements_info() gets 'storage' to define where statistics are kept.
+  * If 'storage' is not specified, assume it exists under the achievement ID.
+  * See admin/config/people/achievements for the disclaimer text on usage.
+  * See achievements.api.php for more on 'storage' and a revised HOWTO.
  * A new permission, "Earn achievements", has been added.
   * It is REQUIRED and NECESSARY for all roles that can unlock achievements.
   * Core functions check for it so you shouldn't need it in your own code.
   * If you think you need to check, use achievements_user_is_achiever().
   * Removing this permission from a role does NOT delete data or ranks.
   * It does stop, however, the collection of new data, points, or unlocks.
+ * achievements/leaderboard/NONEXISTENT now returns a 404.
 
 
 Achievements 7.x-1.0, 2011-07-07
