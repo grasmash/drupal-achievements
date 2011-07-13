@@ -54,7 +54,7 @@ function achievements_menu() {
   $items['admin/config/people/achievements'] = array(
     'access arguments'  => array('administer achievements'),
     'description'       => 'Configure the achievements system.',
-    'file'              => 'achievements.pages.inc',
+    'file'              => 'achievements.admin.inc',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('achievements_settings'),
     'title'             => 'Achievements',
@@ -127,8 +127,14 @@ function achievements_load($achievement_id = NULL, $reset = FALSE) {
     }
     else {
       $achievements = module_invoke_all('achievements_info');
-      cache_set('achievement_info', $achievements, 'cache', CACHE_TEMPORARY);
+
+      // loop through 'em all and set some defaults.
+      foreach ($achievements as $id => $achievement) {
+        $achievements[$id]['id'] = $id; // shorthand.
+      }
+
       // no magically-useful way to say "on file change". le sigh.
+      cache_set('achievement_info', $achievements, 'cache', CACHE_TEMPORARY);
     }
   }
 
@@ -192,14 +198,16 @@ function achievements_totals_user($type = 'points', $uid = NULL) {
     $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
     $achievers[$uid] = $query->condition('at.uid', $uid)->execute()->fetchObject();
 
-    // to find the user's rank, count all the users with greater points, add
-    // all the users with equal points but earlier timestamps, and then add 1.
-    $better_points = db_select('achievement_totals')->condition('points', $achievers[$uid]->points, '>')->countQuery()->execute()->fetchField();
-    $earlier_times = db_select('achievement_totals')->condition('points', $achievers[$uid]->points)->condition('timestamp', $achievers[$uid]->timestamp, '<')->countQuery()->execute()->fetchField();
-    $achievers[$uid]->rank = $better_points + $earlier_times + 1;
+    if ($achievers[$uid]) { // only keep going if they've unlocked something.
+      // to find the user's rank, count all the users with greater points, add
+      // all the users with equal points but earlier timestamps, and then add 1.
+      $better_points = db_select('achievement_totals')->condition('points', $achievers[$uid]->points, '>')->countQuery()->execute()->fetchField();
+      $earlier_times = db_select('achievement_totals')->condition('points', $achievers[$uid]->points)->condition('timestamp', $achievers[$uid]->timestamp, '<')->countQuery()->execute()->fetchField();
+      $achievers[$uid]->rank = $better_points + $earlier_times + 1;
+    }
   }
 
-  return $type == 'all' ? $achievers[$uid] : ($achievers[$uid]->$type ? $achievers[$uid]->$type : 0);
+  return $type == 'all' ? $achievers[$uid] : (isset($achievers[$uid]->$type) ? $achievers[$uid]->$type : 0);
 }
 
 /**

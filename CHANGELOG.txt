@@ -1,8 +1,14 @@
 
 Achievements 7.x-1.1, 2011-xx-xx
 --------------------------------
-@todo Revise the README with the relevants from below.
+@todo Revise the README and project page with the relevants from below.
 
+ * Achievements can now have images.
+  * Three possible display states: locked, unlocked, and hidden.
+  * Admins may set the default images at admin/config/people/achievements.
+  * An 'images' array has been added to hook_achievements_info() definitions.
+  * Per-achievement images can override the default on a per-state basis.
+  * CSS tweaks were made for a more flexible achievement display.
  * Administrators can now manually give and take achievements from users.
   * It's problematic on progression-based achievements and internal statistics.
   * hook_achievements_info() gets 'storage' to define where statistics are kept.
@@ -17,6 +23,8 @@ Achievements 7.x-1.1, 2011-xx-xx
   * It does stop, however, the collection of new data, points, or unlocks.
  * achievements/leaderboard/NONEXISTENT now returns a 404.
  * Locked achievements are now displayed on a user's achievements tab.
+ * No more warnings when viewing a user with no achievement unlocks.
+ * 'id' is no longer duplicated in hook_achievements_info() definitions.
 
 
 Achievements 7.x-1.0, 2011-07-07

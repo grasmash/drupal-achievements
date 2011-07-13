@@ -6,18 +6,21 @@
   border: 1px solid #bbb;
   height: 85px;
   margin: 0.8em auto;
-  width: 675px;
 }
 
+.achievement-hidden,
 .achievement-locked {
   filter: alpha(opacity=50);
   opacity: 0.5;
 }
 
-.achievement .achievement-body {
+.achievement .achievement-image {
   float: left;
+  margin: 0.6em;
+}
+
+.achievement .achievement-body {
   padding: 0.6em;
-  width: 570px;
 }
 
 .achievement .achievement-title {
@@ -28,19 +31,21 @@
 .achievement-points-box {
   background-color: #ddd;
   border-left: 1px solid #bbb;
+  font-family: Verdana, Arial, sans-serif;
   float: right;
+  margin-left: 0.6em;
   text-align: center;
   height: 85px;
   width: 85px;
 }
 
 .achievement-points-box .achievement-points {
-  font-size: 2.6em;
+  font-size: 2em;
   font-weight: bold;
-  margin-top: -5px;
+  margin-top: 2px;
 }
 
-.achievement-points-box .achievement-unlocked {
+.achievement-points-box .achievement-unlocked-stats {
   font-size: 75%;
 }
 

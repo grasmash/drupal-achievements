@@ -23,12 +23,18 @@
  * copy achievements from another site or install.
  *
  * @return
- *   An array whose keys are internal achievement IDs and whose values
- *   identify properties of the achievement. These properties are:
- *   - id: (required) Internal ID of the achievement (32 character max.)
+ *   An array whose keys are internal achievement IDs (32 chars max) and whose
+ *   values identify properties of the achievement. These properties are:
  *   - title: (required) The title of the achievement.
  *   - description: (required) A description of the achievement.
  *   - points: (required) How many points the user will earn when unlocked.
+ *   - images: (optional) An array of (optional) keys 'locked', 'unlocked',
+ *     and 'hidden' whose values image file paths. Achievements exist in one of
+ *     three separate display states: unlocked (the user has it), locked (the
+ *     user doesn't have it), and hidden (the user doesn't have it, and the
+ *     achievement is a secret). Each state can have its own default image
+ *     associated with it (which administrators can configure), or achievements
+ *     can specify their own images for one, some, or all states.
  *   - storage: (optional) If you store statistics for your achievement, the
  *     core module assumes you've used the achievement ID for the storage
  *     location. If you haven't, specify the storage location here. This lets
@@ -41,24 +47,31 @@
 function hook_achievements_info() {
   return array(
     'comment-count-50' => array(
-      'id'          => 'comment-count-50',
       'title'       => t('Posted 50 comments!'),
       'description' => t("We no longer think you're a spam bot. Maybe."),
       'storage'     => 'comment-count',
       'points'      => 50,
     ),
     'comment-count-100' => array(
-      'id'          => 'comment-count-100',
       'title'       => t('Posted 100 comments!'),
       'description' => t('But what about the children?!'),
       'storage'     => 'comment-count',
       'points'      => 100,
+      'images' => array(
+        'unlocked'  => '/sites/default/files/example.png',
+        // 'hidden' and 'locked' will use the defaults.
+      ),
     ),
     'node-mondays' => array(
-      'id'          => 'node-mondays',
       'title'       => t('Published some content on a Monday'),
       'description' => t("Go back to bed: it's still the weekend!"),
       'points'      => 5,
+      'images' => array(
+        'unlocked'  => '/sites/default/files/example1.png',
+        'locked'    => '/sites/default/files/example2.png',
+        'hidden'    => '/sites/default/files/example3.png',
+        // all default images have been replaced.
+      ),
     ),
   );
 }
