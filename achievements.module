@@ -83,6 +83,40 @@ function achievements_theme() {
 }
 
 /**
+ * Process variables for achievement.tpl.php.
+ *
+ * The $variables array contains the following arguments:
+ *
+ *  - $achievement
+ *  - $unlock
+ *
+ * @see achievement.tpl.php
+ */
+function template_preprocess_achievement(&$variables) {
+  $variables['state'] = isset($variables['unlock']) ? 'unlocked' : 'locked';
+  if (isset($variables['achievement']['hidden']) && !achievements_unlocked_already($variables['achievement']['id'])) {
+    $variables['achievement']['points']      = t('???'); // IIiII haveEeeA aa seecFRrit and I'll NEEVvaaha hTellLL..
+    $variables['achievement']['title']       = t('Hidden achievement'); // unless, of course, you PayPal me bribes.
+    $variables['achievement']['description'] = t('Continue playing to unlock this hidden achievement.');
+    $variables['state'] = 'hidden';
+  }
+
+  $variables['classes_array'][] = 'achievement-' . $variables['state'];
+  $variables['achievement_url'] = url('achievements/leaderboard/' . $variables['achievement']['id']);
+  $variables['unlocked_date'] = isset($variables['unlock']['timestamp']) ? format_date($variables['unlock']['timestamp'], 'custom', 'Y/m/d') : '';
+  $variables['unlocked_rank'] = isset($variables['unlock']['rank']) ? t('Rank #@rank', array('@rank' => $variables['unlock']['rank'])) : '';
+
+  // set the per-achievement image or admin default.
+  if (isset($variables['achievement']['images'][$variables['state']])) {
+    $variables['image'] = theme('image', array('path' => $variables['achievement']['images'][$variables['state']]));
+  }
+  else {
+    $default = drupal_get_path('module', 'achievements') . '/images/default-' . $variables['state'] . '-70.jpg';
+    $variables['image'] = theme('image', array('path' => variable_get('achievements_image_' . $variables['state'], $default)));
+  }
+}
+
+/**
  * Implements hook_block_info().
  */
 function achievements_block_info() {
@@ -111,7 +145,7 @@ function achievements_block_view($delta = '') {
  * Load information about our achievements.
  *
  * @param $achievement_id
- *   Optional; the achievement this request applies against.
+ *   The (optional) achievement this request applies against.
  * @param $reset
  *   Forces a refresh of the cached achievement data.
  *
@@ -144,14 +178,14 @@ function achievements_load($achievement_id = NULL, $reset = FALSE) {
 }
 
 /**
- * Returns all, or per user, achievement totals.
+ * Returns all, or per-user, achievement totals.
  *
  * @param $count
- *   Defaults to 50; the number of top-ranking users to return.
+ *   The number of top-ranking users to return (defaults to 50).
  * @param $current_user
- *   Defaults to TRUE; whether to include the current user's stats in the list,
- *   even if they're not in the top $count. This is just a friendly "how you
- *   compare" feature ("I'm rank 52; nearly in the top 50. woot!").
+ *   Whether to include the current user's stats in the list, even if they're
+ *   not in the top $count. This is just a friendly "how you compare" feature
+ *   ("I'm rank 52; nearly in the top 50. woot!"). Defaults to TRUE.
  *
  * @return $totals
  *   An array of totals information for the top $count users.
@@ -180,9 +214,9 @@ function achievements_totals($count = 50, $current_user = TRUE) {
  * Returns a specific user's achievement totals.
  *
  * @param $type
- *   Defaults to 'points'; one of 'points', 'unlocks', 'rank', or 'all'.
+ *   'points', 'unlocks', 'rank', or 'all' (defaults to 'points').
  * @param $uid
- *   Defaults to current user; the user to return achievement info for.
+ *   The user to return achievement info for (defaults to current user).
  *
  * @return $integer or $object
  *   The value of the passed $type. If $type is 'all', the full object.
@@ -199,7 +233,7 @@ function achievements_totals_user($type = 'points', $uid = NULL) {
     $achievers[$uid] = $query->condition('at.uid', $uid)->execute()->fetchObject();
 
     if ($achievers[$uid]) { // only keep going if they've unlocked something.
-      // to find the user's rank, count all the users with greater points, add
+      // to find the user's rank: count all the users with greater points, add
       // all the users with equal points but earlier timestamps, and then add 1.
       $better_points = db_select('achievement_totals')->condition('points', $achievers[$uid]->points, '>')->countQuery()->execute()->fetchField();
       $earlier_times = db_select('achievement_totals')->condition('points', $achievers[$uid]->points)->condition('timestamp', $achievers[$uid]->timestamp, '<')->countQuery()->execute()->fetchField();
@@ -216,7 +250,7 @@ function achievements_totals_user($type = 'points', $uid = NULL) {
  * @param $achievement_id
  *   The achievement this request applies against.
  * @param $uid
- *   Defaults to current user; the user to unlock an achievement for.
+ *   The user to unlock an achievement for (defaults to current user).
  */
 function achievements_unlocked($achievement_id, $uid = NULL) {
   list($uid, $access) = achievements_user_is_achiever($uid);
@@ -266,7 +300,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
  * @param $achievement_id
  *   The achievement this request applies against.
  * @param $uid
- *   Defaults to current user; the user this request applies against.
+ *   The user this request applies against (defaults to current user).
  *
  * @return NULL or $unlocked
  *   $unlocked is an array containing rank and timestamp.
@@ -287,7 +321,7 @@ function achievements_unlocked_already($achievement_id, $uid = NULL) {
  * @param $achievement_id
  *   An identifier for the achievement whose data is being collected.
  * @param $uid
- *   Defaults to current user; the user this stored data applies to.
+ *   The user this stored data applies to (defaults to current user).
  *
  * @return $data
  *   The data stored for this achievement and user (unserialized).
@@ -306,7 +340,7 @@ function achievements_storage_get($achievement_id = NULL, $uid = NULL) {
  * @param $achievement_id
  *   An identifier for the achievement whose data is being collected.
  * @param $uid
- *   Defaults to current user; the user this stored data applies to.
+ *   The user this stored data applies to (defaults to current user).
  * @param $data
  *   The data being saved (of any type; serialization occurs).
  */
@@ -326,11 +360,11 @@ function achievements_storage_set($achievement_id = NULL, $data = NULL, $uid = N
  * This is a general helper around the core achievements functions and allows
  * us to default to the global user if a $uid is not passed, but also check
  * permissions against a user who is not the global user. This allows us to
- * a) define roles of users that CAN NOT earn achievements and b) manually
+ * a) define roles of users that can not earn achievements and b) manually
  * unlock achievements for a non-current user.
  *
  * @param $uid
- *   Defaults to current user; the user to check for "earn achievements".
+ *   The user to check for "earn achievements" (defaults to current user).
  *
  * @return $results
  *   An array with values of:
@@ -361,4 +395,3 @@ function achievements_user_delete($account) {
   db_delete('achievement_unlocks')->condition('uid', $account->uid)->execute();
   db_delete('achievement_storage')->condition('uid', $account->uid)->execute();
 }
-

@@ -9,7 +9,7 @@
  * Menu callback and block; show the site-wide leaderboard.
  *
  * @param $block
- *   Defaults to FALSE; whether this is a block display.
+ *   Whether this is a block display (defaults to FALSE).
  */
 function achievements_leaderboard_totals($block = FALSE) {
   $achievers = achievements_totals($block ? 5 : 50);
@@ -21,20 +21,35 @@ function achievements_leaderboard_totals($block = FALSE) {
   $rows = array();
   foreach ($achievers as $achiever) {
     $row = array( // dueling styles for wipe.
-      array('data' => $achiever->rank, 'class' => array('achievement-leaderboard-rank')),
-      array('data' => theme('username', array('account' => $achiever)), 'class' => array('achievement-leaderboard-username')),
-      array('data' => l($achiever->points, 'user/' . $achiever->uid . '/achievements'), 'class' => array('achievement-leaderboard-points')),
+      array(
+        'data'  => $achiever->rank,
+        'class' => array('achievement-leaderboard-rank')
+      ),
+      array(
+        'data'  => theme('username', array('account' => $achiever)),
+        'class' => array('achievement-leaderboard-username')
+      ),
+      array(
+        'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+        'class' => array('achievement-leaderboard-points')
+      ),
     );
 
-    if (!$block) { // full page display comes with a few more columns.
-      $row[] = array('data' => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'), 'class' => array('achievement-leaderboard-unlocks'));
-      $row[] = array('data' => format_date($achiever->timestamp, 'small'), 'class' => array('achievement-leaderboard-when')); // mOOoOdooD for lOoovoe.
+    if (!$block) {
+      $row[] = array(
+        'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
+        'class' => array('achievement-leaderboard-unlocks')
+      );
+      $row[] = array(
+        'data'  => format_date($achiever->timestamp, 'small'),
+        'class' => array('achievement-leaderboard-when')
+      );
     }
 
     $rows[] = $row;
   }
 
-  $render['achievements']['leaderboard'] = array(
+  $build['achievements']['leaderboard'] = array(
     '#attributes' => array('class' => array('achievement-leaderboard')),
     '#header'     => $header, // 3 or 5 columns based on $block.
     '#empty'      => t('No one has been ranked yet.'),
@@ -43,14 +58,14 @@ function achievements_leaderboard_totals($block = FALSE) {
   );
 
   if ($block) { // link off to more. MOOOReEeE!
-    $render['achievements']['see-more'] = array(
+    $build['achievements']['see-more'] = array(
       '#prefix'   => '<div class="achievement-see-more">',
       '#markup'   =>  l(t('View the top 50 leaders »'), 'achievements/leaderboard'),
       '#suffix'   => '</div>',
     );
   }
 
-  return $render;
+  return $build;
 }
 
 /**
@@ -60,7 +75,7 @@ function achievements_leaderboard_for($achievement) {
   drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
   drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])));
 
-  $render['achievements']['achievement'] = array(
+  $build['achievements']['achievement'] = array(
     '#theme'        => 'achievement',
     '#achievement'  => $achievement,
     '#unlock'       => achievements_unlocked_already($achievement['id']),
@@ -81,14 +96,26 @@ function achievements_leaderboard_for($achievement) {
     $rows = array(); // clear previous run.
     foreach ($stats[$type] as $stat) {
       $rows[] = array(
-        array('data' => $stat->rank, 'class' => array('achievement-leaderboard-rank')),
-        array('data' => theme('username', array('account' => $stat)), 'class' => array('achievement-leaderboard-username')),
-        array('data' => l($stat->points, 'user/' . $stat->uid . '/achievements'), 'class' => array('achievement-leaderboard-points')),
-        array('data' => format_date($stat->timestamp, 'short'), 'class' => array('achievement-leaderboard-when')),
+        array(
+          'data'  => $stat->rank,
+          'class' => array('achievement-leaderboard-rank')
+        ),
+        array(
+          'data'  => theme('username', array('account' => $stat)),
+          'class' => array('achievement-leaderboard-username')
+        ),
+        array(
+          'data'  => l($stat->points, 'user/' . $stat->uid . '/achievements'),
+          'class' => array('achievement-leaderboard-points')
+        ),
+        array(
+          'data'  => format_date($stat->timestamp, 'short'),
+          'class' => array('achievement-leaderboard-when')
+        ),
       );
     }
 
-    $render['achievements']['stats'][$type] = array(
+    $build['achievements']['stats'][$type] = array(
       '#attributes' => array('class' => array('achievement-stats-' . $type)),
       '#caption'    => t('@type achievement unlocks', array('@type' => drupal_ucfirst($type))),
       '#header'     => array(t('#'), t('Who'), t('Points'), t('When')),
@@ -98,7 +125,7 @@ function achievements_leaderboard_for($achievement) {
     );
   }
 
-  return $render;
+  return $build;
 }
 
 /**
@@ -115,7 +142,7 @@ function achievements_user_page($account) {
   $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
     ->condition('uid', $account->uid)->orderBy('timestamp', 'DESC')->execute()->fetchAllAssoc('achievement_id');
 
-  $render['achievements']['stats'] = array(
+  $build['achievements']['stats'] = array(
     '#prefix' => '<div class="achievement-stats">',
     '#markup' => t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
       '@name'           => $account->name,
@@ -126,10 +153,10 @@ function achievements_user_page($account) {
     '#suffix' => '</div>',
   );
   foreach ($unlocks as $achievement_id => $unlock) {
-    $render['achievements']['unlocks'][$achievement_id] = array(
+    $build['achievements']['unlocks'][$achievement_id] = array(
       '#theme'        => 'achievement',
       '#achievement'  => $achievements[$achievement_id],
-      '#unlock'       => (array)$unlock,
+      '#unlock'       => (array) $unlock,
     );
 
     // don't show it again in locked loop.
@@ -138,13 +165,13 @@ function achievements_user_page($account) {
 
   // display all the remaining locked achievements.
   foreach ($achievements as $achievement_id => $achievement) {
-    $render['achievements']['locks'][$achievement_id] = array(
+    $build['achievements']['locks'][$achievement_id] = array(
       '#theme'        => 'achievement',
       '#achievement'  => $achievement,
     );
   }
 
-  return $render;
+  return $build;
 }
 
 /**
@@ -162,4 +189,3 @@ function achievements_autocomplete($string = '') {
 function achievements_autocomplete_search(&$value, $key, $string) {
   $value = (stripos($value['title'], $string) === FALSE) ? FALSE : $value['title'];
 }
-

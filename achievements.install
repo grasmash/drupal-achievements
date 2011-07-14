@@ -89,8 +89,8 @@ function achievements_schema() {
     'primary key'       => array('achievement_id', 'uid'),
   );
 
-  // some achievements only trigger over time - after 10 comments, after 50
-  // page views, etc. this is a simple table for storage of these counters.
+  // some achievements only trigger over time e.g. after 10 comments, after 50
+  // Mondays, etc. this is a simple table for storage of these statistics.
   $schema['achievement_storage'] = array(
     'description' => 'Provides a general storage area for statistic collection.',
     'fields' => array(
@@ -119,4 +119,3 @@ function achievements_schema() {
 
   return $schema;
 }
-

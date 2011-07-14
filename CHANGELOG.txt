@@ -25,6 +25,7 @@ Achievements 7.x-1.1, 2011-xx-xx
  * Locked achievements are now displayed on a user's achievements tab.
  * No more warnings when viewing a user with no achievement unlocks.
  * 'id' is no longer duplicated in hook_achievements_info() definitions.
+ * achievements.tpl.php has had its PHP moved to template_preprocess_hook().
 
 
 Achievements 7.x-1.0, 2011-07-07
