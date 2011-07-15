@@ -154,6 +154,7 @@ function achievements_user_page($account) {
   );
 
   foreach ($achievements as $group_id => $group) {
+    $locked_weight = 0; // we can't use definition order.
     foreach ($group['achievements'] as $achievement_id => $achievement) {
       $build['achievements'][$group_id][$achievement_id]['#theme'] = 'achievement';
       $build['achievements'][$group_id][$achievement_id]['#achievement'] = $achievement;
@@ -161,7 +162,12 @@ function achievements_user_page($account) {
       if (isset($unlocks[$achievement_id])) {
         $build['achievements'][$group_id][$achievement_id]['#unlock'] = (array) $unlocks[$achievement_id];
         $build['achievements'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
-        // by setting the weight to the timestamp, the latest unlocks are always shown at the top.
+        // by setting the negative weight to the timestamp, the latest unlocks are always shown at the top.
+      }
+      else {
+        // since we're forcing unlocked achievements to the top with #weight,
+        // locked achievements can no longer depend on "definition order".
+        $build['achievements'][$group_id][$achievement_id]['#weight'] = $locked_weight++;
       }
     }
   }
