@@ -15,7 +15,7 @@
  * - $state: The 'unlocked', 'locked', or 'hidden' achievement state.
  */
 ?>
-<div class="achievement <?php print $classes; ?>">
+<div class="<?php print $classes; ?>">
   <div class="achievement-image"><?php print $image; ?></div>
 
   <div class="achievement-points-box">

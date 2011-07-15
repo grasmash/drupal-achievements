@@ -138,7 +138,7 @@ function achievements_user_page($account) {
   drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
 
-  $achievements = achievements_load(NULL, TRUE);
+  $achievements_grouped = achievements_load(NULL, TRUE);
   $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
     ->condition('uid', $account->uid)->orderBy('timestamp', 'DESC')->execute()->fetchAllAssoc('achievement_id');
 
@@ -148,13 +148,16 @@ function achievements_user_page($account) {
       '@name'           => $account->name,
       '@rank'           => achievements_totals_user('rank', $account->uid),
       '@points'         => achievements_totals_user('points', $account->uid),
-      '@unlocks_count'  => count($unlocks),
-      '@total_count'    => count($achievements))),
+      '@unlocks_count'  => count($unlocks), // non-grouped achievements.
+      '@total_count'    => count(achievements_load()))),
     '#suffix' => '</div>',
   );
 
-  foreach ($achievements as $group_id => $group) {
+  foreach ($achievements_grouped as $group_id => $group) {
     $locked_weight = 0; // we can't use definition order.
+    $build['achievements'][$group_id]['#prefix'] = '<div class="achievement-group-' . $group_id .'">';
+    $build['achievements'][$group_id]['#suffix'] = '</div>'; // necessary for the jQuery UI tabs.
+
     foreach ($group['achievements'] as $achievement_id => $achievement) {
       $build['achievements'][$group_id][$achievement_id]['#theme'] = 'achievement';
       $build['achievements'][$group_id][$achievement_id]['#achievement'] = $achievement;

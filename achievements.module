@@ -149,7 +149,7 @@ function achievements_block_view($delta = '') {
  * @param $grouped
  *   Whether to return the achievements list flattened (FALSE, the default)
  *   or grouped into achievement-defined categories. If TRUE, but there is no
- *   group specified for an achievement, it'll be stored in a "__NONE__" group
+ *   group specified for an achievement, it'll be stored in a "-none-" array
  *   intended to simplify display code. Not compatible with $achievement_id.
  * @param $reset
  *   Forces a refresh of the cached achievement data.
@@ -184,13 +184,17 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
         }
         else {
           $value['id']              = $key;
-          $value['group_id']        = '__NONE__';
+          $value['group_id']        = '-none-';
           $value['group_title']     = NULL; // moo.
-          $achievements['grouped']['__NONE__']['achievements'][$key] = $value;
-          $achievements['flat'][$key] = &$achievements['grouped']['__NONE__']['achievements'][$key];
+          $achievements['grouped']['-none-']['achievements'][$key] = $value;
+          $achievements['flat'][$key] = &$achievements['grouped']['-none-']['achievements'][$key];
         }
       }
 
+      if (isset($achievements['grouped']['-none-'])) {
+        $achievements['grouped']['-none-']['title'] = t('Miscellany');
+      }
+  
       cache_set('achievements_info', $achievements, 'cache', CACHE_TEMPORARY);
     }
   }
