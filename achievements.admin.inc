@@ -70,7 +70,7 @@ function achievements_settings() {
  * Submit callback; clear achievement info cache.
  */
 function achievements_clear_info_cache_submit() {
-  achievements_load(NULL, TRUE);
+  achievements_load(NULL, FALSE, TRUE);
   drupal_set_message(t('Achievements information cache cleared.'));
 }
 

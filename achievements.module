@@ -146,35 +146,61 @@ function achievements_block_view($delta = '') {
  *
  * @param $achievement_id
  *   The (optional) achievement this request applies against.
+ * @param $grouped
+ *   Whether to return the achievements list flattened (FALSE, the default)
+ *   or grouped into achievement-defined categories. If TRUE, but there is no
+ *   group specified for an achievement, it'll be stored in a "__NONE__" group
+ *   intended to simplify display code. Not compatible with $achievement_id.
  * @param $reset
  *   Forces a refresh of the cached achievement data.
  *
  * @return $achievements
  *   An array of all achievements, or just the one passed.
  */
-function achievements_load($achievement_id = NULL, $reset = FALSE) {
+function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FALSE) {
   $achievements = &drupal_static(__FUNCTION__);
 
   if (!isset($achievements) || $reset) {
-    if (!$reset && $cache = cache_get('achievement_info')) {
+    if (!$reset && $cache = cache_get('achievements_info')) {
       $achievements = $cache->data;
     }
     else {
-      $achievements = module_invoke_all('achievements_info');
+      $result = module_invoke_all('achievements_info');
 
-      // loop through 'em all and set some defaults.
-      foreach ($achievements as $id => $achievement) {
-        $achievements[$id]['id'] = $id; // shorthand.
+      // determine if we're looking at an achievement or group and create our
+      // master $achievements array. we store the achievements in two separate
+      // forms: one with a tree (for display purposes) and one flattened (for
+      // lookup purposes). the flattened index is referenced so that we save
+      // space in the final serialized blob that cache_set() sends.
+      foreach ($result as $key => $value) {
+        if (isset($value['achievements']) && is_array($value['achievements'])) {
+          $achievements['grouped'][$key] = $value; // copy the whole shebang into realz.
+          foreach ($achievements['grouped'][$key]['achievements'] as $id => $achievement) {
+            $achievement[$id]['id']           = $id;
+            $achievement[$id]['group_id']     = $key;
+            $achievement[$id]['group_title']  = $value['title'];
+            $achievements['flat'][$id] = &$achievements['grouped'][$key]['achievements'][$id];
+          }
+        }
+        else {
+          $value['id']              = $key;
+          $value['group_id']        = '__NONE__';
+          $value['group_title']     = NULL; // moo.
+          $achievements['grouped']['__NONE__']['achievements'][$key] = $value;
+          $achievements['flat'][$key] = &$achievements['grouped']['__NONE__']['achievements'][$key];
+        }
       }
 
-      // no magically-useful way to say "on file change". le sigh.
-      cache_set('achievement_info', $achievements, 'cache', CACHE_TEMPORARY);
+      cache_set('achievements_info', $achievements, 'cache', CACHE_TEMPORARY);
     }
   }
 
-  return $achievement_id
-    ? (isset($achievements[$achievement_id]) ? $achievements[$achievement_id] : FALSE)
-    : $achievements; // return FALSE to stop bum URLs (via the menu %loader callback).
+  if ($achievement_id) { // all my majesty and brilliance, and you just want one result? /me weeps.
+    return isset($achievements['flat'][$achievement_id]) ? $achievements['flat'][$achievement_id] : FALSE;
+  }
+
+  // return the whole shebang in groups or a flattened lookup bucket.
+  return $grouped ? $achievements['grouped'] : $achievements['flat'];
 }
 
 /**
@@ -259,7 +285,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
   // grab information about the achievement.
   $achievement = achievements_load($achievement_id);
   if (!isset($achievement)) { // hrm... try a cache refresh?
-    $achievement = achievements_load($achievement_id, TRUE);
+    $achievement = achievements_load($achievement_id, FALSE, TRUE);
   }
 
   if (isset($achievement) && !achievements_unlocked_already($achievement_id, $uid)) {

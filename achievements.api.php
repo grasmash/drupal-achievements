@@ -45,7 +45,7 @@
  *   - hidden: (optional) The achievement is a sekrit until it is unlocked.
  */
 function hook_achievements_info() {
-  return array(
+  $achievements = array(
     'comment-count-50' => array(
       'title'       => t('Posted 50 comments!'),
       'description' => t("We no longer think you're a spam bot. Maybe."),
@@ -58,7 +58,7 @@ function hook_achievements_info() {
       'storage'     => 'comment-count',
       'points'      => 100,
       'images' => array(
-        'unlocked'  => '/sites/default/files/example.png',
+        'unlocked'  => '/sites/default/files/example1.png',
         // 'hidden' and 'locked' will use the defaults.
       ),
     ),
@@ -74,6 +74,8 @@ function hook_achievements_info() {
       ),
     ),
   );
+
+  return $achievements;
 }
 
 /**

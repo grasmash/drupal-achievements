@@ -138,7 +138,7 @@ function achievements_user_page($account) {
   drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
 
-  $achievements = achievements_load();
+  $achievements = achievements_load(NULL, TRUE);
   $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
     ->condition('uid', $account->uid)->orderBy('timestamp', 'DESC')->execute()->fetchAllAssoc('achievement_id');
 
@@ -152,23 +152,18 @@ function achievements_user_page($account) {
       '@total_count'    => count($achievements))),
     '#suffix' => '</div>',
   );
-  foreach ($unlocks as $achievement_id => $unlock) {
-    $build['achievements']['unlocks'][$achievement_id] = array(
-      '#theme'        => 'achievement',
-      '#achievement'  => $achievements[$achievement_id],
-      '#unlock'       => (array) $unlock,
-    );
 
-    // don't show it again in locked loop.
-    unset($achievements[$achievement_id]);
-  }
+  foreach ($achievements as $group_id => $group) {
+    foreach ($group['achievements'] as $achievement_id => $achievement) {
+      $build['achievements'][$group_id][$achievement_id]['#theme'] = 'achievement';
+      $build['achievements'][$group_id][$achievement_id]['#achievement'] = $achievement;
 
-  // display all the remaining locked achievements.
-  foreach ($achievements as $achievement_id => $achievement) {
-    $build['achievements']['locks'][$achievement_id] = array(
-      '#theme'        => 'achievement',
-      '#achievement'  => $achievement,
-    );
+      if (isset($unlocks[$achievement_id])) {
+        $build['achievements'][$group_id][$achievement_id]['#unlock'] = (array) $unlocks[$achievement_id];
+        $build['achievements'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
+        // by setting the weight to the timestamp, the latest unlocks are always shown at the top.
+      }
+    }
   }
 
   return $build;
