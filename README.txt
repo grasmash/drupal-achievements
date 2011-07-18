@@ -25,18 +25,25 @@ Current features and design:
    no achievement for posting 20 nodes, the user receives no further points.
 
  * Since achievements are milestones, each one has its own leaderboard
-   that lists when a user has met (or "unlocked") the goal, and their
+   that lists when a user has met (or "unlocked") the goal and their
    matching rank. A site-wide leaderboard ranks users by points they've
    achieved, but also by timestamp -- if two users share the same point
    total, the person who got there first gets the higher rank.
 
  * Achievements can be hidden so that a user doesn't know how to unlock
-   it until he stumbles upon the discovery himself (either by meeting the
+   it until she stumbles upon the discovery herself (by meeting the
    milestone, asking another user, etc.).
 
- * Achievements are not retroactively applied - you either get them after
-   the Achievements module has been enabled, or you don't get them at all.
-   Likewise, achievements can not be deleted (but they can be taken away).
+ * Achievements can have images (or "badges") in one of three different
+   states: unlocked, locked, or hidden. Default images can be used for all
+   achievements (and some are provided with the module), or you can override
+   them on a per-achievement basis.
+
+ * Achievements can be grouped into categories and tabbed with jQuery UI.
+
+ * An adminterface allows you to manually grant or remove achievements.
+
+ * Your code decides whether achievements are retroactively applied or not.
 
 
 CREATING ACHIEVEMENTS

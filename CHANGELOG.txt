@@ -1,11 +1,6 @@
 
-Achievements 7.x-1.1, 2011-xx-xx
+Achievements 7.x-1.1, 2011-07-18
 --------------------------------
-@todo Revise the README and project page with the relevants from below.
- @todo You decide if you start fresh or support previous content.
- @todo Add in images for all the features.
-@todo check over and release 1.1.
-
  * Achievements can now be categorized into groups.
   * Grouped achievements will be displayed within jQuery UI tabs.
   * If groups exist, ungrouped achievements "upgrade" automatically.
@@ -16,6 +11,7 @@ Achievements 7.x-1.1, 2011-xx-xx
   * An 'images' array has been added to hook_achievements_info() definitions.
   * Per-achievement images can override the default on a per-state basis.
   * CSS tweaks were made for a more flexible achievement display.
+  * Default images have been provided for each of the three states.
  * Administrators can now manually give and take achievements from users.
   * It's problematic on progression-based achievements and internal statistics.
   * hook_achievements_info() gets 'storage' to define where statistics are kept.
@@ -33,6 +29,7 @@ Achievements 7.x-1.1, 2011-xx-xx
  * No more warnings when viewing a user with no achievement unlocks.
  * 'id' is no longer duplicated in hook_achievements_info() definitions.
  * achievements.tpl.php has had its PHP moved to template_preprocess_hook().
+  * New variables have been added to streamline the display code.
 
 
 Achievements 7.x-1.0, 2011-07-07
