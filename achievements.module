@@ -102,6 +102,7 @@ function template_preprocess_achievement(&$variables) {
   }
 
   $variables['classes_array'][] = 'achievement-' . $variables['state'];
+  $variables['classes_array'][] = 'ui-corner-all'; // if jquery UI is enabled, adds rounded rects.
   $variables['achievement_url'] = url('achievements/leaderboard/' . $variables['achievement']['id']);
   $variables['unlocked_date'] = isset($variables['unlock']['timestamp']) ? format_date($variables['unlock']['timestamp'], 'custom', 'Y/m/d') : '';
   $variables['unlocked_rank'] = isset($variables['unlock']['rank']) ? t('Rank #@rank', array('@rank' => $variables['unlock']['rank'])) : '';
@@ -114,6 +115,8 @@ function template_preprocess_achievement(&$variables) {
     $default = drupal_get_path('module', 'achievements') . '/images/default-' . $variables['state'] . '-70.jpg';
     $variables['image'] = theme('image', array('path' => variable_get('achievements_image_' . $variables['state'], $default)));
   }
+
+  $variables['image'] = l($variables['image'], 'achievements/leaderboard/' . $variables['achievement']['id'], array('html' => TRUE));
 }
 
 /**

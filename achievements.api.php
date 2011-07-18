@@ -43,6 +43,13 @@
  *     tracks statistics that are NOT set with achievements_storage_get()
  *     or _set, you don't have to define the 'storage' key.
  *   - hidden: (optional) The achievement is a sekrit until it is unlocked.
+ *
+ *   Achievements can also be categorized into groups. Groups are simply
+ *   arrays whose keys are internal group IDs and whose values identify
+ *   the 'title' of the group as well as the array of 'achievements' that
+ *   correspond to that group. If some achievements are within a group and
+ *   some achievements are without a group, the groupless achievements will
+ *   automatically be placed into a "Miscellany" category.
  */
 function hook_achievements_info() {
   $achievements = array(
@@ -62,15 +69,25 @@ function hook_achievements_info() {
         // 'hidden' and 'locked' will use the defaults.
       ),
     ),
-    'node-mondays' => array(
-      'title'       => t('Published some content on a Monday'),
-      'description' => t("Go back to bed: it's still the weekend!"),
-      'points'      => 5,
-      'images' => array(
-        'unlocked'  => '/sites/default/files/example1.png',
-        'locked'    => '/sites/default/files/example2.png',
-        'hidden'    => '/sites/default/files/example3.png',
-        // all default images have been replaced.
+
+    // An example of achievement groups: 'node-creation' is the group ID,
+    // "Article creation" is the group title, and all relevant achievements are
+    // placed in an 'achievements' array. The ungrouped comment achievements
+    // above will be automatically pushed into a "Miscellany" group.
+    'article-creation' => array(
+      'title' => t('Article creation'),
+      'achievements' => array(
+        'node-mondays' => array(
+          'title'       => t('Published some content on a Monday'),
+          'description' => t("Go back to bed: it's still the weekend!"),
+          'points'      => 5,
+          'images' => array(
+            'unlocked'  => '/sites/default/files/example1.png',
+            'locked'    => '/sites/default/files/example2.png',
+            'hidden'    => '/sites/default/files/example3.png',
+            // all default images have been replaced.
+          ),
+        ),
       ),
     ),
   );

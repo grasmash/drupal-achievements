@@ -153,24 +153,46 @@ function achievements_user_page($account) {
     '#suffix' => '</div>',
   );
 
+  $build['achievements']['tabs']= array(
+    '#prefix' => '<div id="achievement-groups">',
+    '#suffix' => '</div>', // even without tabs.
+  );
+
+  // use jQuery tabs if more than one group.
+  if (count($achievements_grouped) > 1) {
+    foreach ($achievements_grouped as $group_id => $group) {
+      $links['achievement-group-' . $group_id] = array(
+        'title'     => $group['title'],
+        'fragment'  => 'achievement-group-' . $group_id,
+        'href'      => '', // just the fragment, please.
+        'external'  => TRUE, // no base_path dammit. GZUS.
+      );
+    }
+    $build['achievements']['tabs']['navigation'] = array('#theme' => 'links', '#links' => $links);
+    $build['achievements']['tabs']['navigation']['#attached']['library'][] = array('system', 'ui.tabs');
+    $build['achievements']['tabs']['navigation']['#attached']['js']= array( // I AM NOT A JS EXPERT. OOooOH NO.
+      'jQuery(document).ready(function(){jQuery("#achievement-groups").tabs();});' => array('type' => 'inline')
+    );
+  }
+
   foreach ($achievements_grouped as $group_id => $group) {
     $locked_weight = 0; // we can't use definition order.
-    $build['achievements'][$group_id]['#prefix'] = '<div class="achievement-group-' . $group_id .'">';
-    $build['achievements'][$group_id]['#suffix'] = '</div>'; // necessary for the jQuery UI tabs.
+    $build['achievements']['tabs']['groups'][$group_id]['#prefix'] = '<div id="achievement-group-' . $group_id .'" class="achievement-group">';
+    $build['achievements']['tabs']['groups'][$group_id]['#suffix'] = '</div>'; // for the jQuery UI tabs for when there's lotsa groups.
 
     foreach ($group['achievements'] as $achievement_id => $achievement) {
-      $build['achievements'][$group_id][$achievement_id]['#theme'] = 'achievement';
-      $build['achievements'][$group_id][$achievement_id]['#achievement'] = $achievement;
+      $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#theme'] = 'achievement';
+      $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#achievement'] = $achievement;
 
       if (isset($unlocks[$achievement_id])) {
-        $build['achievements'][$group_id][$achievement_id]['#unlock'] = (array) $unlocks[$achievement_id];
-        $build['achievements'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
+        $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#unlock'] = (array) $unlocks[$achievement_id];
+        $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
         // by setting the negative weight to the timestamp, the latest unlocks are always shown at the top.
       }
       else {
         // since we're forcing unlocked achievements to the top with #weight,
         // locked achievements can no longer depend on "definition order".
-        $build['achievements'][$group_id][$achievement_id]['#weight'] = $locked_weight++;
+        $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = $locked_weight++;
       }
     }
   }

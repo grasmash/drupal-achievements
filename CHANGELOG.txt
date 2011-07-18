@@ -2,7 +2,14 @@
 Achievements 7.x-1.1, 2011-xx-xx
 --------------------------------
 @todo Revise the README and project page with the relevants from below.
+ @todo You decide if you start fresh or support previous content.
+ @todo Add in images for all the features.
+@todo check over and release 1.1.
 
+ * Achievements can now be categorized into groups.
+  * Grouped achievements will be displayed within jQuery UI tabs.
+  * If groups exist, ungrouped achievements "upgrade" automatically.
+  * See achievements.api.php for more on how to define achievement groups.
  * Achievements can now have images.
   * Three possible display states: locked, unlocked, and hidden.
   * Admins may set the default images at admin/config/people/achievements.

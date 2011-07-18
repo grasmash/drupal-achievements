@@ -4,7 +4,7 @@
  */
 .achievement {
   border: 1px solid #bbb;
-  height: 85px;
+  height: 86px;
   margin: 0.8em auto;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .achievement .achievement-title {
-  font-size: 120%;
+  font-size: 17px;
   font-weight: bold;
 }
 
@@ -35,24 +35,25 @@
   float: right;
   margin-left: 0.6em;
   text-align: center;
-  height: 85px;
-  width: 85px;
+  height: 86px;
+  width: 86px;
 }
 
 .achievement-points-box .achievement-points {
-  font-size: 2em;
+  font-size: 28px;
   font-weight: bold;
   margin-top: 2px;
 }
 
 .achievement-points-box .achievement-unlocked-stats {
-  font-size: 75%;
+  font-size: 11px;
 }
 
 /**
  * Stats line on the user's achievement page.
  */
 .achievement-stats {
+  margin: 1em;
   text-align: center;
 }
 
