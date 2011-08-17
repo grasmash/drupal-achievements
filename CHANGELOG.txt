@@ -1,4 +1,16 @@
 
+Achievements 7.x-1.2, 2011-xx-xx
+--------------------------------
+ * Achievement unlock notifications are now JS fadeins and offline-able.
+  * We no longer use drupal_set_message() to inform of an unlock.
+  * A new achievement-notification.tpl.php controls the appearance.
+  * Unlock notifications now fade in and out at the window's bottom right.
+  * We now track whether a user has seen an achievement unlock notification.
+  * If they haven't, they will the next time they login or access the site.
+ * Block 'achievements-leaderboard' renamed with underscores not dashes.
+  * If you're using this block, you'll need to place it again upon upgrade.
+
+
 Achievements 7.x-1.1, 2011-07-18
 --------------------------------
  * Achievements can now be categorized into groups.

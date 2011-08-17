@@ -16,7 +16,6 @@ function achievements_leaderboard_totals($block = FALSE) {
   $header = array(t('#'), t('Who'), t('Points'), t('Unlocks'), t('When'));
   $header = $block ? array_slice($header, 0, 3) : $header; // UNIQUEZORS.
   !$block ? drupal_set_title(t('Achievement leaderboard')) : ''; // UNIQUEZORS+.
-  drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
 
   $rows = array();
   foreach ($achievers as $achiever) {
@@ -72,7 +71,6 @@ function achievements_leaderboard_totals($block = FALSE) {
  * Menu callback; display a single achievement page with leaderboards.
  */
 function achievements_leaderboard_for($achievement) {
-  drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
   drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])));
 
   $build['achievements']['achievement'] = array(
@@ -135,7 +133,6 @@ function achievements_leaderboard_for($achievement) {
  *   The user object this request applies against.
  */
 function achievements_user_page($account) {
-  drupal_add_css(drupal_get_path('module', 'achievements') . '/achievements.css');
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
 
   $achievements_grouped = achievements_load(NULL, TRUE);

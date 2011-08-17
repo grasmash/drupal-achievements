@@ -1,6 +1,6 @@
 
 /**
- * Single achievement display.
+ * Single achievement full display.
  */
 .achievement {
   border: 1px solid #bbb;
@@ -14,16 +14,16 @@
   opacity: 0.5;
 }
 
-.achievement .achievement-image {
+.achievement-image {
   float: left;
   margin: 0.6em;
 }
 
-.achievement .achievement-body {
+.achievement-body {
   padding: 0.6em;
 }
 
-.achievement .achievement-title {
+.achievement-title {
   font-size: 17px;
   font-weight: bold;
 }
@@ -47,6 +47,44 @@
 
 .achievement-points-box .achievement-unlocked-stats {
   font-size: 11px;
+}
+
+/**
+ * Single achievement notification display.
+ */
+.achievement-notification-dialog {
+  border-color: #00c325;
+  margin: 0.6em;
+  padding: 0;
+  position: fixed;
+}
+
+.achievement-notification-dialog .ui-dialog-titlebar {
+  display: none;
+}
+
+.achievement-notification {
+  background: #b8ffa9 !important;
+}
+
+.achievement-notification .achievement-body {
+  margin-top: 1em;
+}
+
+.achievement-notification img {
+  display: block;
+}
+
+.achievement-notification .achievement-points-box {
+  border: 1px solid #1CF608;
+  background: #79F66A;
+  margin-top: 0.6em;
+  height: 70px;
+  width: 70px;
+}
+
+.achievement-notification .achievement-body {
+  text-align: center;
 }
 
 /**

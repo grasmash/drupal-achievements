@@ -31,8 +31,8 @@ Current features and design:
    total, the person who got there first gets the higher rank.
 
  * Achievements can be hidden so that a user doesn't know how to unlock
-   it until she stumbles upon the discovery herself (by meeting the
-   milestone, asking another user, etc.).
+   it until she stumbles upon the discovery herself (meeting the milestone,
+   asking a user, etc.).
 
  * Achievements can have images (or "badges") in one of three different
    states: unlocked, locked, or hidden. Default images can be used for all

@@ -80,10 +80,17 @@ function achievements_schema() {
         'not null'      => TRUE,
         'type'          => 'int',
       ),
+      'seen' => array(
+        'default'       => 0,
+        'description'   => 'A boolean indicating whether the user has been notified of this unlock.',
+        'not null'      => TRUE,
+        'type'          => 'int',
+      ),
     ),
     'indexes' => array(
       'aid_rank'        => array('achievement_id', 'rank'),
       'aid_timestamp'   => array('achievement_id', 'timestamp'),
+      'uid_seen_timestamp' => array('uid', 'seen', 'timestamp'),
       'uid_timestamp'   => array('uid', 'timestamp'),
     ),
     'primary key'       => array('achievement_id', 'uid'),
@@ -118,4 +125,19 @@ function achievements_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Add support for achievement notification popups.
+ */
+function achievements_update_7100() {
+  db_add_field('achievement_unlocks', 'seen', array(
+    'default'           => 0,
+    'description'       => 'A boolean indicating whether the user has been notified of this unlock.',
+    'not null'          => TRUE,
+    'type'              => 'int',
+  ));
+
+  db_add_index('achievement_unlocks', 'uid_seen_timestamp', array('uid', 'seen', 'timestamp'));
+  db_update('achievement_unlocks')->fields(array('seen' => 1))->execute();
 }

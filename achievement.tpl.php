@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Default theme implementation of a single achievement's display.
+ * Default theme implementation for an achievement's full display.
  *
  * Available variables:
  * - $achievement: The achievement being displayed, as an array.

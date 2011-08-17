@@ -79,21 +79,38 @@ function achievements_theme() {
       'variables'       => array('achievement' => NULL, 'unlock' => NULL),
       'template'        => 'achievement',
     ),
+    'achievement_notification' => array(
+      'variables'       => array('achievement' => NULL, 'unlock' => NULL),
+      'template'        => 'achievement-notification',
+    ),
   );
 }
 
 /**
  * Process variables for achievement.tpl.php.
- *
- * The $variables array contains the following arguments:
- *
- *  - $achievement
- *  - $unlock
- *
- * @see achievement.tpl.php
  */
 function template_preprocess_achievement(&$variables) {
+  achievement_template_shared_variables($variables);
+}
+
+/**
+ * Process variables for achievement-notification.tpl.php.
+ */
+function template_preprocess_achievement_notification(&$variables) {
+  achievement_template_shared_variables($variables);
+  $variables['classes_array'][] = 'element-hidden';
+}
+
+/**
+ * Standard variables used in our achievement templates.
+ *
+ * All our achievement templates send in $achievement and $unlock, but display
+ * some or all of the data in different ways. This is a centralized collection
+ * of the various helper $variables needed for theme display.
+ */
+function achievement_template_shared_variables(&$variables) {
   $variables['state'] = isset($variables['unlock']) ? 'unlocked' : 'locked';
+
   if (isset($variables['achievement']['hidden']) && !achievements_unlocked_already($variables['achievement']['id'])) {
     $variables['achievement']['points']      = t('???'); // IIiII haveEeeA aa seecFRrit and I'll NEEVvaaha hTellLL..
     $variables['achievement']['title']       = t('Hidden achievement'); // unless, of course, you PayPal me bribes.
@@ -108,14 +125,10 @@ function template_preprocess_achievement(&$variables) {
   $variables['unlocked_rank'] = isset($variables['unlock']['rank']) ? t('Rank #@rank', array('@rank' => $variables['unlock']['rank'])) : '';
 
   // set the per-achievement image or admin default.
-  if (isset($variables['achievement']['images'][$variables['state']])) {
-    $variables['image'] = theme('image', array('path' => $variables['achievement']['images'][$variables['state']]));
-  }
-  else {
-    $default = drupal_get_path('module', 'achievements') . '/images/default-' . $variables['state'] . '-70.jpg';
-    $variables['image'] = theme('image', array('path' => variable_get('achievements_image_' . $variables['state'], $default)));
-  }
-
+  $default = drupal_get_path('module', 'achievements') . '/images/default-' . $variables['state'] . '-70.jpg';
+  $variables['image'] = isset($variables['achievement']['images'][$variables['state']])
+    ? theme('image', array('path' => $variables['achievement']['images'][$variables['state']]))
+    : theme('image', array('path' => variable_get('achievements_image_' . $variables['state'], $default)));
   $variables['image'] = l($variables['image'], 'achievements/leaderboard/' . $variables['achievement']['id'], array('html' => TRUE));
 }
 
@@ -124,7 +137,7 @@ function template_preprocess_achievement(&$variables) {
  */
 function achievements_block_info() {
   return array(
-    'achievements-leaderboard' => array(
+    'achievements_leaderboard' => array(
       'info'  => t('Achievements leaderboard'),
       'cache' => DRUPAL_CACHE_GLOBAL,
     ),
@@ -135,7 +148,7 @@ function achievements_block_info() {
  * Implements hook_block_view().
  */
 function achievements_block_view($delta = '') {
-  if ($delta == 'achievements-leaderboard') {
+  if ($delta == 'achievements_leaderboard') {
     include_once(drupal_get_path('module', 'achievements') . '/achievements.pages.inc');
     return array( // stupid file that I have to include. WHERE"S MY FUNCTION REGSITERYR.
       'subject' => t('Leaderboard'),
@@ -197,7 +210,7 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
       if (isset($achievements['grouped']['-none-'])) {
         $achievements['grouped']['-none-']['title'] = t('Miscellany');
       }
-  
+
       cache_set('achievements_info', $achievements, 'cache', CACHE_TEMPORARY);
     }
   }
@@ -305,6 +318,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
         'uid'             => $uid,
         'rank'            => $last_rank ? $last_rank + 1 : 1,
         'timestamp'       => REQUEST_TIME,
+        'seen'            => 0,
       ))
       ->execute();
 
@@ -318,12 +332,6 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
       ->expression('points', 'points + :points', array(':points' => $achievement['points']))
       ->expression('unlocks', 'unlocks + :increment', array(':increment' => 1))
       ->execute();
-
-    if ($uid == $GLOBALS['user']->uid) { // only show the unlock if $uid is our viewer.
-      drupal_set_message(t('<strong>Achievement unlocked:</strong> @achievement (+@number). !view.',
-        array('@achievement' => $achievement['title'], '@number' => $achievement['points'],
-          '!view' => l(t('View your achievements'), 'user/' . $uid . '/achievements'))));
-    }
   }
 }
 
@@ -428,3 +436,34 @@ function achievements_user_delete($account) {
   db_delete('achievement_unlocks')->condition('uid', $account->uid)->execute();
   db_delete('achievement_storage')->condition('uid', $account->uid)->execute();
 }
+
+/**
+ * Implements hook_page_alter().
+ */
+function achievements_page_alter(&$page) {
+  if (achievements_user_is_achiever()) {
+    $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
+      ->condition('uid', $GLOBALS['user']->uid)->condition('seen', 0)->orderBy('timestamp')->execute()->fetchAllAssoc('achievement_id');
+
+    // if unseen unlocks are available, load in our JS libraries,
+    // display our achievement notification, and flag 'em as seen.
+    if (count($unlocks)) {
+      drupal_add_library('system', 'ui.dialog');
+      drupal_add_library('system', 'effects.fade');
+      drupal_add_js(drupal_get_path('module', 'achievements') . '/achievements.js');
+
+      foreach ($unlocks as $unlock) {
+        $achievement = achievements_load($unlock->achievement_id);
+        $page['page_bottom']['achievements'][$unlock->achievement_id] = array(
+          '#theme'        => 'achievement_notification',
+          '#achievement'  => $achievement,
+          '#unlock'       => (array) $unlock,
+        );
+      }
+
+      db_update('achievement_unlocks')->fields(array('seen' => 1))
+        ->condition('uid', $GLOBALS['user']->uid)->condition('seen', 0)->execute();
+    }
+  }
+}
+
