@@ -1,6 +1,15 @@
 
 Achievements 7.x-1.2, 2011-xx-xx
 --------------------------------
+
+* (in-progress) #6759: Support multiple achievement popups/fadeins
+* Make the counts on the block and the achievement leaderboard configurable.
+* Make it configurable whether achievements float to top of list.
+* storage_ should only serialize when it's a complex type.
+* Make a "relative" leaderboard with configurable amount of surroundings.
+* Create an "in the now" leaderboard of gains in a certain timeframe.
+* Add watchdog notice for each unlock.
+
  * Achievement unlock notifications are now JS fadeins and offline-able.
   * We no longer use drupal_set_message() to inform of an unlock.
   * A new achievement-notification.tpl.php controls the appearance.
@@ -9,6 +18,7 @@ Achievements 7.x-1.2, 2011-xx-xx
   * If they haven't, they will the next time they login or access the site.
  * Block 'achievements-leaderboard' renamed with underscores not dashes.
   * If you're using this block, you'll need to place it again upon upgrade.
+ * Fixed a few PHP warnings when a user has yet to unlock any achievements.
 
 
 Achievements 7.x-1.1, 2011-07-18

@@ -248,8 +248,8 @@ function achievements_totals($count = 50, $current_user = TRUE) {
     $achiever->rank = $rank++;
   }
 
-  // if the current user isn't in our top $count, find 'em.
-  if ($current_user && user_is_logged_in() && !isset($achievers[$GLOBALS['user']->uid])) {
+  // if the current logged in user isn't in our top $count, add 'em if they have achievements.
+  if ($current_user && user_is_logged_in() && !isset($achievers[$GLOBALS['user']->uid]) && achievements_totals_user('all')) {
     $achievers[$GLOBALS['user']->uid] = achievements_totals_user('all');
   }
 
