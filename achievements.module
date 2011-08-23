@@ -332,6 +332,10 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
       ->expression('points', 'points + :points', array(':points' => $achievement['points']))
       ->expression('unlocks', 'unlocks + :increment', array(':increment' => 1))
       ->execute();
+
+    watchdog('achievements', t('Unlocked: %achievement (+@points).'),
+      array('%achievement' => $achievement['title'], '@points' => $achievement['points']),
+      WATCHDOG_NOTICE, l(t('view'), 'user/' . $uid . '/achievements')); // nothing fancy.
   }
 }
 
