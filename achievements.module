@@ -151,9 +151,37 @@ function achievements_block_view($delta = '') {
   if ($delta == 'achievements_leaderboard') {
     include_once(drupal_get_path('module', 'achievements') . '/achievements.pages.inc');
     return array( // stupid file that I have to include. WHERE"S MY FUNCTION REGSITERYR.
+      'content' => achievements_leaderboard_totals(TRUE, variable_get('achievements_leaderboard_block_count_top', 5)),
       'subject' => t('Leaderboard'),
-      'content' => achievements_leaderboard_totals(TRUE),
     );
+  }
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function achievements_block_configure($delta = '') {
+  if ($delta == 'achievements_leaderboard') {
+    $form['achievements_rankings'] = array(
+      '#title'              => t('Leaderboard ranks'),
+      '#type'               => 'fieldset',
+    );
+    $form['achievements_rankings']['achievements_leaderboard_block_count_top'] = array(
+      '#type'           => 'select',
+      '#title'          => t('Number of top ranks'),
+      '#default_value'  => variable_get('achievements_leaderboard_block_count_top', 5),
+      '#options'        => drupal_map_assoc(range(0, 30)),
+    );
+    return $form;
+  }
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function achievements_block_save($delta = '', $edit = array()) {
+  if ($delta == 'achievements_leaderboard') { // bleh, this is wasteful code that should be automated.
+    variable_set('achievements_leaderboard_block_count_top', $edit['achievements_leaderboard_block_count_top']);
   }
 }
 

@@ -49,6 +49,17 @@ function achievements_settings() {
     '#value'              => t('Take achievement'),
   );
 
+  $form['achievements_rankings'] = array(
+    '#title'              => t('Leaderboard ranks'),
+    '#type'               => 'fieldset',
+  );
+  $form['achievements_rankings']['achievements_leaderboard_count_top'] = array(
+    '#type'           => 'select',
+    '#title'          => t('Number of top ranks'),
+    '#default_value'  => variable_get('achievements_leaderboard_count_top', 50),
+    '#options'        => drupal_map_assoc(array(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)),
+  );
+
   $form['achievements_images'] = array(
     '#description'        => t('URLs of pictures to display for achievements with no custom picture defined.'),
     '#title'              => t('Default images'),

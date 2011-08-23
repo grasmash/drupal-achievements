@@ -10,9 +10,12 @@
  *
  * @param $block
  *   Whether this is a block display (defaults to FALSE).
+ * @param $top_count
+ *   The number of top ranks to display.
  */
-function achievements_leaderboard_totals($block = FALSE) {
-  $achievers = achievements_totals($block ? 5 : 50);
+function achievements_leaderboard_totals($block = FALSE, $top_count = NULL) {
+  $top_count = isset($top_count) ? $top_count : ($block ? variable_get('achievements_leaderboard_block_count_top', 5) : variable_get('achievements_leaderboard_count_top', 50));
+  $achievers = achievements_totals($top_count); // handle both page and block display with different configs and available columns.
   $header = array(t('#'), t('Who'), t('Points'), t('Unlocks'), t('When'));
   $header = $block ? array_slice($header, 0, 3) : $header; // UNIQUEZORS.
   !$block ? drupal_set_title(t('Achievement leaderboard')) : ''; // UNIQUEZORS+.
@@ -59,7 +62,7 @@ function achievements_leaderboard_totals($block = FALSE) {
   if ($block) { // link off to more. MOOOReEeE!
     $build['achievements']['see-more'] = array(
       '#prefix'   => '<div class="achievement-see-more">',
-      '#markup'   =>  l(t('View the top 50 leaders »'), 'achievements/leaderboard'),
+      '#markup'   =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
       '#suffix'   => '</div>',
     );
   }
