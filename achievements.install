@@ -9,7 +9,6 @@
  * Implements hook_schema().
  */
 function achievements_schema() {
-
   // the global leaderboard.
   $schema['achievement_totals'] = array(
     'description' => 'A combined leaderboard of totals across the entire site.',
@@ -125,6 +124,19 @@ function achievements_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function achievements_uninstall() {
+  variable_del('achievements_image_hidden');
+  variable_del('achievements_image_locked');
+  variable_del('achievements_image_unlocked');
+  variable_del('achievements_leaderboard_block_count_top');
+  variable_del('achievements_leaderboard_count_top');
+  variable_del('achievements_manual_achievement');
+  variable_del('achievements_manual_user');
 }
 
 /**

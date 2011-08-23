@@ -7,7 +7,6 @@ Achievements 7.x-1.2, 2011-xx-xx
 * (todo) storage_ should only serialize when it's a complex type.
 * (todo) Make a "relative" leaderboard with configurable amount of surroundings.
 * (todo) Create an "in the now" leaderboard of gains in a certain timeframe.
-* (todo) Add variable deletion to the hook_uninstall().
 
  * Achievement unlock notifications are now JS fadeins and offline-able.
   * We no longer use drupal_set_message() to inform of an unlock.
@@ -21,6 +20,7 @@ Achievements 7.x-1.2, 2011-xx-xx
   * If you're using this block, you'll need to place it again upon upgrade.
  * Fixed a few PHP warnings when a user has yet to unlock any achievements.
  * Achievement unlocks are now logged in watchdog.
+ * Variables are now properly deleted on uninstall.
 
 
 Achievements 7.x-1.1, 2011-07-18
