@@ -60,19 +60,23 @@ function achievements_settings() {
     '#options'        => drupal_map_assoc(array(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)),
   );
 
-  $form['achievements_images'] = array(
-    '#description'        => t('URLs of pictures to display for achievements with no custom picture defined.'),
-    '#title'              => t('Default images'),
+  $form['achievements_config'] = array(
+    '#title'              => t('Additional configuration'),
     '#type'               => 'fieldset',
   );
   $module_path = drupal_get_path('module', 'achievements');
   foreach (array('unlocked', 'locked', 'hidden') as $image_type) {
-    $form['achievements_images']['achievements_image_' . $image_type] = array(
+    $form['achievements_config']['achievements_image_' . $image_type] = array(
       '#default_value'      => variable_get('achievements_image_' . $image_type, $module_path . '/images/default-' . $image_type . '-70.jpg'),
       '#title'              => t('Default @image_type picture', array('@image_type' => $image_type)),
       '#type'               => 'textfield',
     );
   }
+  $form['achievements_config']['achievements_unlocked_move_to_top'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t("Move the user's unlocked achievements to the top of their achievement page."),
+    '#default_value'  => variable_get('achievements_unlocked_move_to_top', TRUE), // default to gamer-style.
+  );
 
   return system_settings_form($form);
 }

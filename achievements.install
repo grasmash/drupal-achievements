@@ -137,6 +137,7 @@ function achievements_uninstall() {
   variable_del('achievements_leaderboard_count_top');
   variable_del('achievements_manual_achievement');
   variable_del('achievements_manual_user');
+  variable_del('achievements_unlocked_move_to_top');
 }
 
 /**

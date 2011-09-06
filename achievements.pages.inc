@@ -138,9 +138,8 @@ function achievements_leaderboard_for($achievement) {
 function achievements_user_page($account) {
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
 
-  $achievements_grouped = achievements_load(NULL, TRUE);
   $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
-    ->condition('uid', $account->uid)->orderBy('timestamp', 'DESC')->execute()->fetchAllAssoc('achievement_id');
+    ->condition('uid', $account->uid)->execute()->fetchAllAssoc('achievement_id'); // INSERT FAME, FORTUNE.
 
   $build['achievements']['stats'] = array(
     '#prefix' => '<div class="achievement-stats">',
@@ -152,6 +151,8 @@ function achievements_user_page($account) {
       '@total_count'    => count(achievements_load()))),
     '#suffix' => '</div>',
   );
+
+  $achievements_grouped = achievements_load(NULL, TRUE);
 
   $build['achievements']['tabs']= array(
     '#prefix' => '<div id="achievement-groups">',
@@ -186,12 +187,14 @@ function achievements_user_page($account) {
 
       if (isset($unlocks[$achievement_id])) {
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#unlock'] = (array) $unlocks[$achievement_id];
-        $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
-        // by setting the negative weight to the timestamp, the latest unlocks are always shown at the top.
+
+        if (variable_get('achievements_unlocked_move_to_top', TRUE)) {
+          $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
+          // by setting the negative weight to the timestamp, the latest unlocks are always shown at the top.
+        }
       }
-      else {
-        // since we're forcing unlocked achievements to the top with #weight,
-        // locked achievements can no longer depend on "definition order".
+      elseif (!isset($unlocks[$achievement_id]) && variable_get('achievements_unlocked_move_to_top', TRUE)) {
+        // if we're forcing unlocks to the top, locked achievements have to be forced to the bottom too.
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = $locked_weight++;
       }
     }
