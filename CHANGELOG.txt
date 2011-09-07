@@ -5,11 +5,8 @@ Achievements 7.x-1.3, 2011-xx-xx
 * (todo) Create an "in the now" leaderboard of gains in a certain timeframe.
 
 
-Achievements 7.x-1.2, 2011-xx-xx
+Achievements 7.x-1.2, 2011-09-07
 --------------------------------
-
-* (todo) storage_ should only serialize when it's a complex type.
-
  * Achievement unlock notifications are now JS fadeins and offline-able.
   * We no longer use drupal_set_message() to inform of an unlock.
   * A new achievement-notification.tpl.php controls the appearance.
