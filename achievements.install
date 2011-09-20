@@ -134,6 +134,7 @@ function achievements_uninstall() {
   variable_del('achievements_image_locked');
   variable_del('achievements_image_unlocked');
   variable_del('achievements_leaderboard_block_count_top');
+  variable_del('achievements_leaderboard_count_per_page');
   variable_del('achievements_leaderboard_count_top');
   variable_del('achievements_manual_achievement');
   variable_del('achievements_manual_user');

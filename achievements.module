@@ -252,50 +252,20 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
 }
 
 /**
- * Returns all, or per-user, achievement totals.
- *
- * @param $count
- *   The number of top-ranking users to return (defaults to 50).
- * @param $current_user
- *   Whether to include the current user's stats in the list, even if they're
- *   not in the top $count. This is just a friendly "how you compare" feature
- *   ("I'm rank 52; nearly in the top 50. woot!"). Defaults to TRUE.
- *
- * @return $totals
- *   An array of totals information for the top $count users.
- */
-function achievements_totals($count = 50, $current_user = TRUE) {
-  $query = db_select('achievement_totals', 'at');
-  $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
-  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
-  $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @todo DESC/ASC doesn't index.
-  $achievers = $query->range(0, $count)->execute()->fetchAllAssoc('uid');
-
-  $rank = 1; // add the ranking.
-  foreach ($achievers as $achiever) {
-    $achiever->rank = $rank++;
-  }
-
-  // if the current logged in user isn't in our top $count, add 'em if they have achievements.
-  if ($current_user && user_is_logged_in() && !isset($achievers[$GLOBALS['user']->uid]) && achievements_totals_user('all')) {
-    $achievers[$GLOBALS['user']->uid] = achievements_totals_user('all');
-  }
-
-  return $achievers;
-}
-
-/**
- * Returns a specific user's achievement totals.
+ * Returns a user-centric leaderboard.
  *
  * @param $type
  *   'points', 'unlocks', 'rank', or 'all' (defaults to 'points').
  * @param $uid
  *   The user to return achievement info for (defaults to current user).
+ * @param $nearby
+ *   How many nearby ranks/users should be returned (defaults to 0).
  *
  * @return $integer or $object
  *   The value of the passed $type. If $type is 'all', the full object.
  */
-function achievements_totals_user($type = 'points', $uid = NULL) {
+function achievements_totals_user($nearby, $uid = NULL) {
+return FALSE;
   list($uid, $access) = achievements_user_is_achiever($uid);
   // we don't check for access as this is info grubbing only.
 

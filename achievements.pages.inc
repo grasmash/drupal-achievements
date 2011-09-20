@@ -13,18 +13,32 @@
  * @param $top_count
  *   The number of top ranks to display.
  */
-function achievements_leaderboard_totals($block = FALSE, $top_count = NULL) {
-  $top_count = isset($top_count) ? $top_count : ($block ? variable_get('achievements_leaderboard_block_count_top', 5) : variable_get('achievements_leaderboard_count_top', 50));
-  $achievers = achievements_totals($top_count); // handle both page and block display with different configs and available columns.
+function achievements_leaderboard_totals($block = FALSE) {
   $header = array(t('#'), t('Who'), t('Points'), t('Unlocks'), t('When'));
   $header = $block ? array_slice($header, 0, 3) : $header; // UNIQUEZORS.
   !$block ? drupal_set_title(t('Achievement leaderboard')) : ''; // UNIQUEZORS+.
 
-  $rows = array();
+  // load up all our achievers for page or block.
+  $query = db_select('achievement_totals', 'at');
+  $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
+  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
+  $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
+  $query = $block // blocks have a set count, but full page leaderboards have a pager.
+    ? $query->range(0, variable_get('achievements_leaderboard_block_count_top', 5))
+    : $query->extend('PagerDefault')->limit(variable_get('achievements_leaderboard_count_per_page', 25));
+  $achievers = $query->execute()->fetchAllAssoc('uid');
+
+  // display our achievers in "how awesome they are" order.
+  // Global rank isn't stored in the database (to prevent us from having
+  // complicated rejiggering every time an achievement is unlocked), but
+  // the order the query returns is the order of the leaderboard. thus,
+  // we start at 1 and increase the rank for every row we're showing.
+  // also, be careful to start with the right number on pager queries.
+  $rank = $block ? 1 : 1 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
   foreach ($achievers as $achiever) {
-    $row = array( // dueling styles for wipe.
+    $row = array(
       array(
-        'data'  => $achiever->rank,
+        'data'  => $rank++,
         'class' => array('achievement-leaderboard-rank')
       ),
       array(
@@ -64,6 +78,11 @@ function achievements_leaderboard_totals($block = FALSE, $top_count = NULL) {
       '#prefix'   => '<div class="achievement-see-more">',
       '#markup'   =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
       '#suffix'   => '</div>',
+    );
+  }
+  else {
+    $build['achievements']['leaderboard_pager'] = array(
+      '#theme'    => 'pager',
     );
   }
 
