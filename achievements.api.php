@@ -29,7 +29,7 @@
  *   - description: (required) A description of the achievement.
  *   - points: (required) How many points the user will earn when unlocked.
  *   - images: (optional) An array of (optional) keys 'locked', 'unlocked',
- *     and 'hidden' whose values image file paths. Achievements exist in one of
+ *     and 'hidden' whose values are image file paths. Achievements exist in
  *     three separate display states: unlocked (the user has it), locked (the
  *     user doesn't have it), and hidden (the user doesn't have it, and the
  *     achievement is a secret). Each state can have its own default image
@@ -70,7 +70,7 @@ function hook_achievements_info() {
       ),
     ),
 
-    // An example of achievement groups: 'node-creation' is the group ID,
+    // An example of achievement groups: 'article-creation' is the group ID,
     // "Article creation" is the group title, and all relevant achievements are
     // placed in an 'achievements' array. The ungrouped comment achievements
     // above will be automatically pushed into a "Miscellany" group.

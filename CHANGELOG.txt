@@ -2,8 +2,9 @@
 Achievements 7.x-1.3, 2011-xx-xx
 --------------------------------
 * (todo) Make a "relative" leaderboard with configurable amount of surroundings.
-* (todo) Create an "in the now" leaderboard of gains in a certain timeframe.
+* (todo) Go through and add hooks and alters for the various thingies.
 
+ * Issue #1274350 by makononov: added query tags for the leaderboards.
 
 Achievements 7.x-1.2, 2011-09-07
 --------------------------------

@@ -266,7 +266,7 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
  */
 function achievements_totals($count = 50, $current_user = TRUE) {
   $query = db_select('achievement_totals', 'at');
-  $query->join('users', 'u', 'u.uid = at.uid');
+  $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
   $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @todo DESC/ASC doesn't index.
   $achievers = $query->range(0, $count)->execute()->fetchAllAssoc('uid');
@@ -302,7 +302,7 @@ function achievements_totals_user($type = 'points', $uid = NULL) {
   $achievers = &drupal_static(__FUNCTION__);
   if (!isset($achievers[$uid])) {
     $query = db_select('achievement_totals', 'at');
-    $query->join('users', 'u', 'u.uid = at.uid');
+    $query->addTag('achievement_totals_user')->join('users', 'u', 'u.uid = at.uid');
     $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
     $achievers[$uid] = $query->condition('at.uid', $uid)->execute()->fetchObject();
 
