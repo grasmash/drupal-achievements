@@ -4,6 +4,10 @@ Achievements 7.x-1.3, 2011-xx-xx
 * (todo) Make a "relative" leaderboard with configurable amount of surroundings.
 * (todo) Go through and add hooks and alters for the various thingies.
 
+ * We now load all of a user's unlocks in achievements_unlocked_already().
+  * This is then cached for all future lookups during that page load.
+  * a_u_a and a_u can be called a lot per page for heavy achievement sites.
+  * Loading all and caching is better, performance-wise, then lots of singles.
  * Issue #1274350 by makononov: added query tags for the leaderboards.
 
 Achievements 7.x-1.2, 2011-09-07

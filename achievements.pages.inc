@@ -137,9 +137,7 @@ function achievements_leaderboard_for($achievement) {
  */
 function achievements_user_page($account) {
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
-
-  $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
-    ->condition('uid', $account->uid)->execute()->fetchAllAssoc('achievement_id'); // INSERT FAME, FORTUNE.
+  $unlocks = achievements_unlocked_already(NULL, $account->uid);
 
   $build['achievements']['stats'] = array(
     '#prefix' => '<div class="achievement-stats">',

@@ -368,24 +368,36 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
 }
 
 /**
- * Determine if a user has already unlocked an achievement.
+ * Return data about a user's unlocked achievements.
  *
  * @param $achievement_id
- *   The achievement this request applies against.
+ *   A specific achievement to check the unlock status of.
  * @param $uid
  *   The user this request applies against (defaults to current user).
  *
- * @return NULL or $unlocked
- *   $unlocked is an array containing rank and timestamp.
+ * @return NULL or $unlocked or $unlocks
+ *   One of the following, based on the passed parameters:
+ *   - If the $uid has not unlocked $achievement_id, return NULL.
+ *   - If $achievement_id is unlocked, return an array of rank and timestamp.
+ *   - If no $achievement_id is passed, an array of all $uid's unlocks.
  */
-function achievements_unlocked_already($achievement_id, $uid = NULL) {
+function achievements_unlocked_already($achievement_id = NULL, $uid = NULL) {
   list($uid, $access) = achievements_user_is_achiever($uid);
   if (!$access) { return; } // i can't let you in, y'know?
+  $unlocks = &drupal_static(__FUNCTION__);
 
-  $unlock = db_select('achievement_unlocks', 'au')->fields('au', array('rank', 'timestamp'))
-    ->condition('achievement_id', $achievement_id)->condition('uid', $uid)->execute()->fetchAssoc();
+  if (!isset($unlocks[$uid])) {
+    // we grab all unlocks and cache per page load. it's better than lots of per-achievement lookups.
+    $unlocks[$uid] = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
+      ->condition('uid', $uid)->execute()->fetchAllAssoc('achievement_id'); // INSERT FAME, FORTUNE. LONELINESS.
+  }
 
-  return isset($unlock) ? $unlock : NULL;
+  if (isset($achievement_id)) { // return data about a specific unlock if requested.
+    return isset($unlocks[$uid][$achievement_id]) ? $unlocks[$uid][$achievement_id] : NULL;
+  }
+  else { // all of 'em.
+    return $unlocks[$uid];
+  }
 }
 
 /**
