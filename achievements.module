@@ -254,18 +254,16 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
 /**
  * Returns a user-centric leaderboard.
  *
- * @param $type
- *   'points', 'unlocks', 'rank', or 'all' (defaults to 'points').
- * @param $uid
- *   The user to return achievement info for (defaults to current user).
  * @param $nearby
  *   How many nearby ranks/users should be returned (defaults to 0).
+ * @param $uid
+ *   The user to return achievement info for (defaults to current user).
  *
- * @return $integer or $object
- *   The value of the passed $type. If $type is 'all', the full object.
+ * @return $results
+ *   If $nearby is 0, an array of ranking information for the passed $uid.
+ *   Otherwise, an array of uids in ranking order, with $uid in the middle.
  */
-function achievements_totals_user($nearby, $uid = NULL) {
-return FALSE;
+function achievements_totals_user($nearby = 0, $uid = NULL) {
   list($uid, $access) = achievements_user_is_achiever($uid);
   // we don't check for access as this is info grubbing only.
 
@@ -285,7 +283,7 @@ return FALSE;
     }
   }
 
-  return $type == 'all' ? $achievers[$uid] : (isset($achievers[$uid]->$type) ? $achievers[$uid]->$type : 0);
+  return $nearby ? $achievers : $achievers[$uid];
 }
 
 /**
@@ -359,7 +357,7 @@ function achievements_unlocked_already($achievement_id = NULL, $uid = NULL) {
   if (!isset($unlocks[$uid])) {
     // we grab all unlocks and cache per page load. it's better than lots of per-achievement lookups.
     $unlocks[$uid] = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
-      ->condition('uid', $uid)->execute()->fetchAllAssoc('achievement_id'); // INSERT FAME, FORTUNE. LONELINESS.
+      ->condition('uid', $uid)->execute()->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC); // INSERT FORTUNE, LONELINESS.
   }
 
   if (isset($achievement_id)) { // return data about a specific unlock if requested.
@@ -471,7 +469,7 @@ function achievements_page_alter(&$page) {
         $page['page_bottom']['achievements'][$unlock->achievement_id] = array(
           '#theme'        => 'achievement_notification',
           '#achievement'  => $achievement,
-          '#unlock'       => (array) $unlock,
+          '#unlock'       => $unlock,
         );
       }
 

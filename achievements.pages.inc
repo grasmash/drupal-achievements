@@ -157,14 +157,15 @@ function achievements_leaderboard_for($achievement) {
 function achievements_user_page($account) {
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
   $unlocks = achievements_unlocked_already(NULL, $account->uid);
+  $achiever = achievements_totals_user(0, $account->uid);
 
   $build['achievements']['stats'] = array(
     '#prefix' => '<div class="achievement-stats">',
     '#markup' => t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
       '@name'           => $account->name,
-      '@rank'           => achievements_totals_user('rank', $account->uid),
-      '@points'         => achievements_totals_user('points', $account->uid),
-      '@unlocks_count'  => count($unlocks), // non-grouped achievements.
+      '@rank'           => $achiever->rank,
+      '@points'         => $achiever->points,
+      '@unlocks_count'  => count($unlocks),
       '@total_count'    => count(achievements_load()))),
     '#suffix' => '</div>',
   );
@@ -203,7 +204,7 @@ function achievements_user_page($account) {
       $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#achievement'] = $achievement;
 
       if (isset($unlocks[$achievement_id])) {
-        $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#unlock'] = (array) $unlocks[$achievement_id];
+        $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#unlock'] = $unlocks[$achievement_id];
 
         if (variable_get('achievements_unlocked_move_to_top', TRUE)) {
           $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
