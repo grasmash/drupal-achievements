@@ -134,8 +134,12 @@ function achievements_uninstall() {
   variable_del('achievements_image_locked');
   variable_del('achievements_image_unlocked');
   variable_del('achievements_leaderboard_block_count_top');
+  variable_del('achievements_leaderboard_block_relative');
+  variable_del('achievements_leaderboard_block_relative_nearby_ranks');
   variable_del('achievements_leaderboard_count_per_page');
   variable_del('achievements_leaderboard_count_top');
+  variable_del('achievements_leaderboard_relative');
+  variable_del('achievements_leaderboard_relative_nearby_ranks');
   variable_del('achievements_manual_achievement');
   variable_del('achievements_manual_user');
   variable_del('achievements_unlocked_move_to_top');

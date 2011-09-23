@@ -6,27 +6,28 @@
  */
 
 /**
- * Menu callback and block; show the site-wide leaderboard.
+ * Menu callback; show the site-wide leaderboard.
  *
- * @param $block
- *   Whether this is a block display (defaults to FALSE).
- * @param $top_count
- *   The number of top ranks to display.
+ * @see achievement_leaderboard_block()
  */
-function achievements_leaderboard_totals($block = FALSE) {
-  $header = array(t('#'), t('Who'), t('Points'), t('Unlocks'), t('When'));
-  $header = $block ? array_slice($header, 0, 3) : $header; // UNIQUEZORS.
-  !$block ? drupal_set_title(t('Achievement leaderboard')) : ''; // UNIQUEZORS+.
+function achievements_leaderboard_totals() {
+  // force no sorting on # so it doesn't get the 'active' CSS, which screws up relative non-header display.
+  $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Points'), t('Unlocks'), t('When'));
+  $achievers = $rows = array('top' => array(), 'relative' => array());
 
-  // load up all our achievers for page or block.
-  $query = db_select('achievement_totals', 'at');
+  // load up all our achievers for the page.
+  $query = db_select('achievement_totals', 'at')->extend('PagerDefault');
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
   $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
-  $query = $block // blocks have a set count, but full page leaderboards have a pager.
-    ? $query->range(0, variable_get('achievements_leaderboard_block_count_top', 5))
-    : $query->extend('PagerDefault')->limit(variable_get('achievements_leaderboard_count_per_page', 25));
-  $achievers = $query->execute()->fetchAllAssoc('uid');
+  $query->limit(variable_get('achievements_leaderboard_count_per_page', 25));
+  $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
+
+  if (user_is_logged_in() && variable_get('achievements_leaderboard_relative', 'nearby_ranks') != 'disabled') {
+    $achievers['relative'] = (variable_get('achievements_leaderboard_relative', 'nearby_ranks') == 'nearby_ranks')
+      ? achievements_totals_user(variable_get('achievements_leaderboard_relative_nearby_ranks', 2))
+      : achievements_totals_user(); // you and me, togetheRrrr FoReEEvvvVeeEeeRRrRR.
+  }
 
   // display our achievers in "how awesome they are" order.
   // Global rank isn't stored in the database (to prevent us from having
@@ -34,57 +35,106 @@ function achievements_leaderboard_totals($block = FALSE) {
   // the order the query returns is the order of the leaderboard. thus,
   // we start at 1 and increase the rank for every row we're showing.
   // also, be careful to start with the right number on pager queries.
-  $rank = $block ? 1 : 1 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
-  foreach ($achievers as $achiever) {
-    $row = array(
-      array(
-        'data'  => $rank++,
-        'class' => array('achievement-leaderboard-rank')
-      ),
-      array(
-        'data'  => theme('username', array('account' => $achiever)),
-        'class' => array('achievement-leaderboard-username')
-      ),
-      array(
-        'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
-        'class' => array('achievement-leaderboard-points')
-      ),
-    );
-
-    if (!$block) {
-      $row[] = array(
-        'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
-        'class' => array('achievement-leaderboard-unlocks')
-      );
-      $row[] = array(
-        'data'  => format_date($achiever->timestamp, 'small'),
-        'class' => array('achievement-leaderboard-when')
+  $rank = 1 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
+  foreach (array('top', 'relative') as $type) {
+    foreach ($achievers[$type] as $achiever) {
+      $rows[$type][] = array(
+        array(
+          'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
+          'class' => array('achievement-leaderboard-rank')
+        ),
+        array(
+          'data'  => theme('username', array('account' => $achiever)),
+          'class' => array('achievement-leaderboard-username')
+        ),
+        array(
+          'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+          'class' => array('achievement-leaderboard-points')
+        ),
+        array(
+          'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
+          'class' => array('achievement-leaderboard-unlocks')
+        ),
+        array(
+          'data'  => format_date($achiever->timestamp, 'small'),
+          'class' => array('achievement-leaderboard-when')
+        ),
       );
     }
-
-    $rows[] = $row;
   }
 
-  $build['achievements']['leaderboard'] = array(
-    '#attributes' => array('class' => array('achievement-leaderboard')),
-    '#header'     => $header, // 3 or 5 columns based on $block.
-    '#empty'      => t('No one has been ranked yet.'),
-    '#rows'       => $rows,
-    '#theme'      => 'table',
+  foreach (array('top', 'relative') as $type) {
+    $build['achievements']['leaderboard'][$type] = array(
+      '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
+      '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
+      '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
+      '#rows'       => $rows[$type],
+      '#theme'      => 'table',
+    );
+  }
+  $build['achievements']['leaderboard_pager'] = array(
+    '#theme'  => 'pager',
   );
 
-  if ($block) { // link off to more. MOOOReEeE!
-    $build['achievements']['see-more'] = array(
-      '#prefix'   => '<div class="achievement-see-more">',
-      '#markup'   =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
-      '#suffix'   => '</div>',
+  return $build;
+}
+
+/**
+ * Block callback; show the global leaderboard.
+ *
+ * @see achievement_leaderboard_totals()
+ */
+function achievements_leaderboard_block() {
+  $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Pts'));
+  $achievers = $rows = array('top' => array(), 'relative' => array());
+
+  $query = db_select('achievement_totals', 'at');
+  $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
+  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
+  $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
+  $query->range(0, variable_get('achievements_leaderboard_block_count_top', 5));
+  $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
+
+  if (user_is_logged_in() && !isset($achievers['top'][$GLOBALS['user']->uid]) && variable_get('achievements_leaderboard_block_relative', 'nearby_ranks') != 'disabled') {
+    $achievers['relative'] = (variable_get('achievements_leaderboard_block_relative', 'nearby_ranks') == 'nearby_ranks')
+      ? achievements_totals_user(variable_get('achievements_leaderboard_block_relative_nearby_ranks', 1))
+      : achievements_totals_user(); // you and me, togetheRrrr FoReEEvvvVeeEeeRRrRR.
+  }
+
+  $rank = 1; // innocent widdle variable!
+  foreach (array('top', 'relative') as $type) {
+    foreach ($achievers[$type] as $achiever) {
+      $rows[$type][] = array(
+        array(
+          'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
+          'class' => array('achievement-leaderboard-rank')
+        ),
+        array(
+          'data'  => theme('username', array('account' => $achiever)),
+          'class' => array('achievement-leaderboard-username')
+        ),
+        array(
+          'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+          'class' => array('achievement-leaderboard-points')
+        ),
+      );
+    }
+  }
+
+  foreach (array('top', 'relative') as $type) {
+    $build['achievements']['leaderboard'][$type] = array(
+      '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
+      '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
+      '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
+      '#rows'       => $rows[$type],
+      '#theme'      => 'table',
     );
   }
-  else {
-    $build['achievements']['leaderboard_pager'] = array(
-      '#theme'    => 'pager',
-    );
-  }
+  $build['achievements']['see-more'] = array(
+    '#prefix'   => '<div class="achievement-see-more">',
+    '#markup'   =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
+    '#suffix'   => '</div>',
+  );
 
   return $build;
 }
@@ -157,14 +207,14 @@ function achievements_leaderboard_for($achievement) {
 function achievements_user_page($account) {
   drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
   $unlocks = achievements_unlocked_already(NULL, $account->uid);
-  $achiever = achievements_totals_user(0, $account->uid);
+  $achiever = array_pop(achievements_totals_user(0, $account->uid));
 
   $build['achievements']['stats'] = array(
     '#prefix' => '<div class="achievement-stats">',
     '#markup' => t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
       '@name'           => $account->name,
-      '@rank'           => $achiever->rank,
-      '@points'         => $achiever->points,
+      '@rank'           => isset($achiever->rank) ? $achiever->rank : 0,
+      '@points'         => isset($achiever->points) ? $achiever->points : 0,
       '@unlocks_count'  => count($unlocks),
       '@total_count'    => count(achievements_load()))),
     '#suffix' => '</div>',
@@ -207,7 +257,7 @@ function achievements_user_page($account) {
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#unlock'] = $unlocks[$achievement_id];
 
         if (variable_get('achievements_unlocked_move_to_top', TRUE)) {
-          $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]->timestamp;
+          $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]['timestamp'];
           // by setting the negative weight to the timestamp, the latest unlocks are always shown at the top.
         }
       }

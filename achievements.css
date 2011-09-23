@@ -99,7 +99,7 @@
  * Columns on the achievement leaderboards.
  */
 .achievement-leaderboard .achievement-leaderboard-rank {
-  width: 10px;
+  width: 12px;
 }
 
 .achievement-leaderboard .achievement-leaderboard-points,
@@ -112,7 +112,7 @@
 }
 
 #block-achievements-achievements-leaderboard .achievement-leaderboard-points {
-  width: auto;
+  width: 15px;
 }
 
 #block-achievements-achievements-leaderboard .achievement-see-more {

@@ -50,6 +50,7 @@ function achievements_settings() {
   );
 
   $form['achievements_rankings'] = array(
+    '#description'        => t('These settings affect the <a href="@url">global leaderboard</a>. Enabling the "relative leaderboard" will show the current user\'s position and, optionally, a number of ranks before and after that position. For example, if the current user is ranked 12th and you configure 3 nearby ranks, the relative leaderboard will show ranks 9 through 15.', array('@url' => url('achievements/leaderboard'))),
     '#title'              => t('Leaderboard ranks'),
     '#type'               => 'fieldset',
   );
@@ -58,6 +59,22 @@ function achievements_settings() {
     '#title'          => t('Number of top ranks per page'),
     '#default_value'  => variable_get('achievements_leaderboard_count_per_page', 25),
     '#options'        => drupal_map_assoc(array(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)),
+  );
+  $form['achievements_rankings']['achievements_leaderboard_relative'] = array(
+    '#type'           => 'radios',
+    '#title'          => t('Relative leaderboard display'),
+    '#default_value'  => variable_get('achievements_leaderboard_relative', 'nearby_ranks'),
+    '#options'        => array(
+      'disabled'      => t('Don\'t show the relative leaderboard'),
+      'user_only'     => t('Show only the current user'),
+      'nearby_ranks'  => t('Show the current user and nearby ranks'),
+    ),
+  );
+  $form['achievements_rankings']['achievements_leaderboard_relative_nearby_ranks'] = array(
+    '#type'           => 'select',
+    '#title'          => t('Number of nearby ranks to display'),
+    '#default_value'  => variable_get('achievements_leaderboard_relative_nearby_ranks', 2),
+    '#options'        => drupal_map_assoc(range(1, 10)),
   );
 
   $form['achievements_config'] = array(

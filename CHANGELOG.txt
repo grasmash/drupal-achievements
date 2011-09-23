@@ -1,18 +1,17 @@
 
 Achievements 7.x-1.3, 2011-xx-xx
 --------------------------------
-* (todo) Make a "relative" leaderboard with configurable amount of surroundings.
- * adding relative leaderboards should be an additional html table, not added to existing.
-   * achievements/leaderboard/ex-comment-count-1 is broken due to achievement_totals_user rewrite.
-  * so, we get the user's position (1 query, existing)
-  * we get the number of users before him (2 queries, existing)
-  * SELECT * FROM achievement_totals ORDER BY points ASC, timestamp ASC LIMIT $rank - 2, 5
-  * then we do a third query that says "start at row $rank - 5 and get 10 results" (assuming $nearby = 5)
- * relative leaderboard count option to block and admin pref.
- * admin pref: whether to show relative leaderboard on every pager page.
+* (todo) add in a class of "me!" whenever leaderboard row matches current user.
 * (todo) Go through and add hooks and alters for the various thingies.
 * (todo) Add a "get latest badge" thing for lookups, add to leaderboard?
 
+
+ * Relative leaderboards have been added.
+  * The block and global leaderboard can now show user-specific stats.
+  * The current user's ranking can be displayed, along with "nearby" users.
+  * "Nearby" users are a number of ranks before and after the current user.
+  * The number of nearby ranks shown can be 0 through 10.
+  * The block and global leaderboard can be configured separately.
  * The achievements/leaderboard is now a paged view instead of a set limit.
   * Control number of ranks per page at admin/config/people/achievements/.
  * achievements_totals() no longer exists; moved inline to leaderboard page.
@@ -22,6 +21,7 @@ Achievements 7.x-1.3, 2011-xx-xx
   * a_u_a and a_u can be called a lot per page for heavy achievement sites.
   * Loading all and caching is better, performance-wise, then lots of singles.
  * Issue #1274350 by makononov: added query tags for the leaderboards.
+ * Fixed some warnings that appeared in a first-time installation.
 
 
 Achievements 7.x-1.2, 2011-09-07

@@ -151,7 +151,7 @@ function achievements_block_view($delta = '') {
   if ($delta == 'achievements_leaderboard') {
     include_once(drupal_get_path('module', 'achievements') . '/achievements.pages.inc');
     return array( // stupid file that I have to include. WHERE"S MY FUNCTION REGSITERYR.
-      'content' => achievements_leaderboard_totals(TRUE, variable_get('achievements_leaderboard_block_count_top', 5)),
+      'content' => achievements_leaderboard_block(),
       'subject' => t('Leaderboard'),
     );
   }
@@ -163,6 +163,7 @@ function achievements_block_view($delta = '') {
 function achievements_block_configure($delta = '') {
   if ($delta == 'achievements_leaderboard') {
     $form['achievements_rankings'] = array(
+      '#description'        => t('Enabling the "relative leaderboard" will show the current user\'s position and, optionally, a number of ranks before and after that position. For example, if the current user is ranked 12th and you configure 3 nearby ranks, the relative leaderboard will show ranks 9 through 15. The relative leaderboard will only show if the logged-in user does not appear in the displayed top ranks.'),
       '#title'              => t('Leaderboard ranks'),
       '#type'               => 'fieldset',
     );
@@ -172,6 +173,23 @@ function achievements_block_configure($delta = '') {
       '#default_value'  => variable_get('achievements_leaderboard_block_count_top', 5),
       '#options'        => drupal_map_assoc(range(0, 30)),
     );
+    $form['achievements_rankings']['achievements_leaderboard_block_relative'] = array(
+      '#type'           => 'radios',
+      '#title'          => t('Relative leaderboard display'),
+      '#default_value'  => variable_get('achievements_leaderboard_block_relative', 'nearby_ranks'),
+      '#options'        => array(
+        'disabled'      => t('Don\'t show the relative leaderboard'),
+        'user_only'     => t('Show only the current user'),
+        'nearby_ranks'  => t('Show the current user and nearby ranks'),
+      ),
+    );
+    $form['achievements_rankings']['achievements_leaderboard_block_relative_nearby_ranks'] = array(
+      '#type'           => 'select',
+      '#title'          => t('Number of nearby ranks to display'),
+      '#default_value'  => variable_get('achievements_leaderboard_block_relative_nearby_ranks', 1),
+      '#options'        => drupal_map_assoc(range(1, 10)),
+    );
+
     return $form;
   }
 }
@@ -182,6 +200,8 @@ function achievements_block_configure($delta = '') {
 function achievements_block_save($delta = '', $edit = array()) {
   if ($delta == 'achievements_leaderboard') { // bleh, this is wasteful code that should be automated.
     variable_set('achievements_leaderboard_block_count_top', $edit['achievements_leaderboard_block_count_top']);
+    variable_set('achievements_leaderboard_block_relative', $edit['achievements_leaderboard_block_relative']);
+    variable_set('achievements_leaderboard_block_relative_nearby_ranks', $edit['achievements_leaderboard_block_relative_nearby_ranks']);
   }
 }
 
@@ -209,6 +229,7 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
       $achievements = $cache->data;
     }
     else {
+      $achievements = array('flat' => array(), 'grouped' => array());
       $result = module_invoke_all('achievements_info');
 
       // determine if we're looking at an achievement or group and create our
@@ -260,8 +281,8 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
  *   The user to return achievement info for (defaults to current user).
  *
  * @return $results
- *   If $nearby is 0, an array of ranking information for the passed $uid.
- *   Otherwise, an array of uids in ranking order, with $uid in the middle.
+ *   Either an empty array (for users who have yet to unlock anything) or
+ *   or an array of user(s) and their achievement statistics, keyed to uid.
  */
 function achievements_totals_user($nearby = 0, $uid = NULL) {
   list($uid, $access) = achievements_user_is_achiever($uid);
@@ -274,7 +295,7 @@ function achievements_totals_user($nearby = 0, $uid = NULL) {
     $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
     $achievers[$uid] = $query->condition('at.uid', $uid)->execute()->fetchObject();
 
-    if ($achievers[$uid]) { // only keep going if they've unlocked something.
+    if (isset($achievers[$uid]->points)) { // only if they've unlocked something.
       // to find the user's rank: count all the users with greater points, add
       // all the users with equal points but earlier timestamps, and then add 1.
       $better_points = db_select('achievement_totals')->condition('points', $achievers[$uid]->points, '>')->countQuery()->execute()->fetchField();
@@ -283,7 +304,26 @@ function achievements_totals_user($nearby = 0, $uid = NULL) {
     }
   }
 
-  return $nearby ? $achievers : $achievers[$uid];
+  // we need to get some nearby users, so use our global leaderboard query to
+  // get a range based on the $uid's current rank and how many $nearby users.
+  if (isset($achievers[$uid]->points) && $nearby) {
+    $starting_rank = max(1, $achievers[$uid]->rank - $nearby);
+
+    // build the magical rank-ranging query.
+    $query = db_select('achievement_totals', 'at');
+    $query->addTag('achievement_totals_user_nearby')->join('users', 'u', 'u.uid = at.uid');
+    $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
+    $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
+    $offset = max(0, $achievers[$uid]->rank - $nearby - 1); // max() ensures no negative numbers.
+    $limit  = $achievers[$uid]->rank - $offset + $nearby; // always get +$nearby from current rank.
+    $achievers = $query->range($offset, $limit)->execute()->fetchAllAssoc('uid');
+
+    foreach ($achievers as $achiever) {
+      $achiever->rank = $starting_rank++;
+    }
+  }
+
+  return isset($achievers[$uid]->points) ? $achievers : array();
 }
 
 /**
@@ -454,8 +494,8 @@ function achievements_user_delete($account) {
  */
 function achievements_page_alter(&$page) {
   if (achievements_user_is_achiever()) {
-    $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp'))
-      ->condition('uid', $GLOBALS['user']->uid)->condition('seen', 0)->orderBy('timestamp')->execute()->fetchAllAssoc('achievement_id');
+    $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp')) // find everything we've yet to see.
+      ->condition('uid', $GLOBALS['user']->uid)->condition('seen', 0)->orderBy('timestamp')->execute()->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC);
 
     // if unseen unlocks are available, load in our JS libraries,
     // display our achievement notification, and flag 'em as seen.
@@ -465,8 +505,8 @@ function achievements_page_alter(&$page) {
       drupal_add_js(drupal_get_path('module', 'achievements') . '/achievements.js');
 
       foreach ($unlocks as $unlock) {
-        $achievement = achievements_load($unlock->achievement_id);
-        $page['page_bottom']['achievements'][$unlock->achievement_id] = array(
+        $achievement = achievements_load($unlock['achievement_id']);
+        $page['page_bottom']['achievements'][$unlock['achievement_id']] = array(
           '#theme'        => 'achievement_notification',
           '#achievement'  => $achievement,
           '#unlock'       => $unlock,
