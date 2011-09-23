@@ -38,26 +38,29 @@ function achievements_leaderboard_totals() {
   $rank = 1 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
-      $rows[$type][] = array(
-        array(
-          'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
-          'class' => array('achievement-leaderboard-rank')
-        ),
-        array(
-          'data'  => theme('username', array('account' => $achiever)),
-          'class' => array('achievement-leaderboard-username')
-        ),
-        array(
-          'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
-          'class' => array('achievement-leaderboard-points')
-        ),
-        array(
-          'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
-          'class' => array('achievement-leaderboard-unlocks')
-        ),
-        array(
-          'data'  => format_date($achiever->timestamp, 'small'),
-          'class' => array('achievement-leaderboard-when')
+      $rows[$type][] = array( // give a special class if its the current user.
+        'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
+        'data'  => array(
+          array(
+            'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
+            'class' => array('achievement-leaderboard-rank')
+          ),
+          array(
+            'data'  => theme('username', array('account' => $achiever)),
+            'class' => array('achievement-leaderboard-username')
+          ),
+          array(
+            'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+            'class' => array('achievement-leaderboard-points')
+          ),
+          array(
+            'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
+            'class' => array('achievement-leaderboard-unlocks')
+          ),
+          array(
+            'data'  => format_date($achiever->timestamp, 'small'),
+            'class' => array('achievement-leaderboard-when')
+          ),
         ),
       );
     }
@@ -104,18 +107,21 @@ function achievements_leaderboard_block() {
   $rank = 1; // innocent widdle variable!
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
-      $rows[$type][] = array(
-        array(
-          'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
-          'class' => array('achievement-leaderboard-rank')
-        ),
-        array(
-          'data'  => theme('username', array('account' => $achiever)),
-          'class' => array('achievement-leaderboard-username')
-        ),
-        array(
-          'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
-          'class' => array('achievement-leaderboard-points')
+      $rows[$type][] = array( // give a special class if its the current user.
+        'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
+        'data'  => array(
+          array(
+            'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
+            'class' => array('achievement-leaderboard-rank')
+          ),
+          array(
+            'data'  => theme('username', array('account' => $achiever)),
+            'class' => array('achievement-leaderboard-username')
+          ),
+          array(
+            'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+            'class' => array('achievement-leaderboard-points')
+          ),
         ),
       );
     }

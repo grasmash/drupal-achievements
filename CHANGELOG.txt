@@ -1,8 +1,7 @@
 
 Achievements 7.x-1.3, 2011-xx-xx
 --------------------------------
-* (todo) add in a class of "me!" whenever leaderboard row matches current user.
-* (todo) Go through and add hooks and alters for the various thingies.
+* (todo) Go through and add hooks and alters for the various thingies. Doc.
 * (todo) Add a "get latest badge" thing for lookups, add to leaderboard?
 
 
@@ -12,6 +11,7 @@ Achievements 7.x-1.3, 2011-xx-xx
   * "Nearby" users are a number of ranks before and after the current user.
   * The number of nearby ranks shown can be 0 through 10.
   * The block and global leaderboard can be configured separately.
+ * New leaderboard CSS class added: achievements-leaderboard-current-user.
  * The achievements/leaderboard is now a paged view instead of a set limit.
   * Control number of ranks per page at admin/config/people/achievements/.
  * achievements_totals() no longer exists; moved inline to leaderboard page.

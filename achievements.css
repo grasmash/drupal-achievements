@@ -102,6 +102,10 @@
   width: 12px;
 }
 
+.achievement-leaderboard-current-user {
+  font-weight: bold;
+}
+
 .achievement-leaderboard .achievement-leaderboard-points,
 .achievement-leaderboard .achievement-leaderboard-unlocks {
   width: 50px;
