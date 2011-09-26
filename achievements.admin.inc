@@ -145,6 +145,8 @@ function achievements_manual_submit($form, &$form_state) {
       $storage = isset($achievement['storage']) ? $achievement['storage'] : $achievement['id'];
       db_delete('achievement_storage')->condition('achievement_id', $storage)->condition('uid', $account->uid)->execute();
 
+      module_invoke_all('achievements_locked', $achievement, $account->uid);
+
       // and let 'em know the nasty deed has been done.
       drupal_set_message(t('%username has had %achievement taken away.', // nope, nope.
         array('%username' => $account->name, '%achievement' => $achievement['title'])));

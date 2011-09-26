@@ -149,3 +149,68 @@ function example_node_insert($node) {
     achievements_unlocked('node-mondays', $node->uid);
   }
 }
+
+/**
+ * Implements hook_query_alter().
+ *
+ * The following database tags have been created for hook_query_alter() and
+ * the matching hook_query_TAG_alter(). If you need more than this, don't
+ * hesitate to create an issue asking for them.
+ *
+ * achievement_totals:
+ *   Leaderboard: find the totals of all users in ranking order.
+ *
+ * achievement_totals_user:
+ *   Leaderboard: find the totals of the passed user.
+ *
+ * achievement_totals_user_nearby:
+ *   Leaderboard: find users nearby the ranking of the passed user.
+ */
+function example_query_alter() {
+  // futz with morbus' logic. insert explosions and singularities.
+}
+
+/**
+ * Implements hook_achievements_info_alter().
+ *
+ * Modify achievements that have been defined in hook_achievements_info().
+ * Note that achievement info is cached so if you add or modify this hook,
+ * also clear said achievement cache in admin/config/people/achievements.
+ *
+ * @param &$achievements
+ *   An array of defined achievements returned by hook_achievements_info().
+ */
+function example_achievements_info_alter(&$achievements) {
+  $achievements['comment-count-100']['points'] = 200;
+}
+
+/**
+ * Implements hook_achievements_unlocked().
+ *
+ * This hook is invoked after an achievement has been unlocked and all
+ * the relevant information has been stored or updated in the database.
+ *
+ * @param $achievement
+ *  An array of information about the achievement.
+ * @param $uid
+ *  The user ID who has unlocked the achievement.
+ */
+function example_achievements_unlocked($achievement, $uid) {
+  // post to twitter or facebook, unlock an additional reward, etc., etc.
+}
+
+/**
+ * Implements hook_achievements_locked().
+ *
+ * This hook is invoked after an achievement has been removed from a user and
+ * all relevant information has been stored or updated in the database. This
+ * is currently only possible from the UI at admin/config/people/achievements.
+ *
+ * @param $achievement
+ *  An array of information about the achievement.
+ * @param $uid
+ *  The user ID who is having the achievement taken away.
+ */
+function example_achievements_locked($achievement, $uid) {
+  // react to achievement removal. bad user, BaAaDdd UUserrRR!
+}
