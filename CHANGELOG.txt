@@ -1,9 +1,9 @@
 
 Achievements 7.x-1.3, 2011-xx-xx
 --------------------------------
-* (todo) Add a "get latest badge" thing for lookups, add to leaderboard?
 * (todo) Make some new screenshots for the latest additions
  * New relative leaderboards. Picture of the popup fadein? Latest badge?
+ * Write up a blog post. Mention on Twitter, G+.
 
  * The following hooks have been added. See achievements.api.php for details:
   * hook_achievements_info_alter() - modify the achievement information.
@@ -15,8 +15,9 @@ Achievements 7.x-1.3, 2011-xx-xx
   * "Nearby" users are a number of ranks before and after the current user.
   * The number of nearby ranks shown can be 0 through 10.
   * The block and global leaderboard can be configured separately.
+ * The global leaderboard now shows a user's latest achievement.
  * New leaderboard CSS class added: achievements-leaderboard-current-user.
- * The achievements/leaderboard is now a paged view instead of a set limit.
+ * The global leaderboard is now a paged view instead of a set limit.
   * Control number of ranks per page at admin/config/people/achievements/.
  * achievements_totals() no longer exists; moved inline to leaderboard page.
  * achievements_totals_user() has been rewritten with different parameters.

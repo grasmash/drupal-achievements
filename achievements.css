@@ -102,17 +102,32 @@
   width: 12px;
 }
 
-.achievement-leaderboard-current-user {
-  font-weight: bold;
-}
-
 .achievement-leaderboard .achievement-leaderboard-points,
 .achievement-leaderboard .achievement-leaderboard-unlocks {
   width: 50px;
 }
 
-.achievement-leaderboard .achievement-leaderboard-when {
-  width: 175px;
+.achievement-leaderboard .achievement-leaderboard-latest {
+  width: 275px;
+}
+
+.achievement-leaderboard-current-user {
+  font-weight: bold;
+}
+
+.achievement-leaderboard .achievement-latest-image img {
+  float: left;
+  height: 35px;
+  padding-right: 5px;
+  width: 35px;
+}
+
+.achievement-leaderboard .achievement-latest-title {
+  font-weight: bold;
+}
+
+.achievement-leaderboard .achievement-latest-when {
+  font-size: smaller;
 }
 
 #block-achievements-achievements-leaderboard .achievement-leaderboard-points {

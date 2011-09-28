@@ -12,7 +12,7 @@
  */
 function achievements_leaderboard_totals() {
   // force no sorting on # so it doesn't get the 'active' CSS, which screws up relative non-header display.
-  $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Points'), t('Unlocks'), t('When'));
+  $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Points'), t('Unlocks'), t('Latest achievement'));
   $achievers = $rows = array('top' => array(), 'relative' => array());
 
   // load up all our achievers for the page.
@@ -38,6 +38,14 @@ function achievements_leaderboard_totals() {
   $rank = 1 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
+      // since we're showing the "latest achievement" for a user, we have to
+      // determine what image to use and respect 'hidden' status. we already
+      // do this in achievements_template_shared_variables(), so reuse it. we
+      // fake an $unlock so the 'unlocked' image is returned; the POV for this
+      // achievement display is the ranked user/row, NOT the current user.
+      $variables = array('achievement' => achievements_load($achiever->achievement_id), 'unlock' => array());
+      achievements_template_shared_variables($variables); // generate image, munge for hidden, etc.
+
       $rows[$type][] = array( // give a special class if its the current user.
         'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
         'data'  => array(
@@ -58,8 +66,11 @@ function achievements_leaderboard_totals() {
             'class' => array('achievement-leaderboard-unlocks')
           ),
           array(
-            'data'  => format_date($achiever->timestamp, 'small'),
-            'class' => array('achievement-leaderboard-when')
+            'data'  =>
+              '<div class="achievement-latest-image">' . $variables['image'] . '</div>' .
+              '<div class="achievement-latest-title">' . $variables['achievement']['title'] . '</div>' .
+              '<div class="achievement-latest-when">' . format_date($achiever->timestamp, 'small') . '</div>',
+            'class' => array('achievement-leaderboard-latest')
           ),
         ),
       );
@@ -161,7 +172,7 @@ function achievements_leaderboard_for($achievement) {
   $query = db_select('achievement_unlocks', 'au');
   $query->join('achievement_totals', 'at', 'at.uid = au.uid');
   $query->join('users', 'u', 'u.uid = au.uid'); // same basic start for both queries.
-  $query->condition('achievement_id', $achievement['id']); // ... with a slight tweak.
+  $query->condition('au.achievement_id', $achievement['id']); // ... with a slight tweak.
   $query->fields('au', array('uid', 'rank', 'timestamp'))->fields('at', array('points', 'unlocks'))->fields('u', array('name'));
   $query2 = clone $query; // allows us to save a few lines of duplicate query building. never used clone before. awesome.
   $stats['first']  = $query->orderBy('rank')->range(0, 10)->execute()->fetchAllAssoc('rank'); // FI... sigh.

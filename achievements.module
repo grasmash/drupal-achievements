@@ -90,14 +90,14 @@ function achievements_theme() {
  * Process variables for achievement.tpl.php.
  */
 function template_preprocess_achievement(&$variables) {
-  achievement_template_shared_variables($variables);
+  achievements_template_shared_variables($variables);
 }
 
 /**
  * Process variables for achievement-notification.tpl.php.
  */
 function template_preprocess_achievement_notification(&$variables) {
-  achievement_template_shared_variables($variables);
+  achievements_template_shared_variables($variables);
   $variables['classes_array'][] = 'element-hidden';
 }
 
@@ -108,7 +108,7 @@ function template_preprocess_achievement_notification(&$variables) {
  * some or all of the data in different ways. This is a centralized collection
  * of the various helper $variables needed for theme display.
  */
-function achievement_template_shared_variables(&$variables) {
+function achievements_template_shared_variables(&$variables) {
   $variables['state'] = isset($variables['unlock']) ? 'unlocked' : 'locked';
 
   if (isset($variables['achievement']['hidden']) && !achievements_unlocked_already($variables['achievement']['id'])) {
