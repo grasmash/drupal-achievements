@@ -37,6 +37,13 @@ function achievements_schema() {
         'not null'      => TRUE,
         'type'          => 'int',
       ),
+      'achievement_id' => array(
+        'default'       => '',
+        'description'   => 'The ID of the achievement the {users}.uid has most recently unlocked.',
+        'length'        => 32,
+        'not null'      => TRUE,
+        'type'          => 'varchar',
+      ),
     ),
     'indexes' => array(
       'uid_points'        => array('uid', 'points'),
@@ -158,4 +165,24 @@ function achievements_update_7100() {
 
   db_add_index('achievement_unlocks', 'uid_seen_timestamp', array('uid', 'seen', 'timestamp'));
   db_update('achievement_unlocks')->fields(array('seen' => 1))->execute();
+}
+
+/**
+ * Add support for "latest achievement" in the leaderboard.
+ */
+function achievements_update_7101() {
+  db_add_field('achievement_totals', 'achievement_id', array(
+    'default'       => '',
+    'description'   => 'The ID of the achievement the {users}.uid has most recently unlocked.',
+    'length'        => 32,
+    'not null'      => TRUE,
+    'type'          => 'varchar',
+  ));
+
+  $achievers = db_select('achievement_totals', 'at')->fields('at', array('uid', 'timestamp'))->execute()->fetchAllAssoc('uid');
+  foreach ($achievers as $achiever) { // pre-fill all the current achievers with their latest unlock.
+    $achievement_id = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id')) // MINE MINE MINE.
+      ->condition('uid', $achiever->uid)->condition('timestamp', $achiever->timestamp)->range(0, 1)->execute()->fetchField();
+    db_update('achievement_totals')->fields(array('achievement_id' => $achievement_id))->condition('uid', $achiever->uid)->execute();
+  }
 }

@@ -2,6 +2,8 @@
 Achievements 7.x-1.3, 2011-xx-xx
 --------------------------------
 * (todo) Add a "get latest badge" thing for lookups, add to leaderboard?
+* (todo) Make some new screenshots for the latest additions
+ * New relative leaderboards. Picture of the popup fadein? Latest badge?
 
  * The following hooks have been added. See achievements.api.php for details:
   * hook_achievements_info_alter() - modify the achievement information.
@@ -22,6 +24,7 @@ Achievements 7.x-1.3, 2011-xx-xx
   * This is then cached for all future lookups during that page load.
   * a_u_a and a_u can be called a lot per page for heavy achievement sites.
   * Loading all and caching is better, performance-wise, then lots of singles.
+ * The database tables have been tweaked to support latest-unlock lookups.
  * Issue #1274350 by makononov: added query tags for the leaderboards.
  * Fixed some warnings that appeared in a first-time installation.
 

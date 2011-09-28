@@ -57,7 +57,7 @@ function achievements_settings() {
   $form['achievements_rankings']['achievements_leaderboard_count_per_page'] = array(
     '#type'           => 'select',
     '#title'          => t('Number of top ranks per page'),
-    '#default_value'  => variable_get('achievements_leaderboard_count_per_page', 25),
+    '#default_value'  => variable_get('achievements_leaderboard_count_per_page', 10),
     '#options'        => drupal_map_assoc(array(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)),
   );
   $form['achievements_rankings']['achievements_leaderboard_relative'] = array(

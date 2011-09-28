@@ -293,7 +293,7 @@ function achievements_totals_user($nearby = 0, $uid = NULL) {
   if (!isset($achievers[$uid])) {
     $query = db_select('achievement_totals', 'at');
     $query->addTag('achievement_totals_user')->join('users', 'u', 'u.uid = at.uid');
-    $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
+    $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp', 'achievement_id'))->fields('u', array('name'));
     $achievers[$uid] = $query->condition('at.uid', $uid)->execute()->fetchObject();
 
     if (isset($achievers[$uid]->points)) { // only if they've unlocked something.
@@ -313,9 +313,9 @@ function achievements_totals_user($nearby = 0, $uid = NULL) {
     // build the magical rank-ranging query.
     $query = db_select('achievement_totals', 'at');
     $query->addTag('achievement_totals_user_nearby')->join('users', 'u', 'u.uid = at.uid');
-    $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
-    $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
-    $offset = max(0, $achievers[$uid]->rank - $nearby - 1); // max() ensures no negative numbers.
+    $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp', 'achievement_id'))->fields('u', array('name'));
+    $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index. at all. curses.
+    $offset = max(0, $achievers[$uid]->rank - $nearby - 1); // max() ensures no negative numbers in our lookup.
     $limit  = $achievers[$uid]->rank - $offset + $nearby; // always get +$nearby from current rank.
     $achievers = $query->range($offset, $limit)->execute()->fetchAllAssoc('uid');
 
@@ -362,9 +362,10 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
     db_merge('achievement_totals')
       ->key(array('uid' => $uid))
       ->fields(array(
-        'points'    => $achievement['points'],
-        'unlocks'   => 1, // OMG CONGRATS
-        'timestamp' => REQUEST_TIME,
+        'points'          => $achievement['points'],
+        'unlocks'         => 1, // OMG CONGRATS
+        'timestamp'       => REQUEST_TIME,
+        'achievement_id'  => $achievement_id,
       ))
       ->expression('points', 'points + :points', array(':points' => $achievement['points']))
       ->expression('unlocks', 'unlocks + :increment', array(':increment' => 1))

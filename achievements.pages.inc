@@ -18,9 +18,9 @@ function achievements_leaderboard_totals() {
   // load up all our achievers for the page.
   $query = db_select('achievement_totals', 'at')->extend('PagerDefault');
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
-  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
-  $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
-  $query->limit(variable_get('achievements_leaderboard_count_per_page', 25));
+  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp', 'achievement_id'))->fields('u', array('name'));
+  $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index. ever. bastids.
+  $query->limit(variable_get('achievements_leaderboard_count_per_page', 10));
   $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
 
   if (user_is_logged_in() && variable_get('achievements_leaderboard_relative', 'nearby_ranks') != 'disabled') {
@@ -93,7 +93,7 @@ function achievements_leaderboard_block() {
 
   $query = db_select('achievement_totals', 'at');
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
-  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp'))->fields('u', array('name'));
+  $query->fields('at', array('uid', 'points', 'unlocks'))->fields('u', array('name'));
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
   $query->range(0, variable_get('achievements_leaderboard_block_count_top', 5));
   $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
