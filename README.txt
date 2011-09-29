@@ -11,24 +11,29 @@ INTRODUCTION
 
 Current Maintainer: Morbus Iff <morbus@disobey.com>
 
-The Achievements module emulates standard gameplay achievements, a system
-whereby gamers are awarded points for the completion of game-specific
-challenges. For a Drupal site, this could mean commenting a certain number
-of times, starting a forum topic, visiting the site every day of the week,
-or anything else that can be tracked and coded.
+The Achievements module offers the ability to create achievements and
+badges similar to systems seen on the Xbox 360, Playstation 3, Foursquare,
+Gowalla, GetGlue, and more. For a Drupal site, this could mean commenting a
+certain number of times, starting a forum topic, visiting the site every day
+of the week, or anything else that can be tracked and coded.
 
 Current features and design:
 
  * Achievement points are based on milestones, not continuous activity.
    Instead of getting 5 points every time a user posts a node, an equivalent
    milestone might instead reward 20 points for posting 10 nodes. If there's
-   no achievement for posting 20 nodes, the user receives no further points.
+   no achievement for posting 50 nodes, the user receives no further points.
 
  * Since achievements are milestones, each one has its own leaderboard
    that lists when a user has met (or "unlocked") the goal and their
    matching rank. A site-wide leaderboard ranks users by points they've
    achieved, but also by timestamp -- if two users share the same point
    total, the person who got there first gets the higher rank.
+
+ * Relative leaderboards are supported and allow the user to see where they
+   are in relation to nearby ranks or the top achievers. Leaderboards also
+   show the latest achievement earned, allowing users to discover new
+   milestones they might want to strive for.
 
  * Achievements can be hidden so that a user doesn't know how to unlock
    it until she stumbles upon the discovery herself (meeting the milestone,
@@ -41,7 +46,9 @@ Current features and design:
 
  * Achievements can be grouped into categories and tabbed with jQuery UI.
 
- * An adminterface allows you to manually grant or remove achievements.
+ * An adminterface allows you to manually grant or remove achievements. If
+   the user is offline at the time, any unlocked achievements will display
+   the next time the user visits the site.
 
  * Your code decides whether achievements are retroactively applied or not.
 

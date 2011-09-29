@@ -1,10 +1,6 @@
 
-Achievements 7.x-1.3, 2011-xx-xx
+Achievements 7.x-1.3, 2011-09-29
 --------------------------------
-* (todo) Make some new screenshots for the latest additions
- * New relative leaderboards. Picture of the popup fadein? Latest badge?
- * Write up a blog post. Mention on Twitter, G+.
-
  * The following hooks have been added. See achievements.api.php for details:
   * hook_achievements_info_alter() - modify the achievement information.
   * hook_achievements_unlocked() - respond to achievement unlocks.
