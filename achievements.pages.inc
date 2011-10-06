@@ -46,11 +46,11 @@ function achievements_leaderboard_totals() {
       $variables = array('achievement' => achievements_load($achiever->achievement_id), 'unlock' => array());
       achievements_template_shared_variables($variables); // generate image, munge for hidden, etc.
 
-      $rows[$type][] = array( // give a special class if its the current user.
+      $rows[$type][$achiever->uid] = array( // give a special class if its the current user.
         'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
         'data'  => array(
-          array(
-            'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
+          array( // increment our internal rank counter, and apply it to the dataset too.
+            'data'  => isset($achiever->rank) ? $achiever->rank : ($achiever->rank = $rank++),
             'class' => array('achievement-leaderboard-rank')
           ),
           array(
@@ -78,14 +78,22 @@ function achievements_leaderboard_totals() {
   }
 
   foreach (array('top', 'relative') as $type) {
-    $build['achievements']['leaderboard'][$type] = array(
-      '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
-      '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
-      '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
-      '#rows'       => $rows[$type],
-      '#theme'      => 'table',
+    $leaderboard = array(
+      'achievers' => $achievers,
+      'block'     => FALSE,
+      'type'      => $type,
+      'render'    => array(
+        '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
+        '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
+        '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
+        '#rows'       => $rows[$type],
+        '#theme'      => 'table',
+      ),
     );
+    drupal_alter('achievements_leaderboard', $leaderboard);
+    $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
   }
+
   $build['achievements']['leaderboard_pager'] = array(
     '#theme'  => 'pager',
   );
@@ -121,8 +129,8 @@ function achievements_leaderboard_block() {
       $rows[$type][] = array( // give a special class if its the current user.
         'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
         'data'  => array(
-          array(
-            'data'  => isset($achiever->rank) ? $achiever->rank : $rank++,
+          array( // increment our internal rank counter, and apply it to the dataset too.
+            'data'  => isset($achiever->rank) ? $achiever->rank : ($achiever->rank = $rank++),
             'class' => array('achievement-leaderboard-rank')
           ),
           array(
@@ -139,18 +147,26 @@ function achievements_leaderboard_block() {
   }
 
   foreach (array('top', 'relative') as $type) {
-    $build['achievements']['leaderboard'][$type] = array(
-      '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
-      '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
-      '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
-      '#rows'       => $rows[$type],
-      '#theme'      => 'table',
+    $leaderboard = array(
+      'achievers' => $achievers,
+      'block'     => TRUE,
+      'type'      => $type,
+      'render'    => array(
+        '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
+        '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
+        '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
+        '#rows'       => $rows[$type],
+        '#theme'      => 'table',
+      ),
     );
+    drupal_alter('achievements_leaderboard', $leaderboard);
+    $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
   }
+
   $build['achievements']['see-more'] = array(
-    '#prefix'   => '<div class="achievement-see-more">',
-    '#markup'   =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
-    '#suffix'   => '</div>',
+    '#prefix' => '<div class="achievement-see-more">',
+    '#markup' =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
+    '#suffix' => '</div>',
   );
 
   return $build;
@@ -175,41 +191,47 @@ function achievements_leaderboard_for($achievement) {
   $query->condition('au.achievement_id', $achievement['id']); // ... with a slight tweak.
   $query->fields('au', array('uid', 'rank', 'timestamp'))->fields('at', array('points', 'unlocks'))->fields('u', array('name'));
   $query2 = clone $query; // allows us to save a few lines of duplicate query building. never used clone before. awesome.
-  $stats['first']  = $query->orderBy('rank')->range(0, 10)->execute()->fetchAllAssoc('rank'); // FI... sigh.
-  $stats['recent'] = $query2->orderBy('timestamp', 'DESC')->range(0, 10)->execute()->fetchAllAssoc('rank');
+  $achievers['first']  = $query->orderBy('rank')->range(0, 10)->execute()->fetchAllAssoc('uid'); // FI... sigh.
+  $achievers['recent'] = $query2->orderBy('timestamp', 'DESC')->range(0, 10)->execute()->fetchAllAssoc('uid');
 
-  // both stat tables are displayed similarly.
   foreach (array('first', 'recent') as $type) {
     $rows = array(); // clear previous run.
-    foreach ($stats[$type] as $stat) {
-      $rows[] = array(
+    foreach ($achievers[$type] as $achiever) {
+      $rows[$achiever->uid] = array(
         array(
-          'data'  => $stat->rank,
+          'data'  => $achiever->rank,
           'class' => array('achievement-leaderboard-rank')
         ),
         array(
-          'data'  => theme('username', array('account' => $stat)),
+          'data'  => theme('username', array('account' => $achiever)),
           'class' => array('achievement-leaderboard-username')
         ),
         array(
-          'data'  => l($stat->points, 'user/' . $stat->uid . '/achievements'),
+          'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
           'class' => array('achievement-leaderboard-points')
         ),
         array(
-          'data'  => format_date($stat->timestamp, 'short'),
+          'data'  => format_date($achiever->timestamp, 'short'),
           'class' => array('achievement-leaderboard-when')
         ),
       );
     }
 
-    $build['achievements']['stats'][$type] = array(
-      '#attributes' => array('class' => array('achievement-stats-' . $type)),
-      '#caption'    => t('@type achievement unlocks', array('@type' => drupal_ucfirst($type))),
-      '#header'     => array(t('#'), t('Who'), t('Points'), t('When')),
-      '#empty'      => t('No one has unlocked this yet. Keep trying!'),
-      '#rows'       => $rows,
-      '#theme'      => 'table',
+    $leaderboard = array(
+      'achievers' => $achievers,
+      'block'     => FALSE,
+      'type'      => $type,
+      'render'    => array(
+        '#attributes' => array('class' => array('achievement-leaderboard-' . $type)),
+        '#caption'    => t('@type achievement unlocks', array('@type' => drupal_ucfirst($type))),
+        '#header'     => array(t('#'), t('Who'), t('Points'), t('When')),
+        '#empty'      => t('No one has unlocked this yet. Keep trying!'),
+        '#rows'       => $rows,
+        '#theme'      => 'table',
+      ),
     );
+    drupal_alter('achievements_leaderboard', $leaderboard);
+    $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
   }
 
   return $build;

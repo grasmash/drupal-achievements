@@ -12,7 +12,7 @@ INTRODUCTION
 Current Maintainer: Morbus Iff <morbus@disobey.com>
 
 The Achievements module offers the ability to create achievements and
-badges similar to systems seen on the Xbox 360, Playstation 3, Foursquare,
+badges similar to systems seen on Xbox 360, Playstation 3, Foursquare,
 Gowalla, GetGlue, and more. For a Drupal site, this could mean commenting a
 certain number of times, starting a forum topic, visiting the site every day
 of the week, or anything else that can be tracked and coded.
@@ -47,8 +47,10 @@ Current features and design:
  * Achievements can be grouped into categories and tabbed with jQuery UI.
 
  * An adminterface allows you to manually grant or remove achievements. If
-   the user is offline at the time, any unlocked achievements will display
-   the next time the user visits the site.
+   the user is offline, unlocked achievements will display the next time
+   the user visits the site.
+
+ * Achievement unlocks fade-in and out at the window's bottom right corner.
 
  * Your code decides whether achievements are retroactively applied or not.
 

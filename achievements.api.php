@@ -158,13 +158,13 @@ function example_node_insert($node) {
  * hesitate to create an issue asking for them.
  *
  * achievement_totals:
- *   Leaderboard: find the totals of all users in ranking order.
+ *   Find the totals of all users in ranking order.
  *
  * achievement_totals_user:
- *   Leaderboard: find the totals of the passed user.
+ *   Find the totals of the passed user.
  *
  * achievement_totals_user_nearby:
- *   Leaderboard: find users nearby the ranking of the passed user.
+ *   Find users nearby the ranking of the passed user.
  */
 function example_query_alter() {
   // futz with morbus' logic. insert explosions and singularities.
@@ -213,4 +213,34 @@ function example_achievements_unlocked($achievement, $uid) {
  */
 function example_achievements_locked($achievement, $uid) {
   // react to achievement removal. bad user, BaAaDdd UUserrRR!
+}
+
+/**
+ * Implements hook_achievements_leaderboard().
+ *
+ * Allows you to tweak or even recreate the leaderboard as required. The
+ * default implementation creates leaderboards as HTML tables and this hook
+ * allows you to modify that table (new columns, tweaked values, etc.) or
+ * replace it entirely with a new render element.
+ *
+ * @param &$leaderboard
+ *   An array of information about the leaderboard. Available keys are:
+ *   - achievers: The database results from the leaderboard queries.
+ *     Results are keyed by leaderboard type (top, relative, first, and
+ *     recent) and then by user ID, sorted in proper ranking order.
+ *   - block: A boolean indicating whether this is a block-based leaderboard.
+ *   - type: The type of leaderboard being displayed. One of: top (the overall
+ *     leaderboard displayed on achievements/leaderboard), relative (the
+ *     current-user-centric version with nearby ranks), first (the first users
+ *     who unlocked a particular achievement), and recent (the most recent
+ *     users who unlocked a particular achievement).
+ *   - render: A render array for use with drupal_render(). Default rendering
+ *     is with #theme => table, and you'll receive all the keys necessary
+ *     for that implementation. You're welcome to insert your own unique
+ *     render, bypassing the default entirely.
+ */
+function example_achievements_leaderboard(&$leaderboard) {
+  if ($leaderboard['type'] == 'first') {
+    $leaderboard['render']['#caption'] = t('Congratulations to our first 10!');
+  }
 }
