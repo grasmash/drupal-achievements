@@ -216,7 +216,7 @@ function example_achievements_locked($achievement, $uid) {
 }
 
 /**
- * Implements hook_achievements_leaderboard().
+ * Implements hook_achievements_leaderboard_alter().
  *
  * Allows you to tweak or even recreate the leaderboard as required. The
  * default implementation creates leaderboards as HTML tables and this hook
@@ -239,7 +239,7 @@ function example_achievements_locked($achievement, $uid) {
  *     for that implementation. You're welcome to insert your own unique
  *     render, bypassing the default entirely.
  */
-function example_achievements_leaderboard(&$leaderboard) {
+function example_achievements_leaderboard_alter(&$leaderboard) {
   if ($leaderboard['type'] == 'first') {
     $leaderboard['render']['#caption'] = t('Congratulations to our first 10!');
   }

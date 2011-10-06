@@ -126,7 +126,7 @@ function achievements_leaderboard_block() {
   $rank = 1; // innocent widdle variable!
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
-      $rows[$type][] = array( // give a special class if its the current user.
+      $rows[$type][$achiever->uid] = array( // give a special class if its the current user.
         'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
         'data'  => array(
           array( // increment our internal rank counter, and apply it to the dataset too.
