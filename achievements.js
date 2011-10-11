@@ -1,5 +1,5 @@
 jQuery(function($) {
-    var height = 104, margin = 10,
+    var height = 104, margin = 10, timeout,
       notifications = $('.achievement-notification').dialog({
         dialogClass:    'achievement-notification-dialog',
         autoOpen:       false,
@@ -33,16 +33,28 @@ jQuery(function($) {
         }
 
         // the longer the list, longer the onscreen time.
-        setTimeout(closeDialog, 5000 + (length * 500));
+        timeout = setTimeout(closeDialog, 5000 + (length * 500));
       });
 
-      notifications.dialog('open');
+      notifications.dialog('open').hover(
+        function () {
+          clearTimeout(timeout);
+        },
+        function () {
+          // the longer the list, longer the onscreen time.
+          timeout = setTimeout(closeDialog, 1500 + (notifications.length * 500));
+        }
+      );
     }
 
     function onClose() {
       var i, length, properties, widget;
       notifications = notifications.not(notifications[0]);
       length = notifications.length;
+
+      function close() {
+         timeout = setTimeout(closeDialog, 1500);
+      }
 
       if (length) {
         properties = {
@@ -51,9 +63,7 @@ jQuery(function($) {
         for (i = 0; i < length; i += 1) {
           widget = notifications.eq(i).dialog('widget');
           if (i === 0) {
-            widget.animate(properties, function() {
-              setTimeout(closeDialog, 1500);
-            });
+            widget.animate(properties, close);
           }
           else {
             widget.animate(properties)
