@@ -198,21 +198,24 @@ function achievements_leaderboard_for($achievement) {
     $rows = array(); // clear previous run.
     foreach ($achievers[$type] as $achiever) {
       $rows[$achiever->uid] = array(
-        array(
-          'data'  => $achiever->rank,
-          'class' => array('achievement-leaderboard-rank')
-        ),
-        array(
-          'data'  => theme('username', array('account' => $achiever)),
-          'class' => array('achievement-leaderboard-username')
-        ),
-        array(
-          'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
-          'class' => array('achievement-leaderboard-points')
-        ),
-        array(
-          'data'  => format_date($achiever->timestamp, 'short'),
-          'class' => array('achievement-leaderboard-when')
+        'class' => array(),
+        'data' => array(
+          array(
+            'data'  => $achiever->rank,
+            'class' => array('achievement-leaderboard-rank')
+          ),
+          array(
+            'data'  => theme('username', array('account' => $achiever)),
+            'class' => array('achievement-leaderboard-username')
+          ),
+          array(
+            'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+            'class' => array('achievement-leaderboard-points')
+          ),
+          array(
+            'data'  => format_date($achiever->timestamp, 'short'),
+            'class' => array('achievement-leaderboard-when')
+          ),
         ),
       );
     }
