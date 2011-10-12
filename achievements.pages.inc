@@ -252,14 +252,14 @@ function achievements_user_page($account) {
   $achiever = array_pop(achievements_totals_user(0, $account->uid));
 
   $build['achievements']['stats'] = array(
-    '#prefix' => '<div class="achievement-stats">',
-    '#markup' => t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
-      '@name'           => $account->name,
-      '@rank'           => isset($achiever->rank) ? $achiever->rank : 0,
-      '@points'         => isset($achiever->points) ? $achiever->points : 0,
-      '@unlocks_count'  => count($unlocks),
-      '@total_count'    => count(achievements_load()))),
-    '#suffix' => '</div>',
+    '#theme'  => 'achievement_user_stats',
+    '#stats'  => array(
+      'name'          => $account->name,
+      'rank'          => isset($achiever->rank) ? $achiever->rank : 0,
+      'points'        => isset($achiever->points) ? $achiever->points : 0,
+      'unlocks_count' => count($unlocks),
+      'total_count'   => count(achievements_load()),
+    ),
   );
 
   $achievements_grouped = achievements_load(NULL, TRUE);
@@ -328,3 +328,24 @@ function achievements_autocomplete($string = '') {
 function achievements_autocomplete_search(&$value, $key, $string) {
   $value = (stripos($value['title'], $string) === FALSE) ? FALSE : $value['title'];
 }
+
+/**
+ * Default theme implementation for a user's achievement stats.
+ *
+ * Available variables:
+ * - $stats: An array which contains the following keys:
+ *   name, rank, points, unlocks_count, and total_count.
+ */
+function theme_achievement_user_stats($variables) {
+  $output = '<div class="achievement-user-stats">'; // VERY CONFUSING CODE COMMENT ABOUT PSYNAPTIC. YOU THOUGHT I WAS KIDDING?
+  $output .= t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
+    '@name'           => $variables['stats']['name'],
+    '@rank'           => $variables['stats']['rank'],
+    '@points'         => $variables['stats']['points'],
+    '@unlocks_count'  => $variables['stats']['unlocks_count'],
+    '@total_count'    => $variables['stats']['total_count'],
+  ));
+  $output .= '</div>';
+  return $output;
+}
+

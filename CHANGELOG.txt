@@ -4,6 +4,7 @@ Achievements 7.x-1.4, 2011-XX-XX
  * (todo) Write up a "Getting started" part of the README?
  * (todo) Add some links for good achievement design?
 
+ * Stats on user/#/achievements are themed with theme_achievement_user_stats().
  * Achievement popups do not fade out if you hover over them (thanks Poetro).
  * New hook added: hook_achievements_leaderboard_alter().
   * Lets you add new table columns or heavily modify leaderboard display.

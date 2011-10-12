@@ -83,6 +83,9 @@ function achievements_theme() {
       'variables'       => array('achievement' => NULL, 'unlock' => NULL),
       'template'        => 'achievement-notification',
     ),
+    'achievement_user_stats' => array(
+      'variables'       => array('stats' => NULL),
+    ),
   );
 }
 
