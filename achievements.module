@@ -86,6 +86,12 @@ function achievements_theme() {
     'achievement_user_stats' => array(
       'variables'       => array('stats' => NULL),
     ),
+    'achievement_groups_wrapper' => array(
+      'render element'  => 'element',
+    ),
+    'achievement_group_wrapper' => array(
+      'render element'  => 'element',
+    ),
   );
 }
 

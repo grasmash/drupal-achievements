@@ -264,10 +264,8 @@ function achievements_user_page($account) {
 
   $achievements_grouped = achievements_load(NULL, TRUE);
 
-  $build['achievements']['tabs']= array(
-    '#prefix' => '<div id="achievement-groups">',
-    '#suffix' => '</div>', // even without tabs.
-  );
+  // theme wrappers let us wrap our children with a rethemable/overridable DIV.
+  $build['achievements']['tabs']['#theme_wrappers'] = array('achievement_groups_wrapper');
 
   // use jQuery tabs if more than one group.
   if (count($achievements_grouped) > 1) {
@@ -288,8 +286,8 @@ function achievements_user_page($account) {
 
   foreach ($achievements_grouped as $group_id => $group) {
     $locked_weight = 0; // we can't use definition order.
-    $build['achievements']['tabs']['groups'][$group_id]['#prefix'] = '<div id="achievement-group-' . $group_id .'" class="achievement-group">';
-    $build['achievements']['tabs']['groups'][$group_id]['#suffix'] = '</div>'; // for the jQuery UI tabs for when there's lotsa groups.
+    $build['achievements']['tabs']['groups'][$group_id]['#group_id'] = $group_id; // add a div in the wrapper.
+    $build['achievements']['tabs']['groups'][$group_id]['#theme_wrappers'] = array('achievement_group_wrapper');
 
     foreach ($group['achievements'] as $achievement_id => $achievement) {
       $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#theme'] = 'achievement';
@@ -332,9 +330,10 @@ function achievements_autocomplete_search(&$value, $key, $string) {
 /**
  * Default theme implementation for a user's achievement stats.
  *
- * Available variables:
- * - $stats: An array which contains the following keys:
- *   name, rank, points, unlocks_count, and total_count.
+ * @param variables
+ *   An associative array containing:
+ *   - stats: An array which contains the following keys:
+ *     name, rank, points, unlocks_count, and total_count.
  */
 function theme_achievement_user_stats($variables) {
   $output = '<div class="achievement-user-stats">'; // VERY CONFUSING CODE COMMENT ABOUT PSYNAPTIC. YOU THOUGHT I WAS KIDDING?
@@ -349,3 +348,25 @@ function theme_achievement_user_stats($variables) {
   return $output;
 }
 
+/**
+ * Default theme for the wrapper around a user's achievements page.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: A render containing the user's achievements page.
+ */
+function theme_achievement_groups_wrapper($variables) {
+  return '<div id="achievement-groups">' . $variables['element']['#children'] . '</div>';
+}
+
+/**
+ * Default theme for the wrapper around an achievement group.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: A render containing the achievement group.
+ */
+function theme_achievement_group_wrapper($variables) {
+  $group_id = 'achievement-group-' . $variables['element']['#group_id'];
+  return '<div id="' . $group_id . '" class="achievement-group">' . $variables['element']['#children'] . '</div>';
+}
