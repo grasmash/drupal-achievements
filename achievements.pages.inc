@@ -35,7 +35,7 @@ function achievements_leaderboard_totals() {
   // the order the query returns is the order of the leaderboard. thus,
   // we start at 1 and increase the rank for every row we're showing.
   // also, be careful to start with the right number on pager queries.
-  $rank = 1 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
+  $rank = 0 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
       // since we're showing the "latest achievement" for a user, we have to
@@ -46,11 +46,19 @@ function achievements_leaderboard_totals() {
       $variables = array('achievement' => achievements_load($achiever->achievement_id), 'unlock' => array());
       achievements_template_shared_variables($variables); // generate image, munge for hidden, etc.
 
-      $rows[$type][$achiever->uid] = array( // give a special class if its the current user.
-        'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
+      // determine the current rank and set some speshul classes.
+      $rank = $achiever->rank = isset($achiever->rank) ? $achiever->rank : $rank + 1;
+      $classes = ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array();
+      if ($rank <= 3) {  // give special classes if its the current user or if it's a cherished leader position.
+        $classes[] = 'achievement-leaderboard-top-rank';
+        $classes[] = 'achievement-leaderboard-top-rank-' . $rank;
+      }
+
+      $rows[$type][$achiever->uid] = array(
+        'class' => $classes,
         'data'  => array(
-          array( // increment our internal rank counter, and apply it to the dataset too.
-            'data'  => isset($achiever->rank) ? $achiever->rank : ($achiever->rank = $rank++),
+          array(
+            'data'  => $rank,
             'class' => array('achievement-leaderboard-rank')
           ),
           array(
@@ -120,17 +128,24 @@ function achievements_leaderboard_block() {
   if (user_is_logged_in() && !isset($achievers['top'][$GLOBALS['user']->uid]) && variable_get('achievements_leaderboard_block_relative', 'nearby_ranks') != 'disabled') {
     $achievers['relative'] = (variable_get('achievements_leaderboard_block_relative', 'nearby_ranks') == 'nearby_ranks')
       ? achievements_totals_user(variable_get('achievements_leaderboard_block_relative_nearby_ranks', 1))
-      : achievements_totals_user(); // you and me, togetheRrrr FoReEEvvvVeeEeeRRrRR.
+      : achievements_totals_user(); // you and me, togetheRrrr almost nEveVvaeeeeEEERrrrrR111!
   }
 
-  $rank = 1; // innocent widdle variable!
+  $rank = 0; // innocent widdle variable!
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
-      $rows[$type][$achiever->uid] = array( // give a special class if its the current user.
-        'class' => ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array(),
+      $rank = $achiever->rank = isset($achiever->rank) ? $achiever->rank : $rank + 1;
+      $classes = ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array();
+      if ($rank <= 3) {  // give special classes if its the current user or if it's a cherished leader position.
+        $classes[] = 'achievement-leaderboard-top-rank';
+        $classes[] = 'achievement-leaderboard-top-rank-' . $rank;
+      }
+
+      $rows[$type][$achiever->uid] = array(
+        'class' => $classes,
         'data'  => array(
-          array( // increment our internal rank counter, and apply it to the dataset too.
-            'data'  => isset($achiever->rank) ? $achiever->rank : ($achiever->rank = $rank++),
+          array(
+            'data'  => $rank,
             'class' => array('achievement-leaderboard-rank')
           ),
           array(
@@ -286,7 +301,7 @@ function achievements_user_page($account) {
 
   foreach ($achievements_grouped as $group_id => $group) {
     $locked_weight = 0; // we can't use definition order.
-    $build['achievements']['tabs']['groups'][$group_id]['#group_id'] = $group_id; // add a div in the wrapper.
+    $build['achievements']['tabs']['groups'][$group_id]['#group_id'] = $group_id; // add a DIV in the wrapper.
     $build['achievements']['tabs']['groups'][$group_id]['#theme_wrappers'] = array('achievement_group_wrapper');
 
     foreach ($group['achievements'] as $achievement_id => $achievement) {

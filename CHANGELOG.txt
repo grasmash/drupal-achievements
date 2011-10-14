@@ -4,8 +4,10 @@ Achievements 7.x-1.4, 2011-XX-XX
  * (todo) Write up a "Getting started" part of the README?
  * (todo) Add some links for good achievement design?
 
+ * "achievement-leaderboard-top-rank" CSS class added to top 3 rank rows.
+ * "achievement-leaderboard-top-rank-[123]" CSS class added to top 3 rank rows.
  * theme_achievements_group_wrapper() added (wraps around user/#/achievements).
- * theme_achievement_group_wrapper() added (wraps around achievement groups).
+ * theme_achievement_group_wrapper() added (wraps around an achievement group).
  * Stats on user/#/achievements are themed with theme_achievement_user_stats().
  * Achievement popups do not fade out if you hover over them (thanks Poetro).
  * New hook added: hook_achievements_leaderboard_alter().
