@@ -135,9 +135,8 @@ function achievements_template_shared_variables(&$variables) {
 
   // set the per-achievement image or admin default.
   $default = drupal_get_path('module', 'achievements') . '/images/default-' . $variables['state'] . '-70.jpg';
-  $variables['image'] = isset($variables['achievement']['images'][$variables['state']])
-    ? theme('image', array('path' => $variables['achievement']['images'][$variables['state']]))
-    : theme('image', array('path' => variable_get('achievements_image_' . $variables['state'], $default)));
+  $variables['image_raw'] = isset($variables['achievement']['images'][$variables['state']]) ? $variables['achievement']['images'][$variables['state']] : variable_get('achievements_image_' . $variables['state'], $default);
+  $variables['image'] = theme('image', array('path' => $variables['image_raw'])); // store the selected image path separately so that folks can send it to an image_style or otherwise fiddle with the path not URL.
   $variables['image'] = l($variables['image'], 'achievements/leaderboard/' . $variables['achievement']['id'], array('html' => TRUE));
 }
 

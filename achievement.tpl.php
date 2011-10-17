@@ -9,7 +9,8 @@
  * - $unlock: An array of unlocked 'rank' and 'timestamp', if applicable.
  * - $unlocked_date: A formatted date of the user's unlock timestamp.
  * - $unlocked_rank: A formatted string of the user's unlock ranking.
- * - $image: The achievement's image (default or otherwise).
+ * - $image: The achievement's image (default or otherwise), linked.
+ * - $image_raw: The raw path to the context-aware achievement image.
  * - $classes: String of classes for this achievement.
  * - $achievement_url: Direct URL of the current achievement.
  * - $state: The 'unlocked', 'locked', or 'hidden' achievement state.
