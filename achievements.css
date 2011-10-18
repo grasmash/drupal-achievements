@@ -63,8 +63,8 @@
   display: none;
 }
 
-.achievement-notification {
-  background: #b8ffa9 !important;
+.achievement-notification-dialog .achievement-notification {
+  background: #b8ffa9;
 }
 
 .achievement-notification .achievement-body {
