@@ -98,8 +98,10 @@ function achievements_leaderboard_totals() {
         '#theme'      => 'table',
       ),
     );
-    drupal_alter('achievements_leaderboard', $leaderboard);
-    $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
+    if ($type == 'top' || count($rows['relative'])) {
+      drupal_alter('achievements_leaderboard', $leaderboard);
+      $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
+    }
   }
 
   $build['achievements']['leaderboard_pager'] = array(
@@ -174,8 +176,10 @@ function achievements_leaderboard_block() {
         '#theme'      => 'table',
       ),
     );
-    drupal_alter('achievements_leaderboard', $leaderboard);
-    $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
+    if ($type == 'top' || count($rows['relative'])) {
+      drupal_alter('achievements_leaderboard', $leaderboard);
+      $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
+    }
   }
 
   $build['achievements']['see-more'] = array(
