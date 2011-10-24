@@ -4,6 +4,7 @@ Achievements 7.x-1.4, 2011-XX-XX
  * (todo) Write up a "Getting started" part of the README?
  * (todo) Add some links for good achievement design?
 
+ * Admins can no longer take away an achievement the user hasn't unlocked.
  * An empty relative leaderboard table is no longer displayed in the HTML.
  * "image_raw" added to achievement themes for the context-aware image path.
  * "achievement-leaderboard-top-rank" CSS class added to top 3 rank rows.

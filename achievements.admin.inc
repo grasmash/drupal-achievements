@@ -110,20 +110,28 @@ function achievements_clear_info_cache_submit() {
  * Submit callback; give or take away an achievement from a user.
  */
 function achievements_manual_submit($form, &$form_state) {
-  $account     = user_load_by_name($form_state['values']['achievements_manual_user']);
-  $achievement = achievements_load($form_state['values']['achievements_manual_achievement']);
-
-  if (!$account) { // dear sir, you are quite unable...
+  $account = user_load_by_name($form_state['values']['achievements_manual_user']);
+  if (!$account) { // You failed an autocomplete?! WTH.
     drupal_set_message(t('%username is not a valid user.',
       array('%username' => $form_state['values']['achievements_manual_user'])), 'error');
+    return;
   }
 
-  if (!$achievement) { // ...to do anything right! --the mgmt.
+  $achievement = achievements_load($form_state['values']['achievements_manual_achievement']);
+  if (!$achievement) { // -100 DKP! That's not even funny anymore.
     drupal_set_message(t('%achievement_id is not a valid achievement.',
       array('%achievement_id' => $form_state['values']['achievements_manual_achievement'])), 'error');
+    return;
   }
 
-  if ($account && $achievement) {
+  $unlocked = achievements_unlocked_already($achievement['id'], $account->uid);
+  if (!$unlocked) { // If I had cake, I would tell you I didn't.
+    drupal_set_message(t('%username has not unlocked %achievement.',
+      array('%username' => $account->name, '%achievement' => $achievement['title'])), 'error');
+    return;
+  }
+
+  if ($account && $achievement && $unlocked) {
     if ($form_state['clicked_button']['#achievement_action'] == 'give') {
       achievements_unlocked($achievement['id'], $account->uid);
       drupal_set_message(t('%username has been given %achievement.', // yeah, yeah.
