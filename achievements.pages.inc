@@ -198,9 +198,9 @@ function achievements_leaderboard_for($achievement) {
   drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])));
 
   $build['achievements']['achievement'] = array(
-    '#theme'        => 'achievement',
     '#achievement'  => $achievement,
     '#unlock'       => achievements_unlocked_already($achievement['id']),
+    '#theme'        => 'achievement__leaderboard_for',
   );
 
   // get stats for first and most recent unlocks.
@@ -309,8 +309,8 @@ function achievements_user_page($account) {
     $build['achievements']['tabs']['groups'][$group_id]['#theme_wrappers'] = array('achievement_group_wrapper');
 
     foreach ($group['achievements'] as $achievement_id => $achievement) {
-      $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#theme'] = 'achievement';
       $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#achievement'] = $achievement;
+      $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#theme'] = 'achievement__user_page';
 
       if (isset($unlocks[$achievement_id])) {
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#unlock'] = $unlocks[$achievement_id];

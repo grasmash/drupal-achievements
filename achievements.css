@@ -75,6 +75,10 @@
   display: block;
 }
 
+.achievement-notification * a:focus {
+  outline: none;
+}
+
 .achievement-notification .achievement-points-box {
   border: 1px solid #1CF608;
   background: #79F66A;

@@ -27,6 +27,6 @@
 
   <div class="achievement-body">
     <div class="achievement-header">Achievement Unlocked</div>
-    <div class="achievement-title"><a href="<?php print $achievement_url; ?>" tabindex="-1"><?php print $achievement['title']; ?></a></div>
+    <div class="achievement-title"><a href="<?php print $achievement_url; ?>"><?php print $achievement['title']; ?></a></div>
   </div>
 </div>
