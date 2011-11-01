@@ -124,20 +124,20 @@ function achievements_manual_submit($form, &$form_state) {
     return;
   }
 
-  $unlocked = achievements_unlocked_already($achievement['id'], $account->uid);
-  if (!$unlocked) { // If I had cake, I would tell you I didn't.
-    drupal_set_message(t('%username has not unlocked %achievement.',
-      array('%username' => $account->name, '%achievement' => $achievement['title'])), 'error');
-    return;
-  }
-
-  if ($account && $achievement && $unlocked) {
+  if ($account && $achievement) {
     if ($form_state['clicked_button']['#achievement_action'] == 'give') {
       achievements_unlocked($achievement['id'], $account->uid);
       drupal_set_message(t('%username has been given %achievement.', // yeah, yeah.
         array('%username' => $account->name, '%achievement' => $achievement['title'])));
     }
     if ($form_state['clicked_button']['#achievement_action'] == 'take') {
+      $unlocked = achievements_unlocked_already($achievement['id'], $account->uid);
+      if (!$unlocked) { // If I had cake, I would tell you I didn't.
+        drupal_set_message(t('%username has not unlocked %achievement.',
+          array('%username' => $account->name, '%achievement' => $achievement['title'])), 'error');
+        return;
+      }
+
       db_delete('achievement_unlocks')->condition('achievement_id', $achievement['id'])->condition('uid', $account->uid)->execute();
       db_update('achievement_totals') // remove from unlocks and then subtract from the current totals.
         ->fields(array(
@@ -149,9 +149,7 @@ function achievements_manual_submit($form, &$form_state) {
         ->condition('uid', $account->uid)
         ->execute();
 
-      // remove any internal statistic saved for this achievement.
-      $storage = isset($achievement['storage']) ? $achievement['storage'] : $achievement['id'];
-      db_delete('achievement_storage')->condition('achievement_id', $storage)->condition('uid', $account->uid)->execute();
+      achievements_storage_del($achievement['id'], $account->uid);
 
       module_invoke_all('achievements_locked', $achievement, $account->uid);
 

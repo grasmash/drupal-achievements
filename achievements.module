@@ -460,6 +460,23 @@ function achievements_storage_set($achievement_id = NULL, $data = NULL, $uid = N
 }
 
 /**
+ * Delete data stored by an achievement.
+ *
+ * @param $achievement_id
+ *   An identifier for the achievement whose data is being collected.
+ * @param $uid
+ *   The user this stored data applies to (defaults to current user).
+ */
+function achievements_storage_del($achievement_id = NULL, $uid = NULL) {
+  list($uid, $access) = achievements_user_is_achiever($uid);
+  if (!$access) { return; } // WE'RE GONNA HAVE A MEELLION BABIES.
+
+  $achievement = achievements_load($achievement_id);
+  $storage = isset($achievement['storage']) ? $achievement['storage'] : $achievement['id'];
+  db_delete('achievement_storage')->condition('achievement_id', $storage)->condition('uid', $uid)->execute();
+}
+
+/**
  * Determine if a user is able to earn achievements.
  *
  * This is a general helper around the core achievements functions and allows

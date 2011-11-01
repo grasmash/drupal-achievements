@@ -3,7 +3,9 @@ Achievements 7.x-1.4, 2011-XX-XX
 --------------------------------
  * (todo) Write up a "Getting started" part of the README?
  * (todo) Add some links for good achievement design?
+ * (todo) Move the admin lock stuff into its own function.
 
+ * achievements_storage_del() added to complement the _set and _get ones.
  * tabindex on achievement notification was rewritten into a CSS override.
  * #theme => 'achievement' usage has gained contextual theme suggestions.
  * Admins can no longer take away an achievement the user hasn't unlocked.
