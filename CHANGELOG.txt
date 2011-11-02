@@ -4,6 +4,7 @@ Achievements 7.x-1.4, 2011-XX-XX
  * (todo) Write up a "Getting started" part of the README?
  * (todo) Add some links for good achievement design?
 
+ * Fixed double-encoding bug in titles of achievements/leaderboard/$AID.
  * achievements_locked() added for programmatic taking away of an unlock.
  * achievements_storage_del() added to complement the _set and _get ones.
  * tabindex on achievement notification was rewritten into a CSS override.

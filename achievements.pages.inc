@@ -195,7 +195,7 @@ function achievements_leaderboard_block() {
  * Menu callback; display a single achievement page with leaderboards.
  */
 function achievements_leaderboard_for($achievement) {
-  drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])));
+  drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])), PASS_THROUGH);
 
   $build['achievements']['achievement'] = array(
     '#achievement'  => $achievement,
