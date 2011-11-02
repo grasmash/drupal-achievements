@@ -75,7 +75,7 @@ function achievements_leaderboard_totals() {
           ),
           array(
             'data'  =>
-              '<div class="achievement-latest-image">' . $achievers[$type][$achiever->uid]->latest['image'] . '</div>' .
+              '<div class="achievement-latest-image">' . render($achievers[$type][$achiever->uid]->latest['image']) . '</div>' .
               '<div class="achievement-latest-title">' . $achievers[$type][$achiever->uid]->latest['achievement']['title'] . '</div>' .
               '<div class="achievement-latest-when">' . format_date($achiever->timestamp, 'small') . '</div>',
             'class' => array('achievement-leaderboard-latest')

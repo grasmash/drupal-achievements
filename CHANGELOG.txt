@@ -4,6 +4,12 @@ Achievements 7.x-1.4, 2011-XX-XX
  * (todo) Write up a "Getting started" part of the README?
  * (todo) Add some links for good achievement design?
 
+ * Most .tpl.php $variables are now render arrays instead of strings.
+  * This allows for easier modifications in preprocess hooks.
+  * You WILL need to modify any overridden themes to support this.
+  * You should be able to just replace "print $a" with "print render($a)";
+ * "image_path" added to achievement themes for the context-aware image path.
+ * "achievement_title" added to achievement themes for easier link display.
  * Fixed double-encoding bug in titles of achievements/leaderboard/$AID.
  * achievements_locked() added for programmatic taking away of an unlock.
  * achievements_storage_del() added to complement the _set and _get ones.
@@ -11,7 +17,6 @@ Achievements 7.x-1.4, 2011-XX-XX
  * #theme => 'achievement' usage has gained contextual theme suggestions.
  * Admins can no longer take away an achievement the user hasn't unlocked.
  * An empty relative leaderboard table is no longer displayed in the HTML.
- * "image_raw" added to achievement themes for the context-aware image path.
  * "achievement-leaderboard-top-rank" CSS class added to top 3 rank rows.
  * "achievement-leaderboard-top-rank-[123]" CSS class added to top 3 rank rows.
  * theme_achievements_group_wrapper() added (wraps around user/#/achievements).

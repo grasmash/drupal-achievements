@@ -119,6 +119,9 @@ function template_preprocess_achievement_notification(&$variables) {
  */
 function achievements_template_shared_variables(&$variables) {
   $variables['state'] = isset($variables['unlock']) ? 'unlocked' : 'locked';
+  $variables['classes_array'][] = 'achievement-' . $variables['state'];
+  $variables['classes_array'][] = 'ui-corner-all'; // add rounded rects for tabs.
+  $variables['achievement_url'] = url('achievements/leaderboard/' . $variables['achievement']['id']);
 
   if (isset($variables['achievement']['hidden']) && !achievements_unlocked_already($variables['achievement']['id'])) {
     $variables['achievement']['points']      = t('???'); // IIiII haveEeeA aa seecFRrit and I'll NEEVvaaha hTellLL..
@@ -127,17 +130,41 @@ function achievements_template_shared_variables(&$variables) {
     $variables['state'] = 'hidden';
   }
 
-  $variables['classes_array'][] = 'achievement-' . $variables['state'];
-  $variables['classes_array'][] = 'ui-corner-all'; // if jquery UI is enabled, adds rounded rects.
-  $variables['achievement_url'] = url('achievements/leaderboard/' . $variables['achievement']['id']);
-  $variables['unlocked_date'] = isset($variables['unlock']['timestamp']) ? format_date($variables['unlock']['timestamp'], 'custom', 'Y/m/d') : '';
-  $variables['unlocked_rank'] = isset($variables['unlock']['rank']) ? t('Rank #@rank', array('@rank' => $variables['unlock']['rank'])) : '';
-
-  // set the per-achievement image or admin default.
+  // set the displayed image to a hidden-or-not default-or-not determined value. sheesh.
   $default = drupal_get_path('module', 'achievements') . '/images/default-' . $variables['state'] . '-70.jpg';
-  $variables['image_raw'] = isset($variables['achievement']['images'][$variables['state']]) ? $variables['achievement']['images'][$variables['state']] : variable_get('achievements_image_' . $variables['state'], $default);
-  $variables['image'] = theme('image', array('path' => $variables['image_raw'])); // store the selected image path separately so that folks can send it to an image_style or otherwise fiddle with the path not URL.
-  $variables['image'] = l($variables['image'], 'achievements/leaderboard/' . $variables['achievement']['id'], array('html' => TRUE));
+  $variables['image_path'] = isset($variables['achievement']['images'][$variables['state']])
+    ? $variables['achievement']['images'][$variables['state']] // user-defined image, yay!
+    : variable_get('achievements_image_' . $variables['state'], $default);
+
+  $variables['image'] = array(
+    '#theme' => 'image_formatter',
+    '#item' => array(
+      'uri'   => $variables['image_path'],
+      'alt'   => $variables['achievement']['title'],
+      'title' => $variables['achievement']['title'],
+    ),
+    '#path' => array(
+      'path'    => 'achievements/leaderboard/' . $variables['achievement']['id'],
+      'options' => array('html' => TRUE),
+    ),
+  );
+
+  $variables['achievement_title'] = array(
+    '#theme'  => 'link',
+    '#text'   => $variables['achievement']['title'],
+    '#path'   => 'achievements/leaderboard/' . $variables['achievement']['id'],
+    '#options' => array('html' => FALSE, 'attributes' => array()),
+  );
+  $variables['unlocked_date'] = array(
+    '#markup' => isset($variables['unlock']['timestamp'])
+      ? format_date($variables['unlock']['timestamp'], 'custom', 'Y/m/d')
+      : '',
+  );
+  $variables['unlocked_rank'] = array(
+    '#markup' => isset($variables['unlock']['rank'])
+      ? t('Rank #@rank', array('@rank' => $variables['unlock']['rank']))
+      : '',
+  );
 }
 
 /**
