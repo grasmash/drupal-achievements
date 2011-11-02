@@ -111,51 +111,39 @@ function achievements_clear_info_cache_submit() {
  */
 function achievements_manual_submit($form, &$form_state) {
   $account = user_load_by_name($form_state['values']['achievements_manual_user']);
+  $achievement = achievements_load($form_state['values']['achievements_manual_achievement']);
+
   if (!$account) { // You failed an autocomplete?! WTH.
-    drupal_set_message(t('%username is not a valid user.',
+    drupal_set_message(t('%username is not a valid user.', // I TRIED TO HELP.
       array('%username' => $form_state['values']['achievements_manual_user'])), 'error');
     return;
   }
 
-  $achievement = achievements_load($form_state['values']['achievements_manual_achievement']);
   if (!$achievement) { // -100 DKP! That's not even funny anymore.
-    drupal_set_message(t('%achievement_id is not a valid achievement.',
+    drupal_set_message(t('%achievement_id is not a valid achievement.', // M... many whelps?
       array('%achievement_id' => $form_state['values']['achievements_manual_achievement'])), 'error');
     return;
   }
 
-  if ($account && $achievement) {
-    if ($form_state['clicked_button']['#achievement_action'] == 'give') {
-      achievements_unlocked($achievement['id'], $account->uid);
-      drupal_set_message(t('%username has been given %achievement.', // yeah, yeah.
-        array('%username' => $account->name, '%achievement' => $achievement['title'])));
+  // if we've a valid user and achievement ID, give 'em the achievement, ya freeloaders.
+  if ($account && $achievement && $form_state['clicked_button']['#achievement_action'] == 'give') {
+    achievements_unlocked($achievement['id'], $account->uid);
+    drupal_set_message(t('%username has been given %achievement.', // yeah, yeah.
+      array('%username' => $account->name, '%achievement' => $achievement['title'])));
+    return;
+  }
+
+  // if we're taking away an achievement, first check if they have it.
+  if ($form_state['clicked_button']['#achievement_action'] == 'take') {
+    if (!achievements_unlocked_already($achievement['id'], $account->uid)) {
+      drupal_set_message(t('%username has not unlocked %achievement.', // palm to forehead.
+        array('%username' => $account->name, '%achievement' => $achievement['title'])), 'error');
+      return;
     }
-    if ($form_state['clicked_button']['#achievement_action'] == 'take') {
-      $unlocked = achievements_unlocked_already($achievement['id'], $account->uid);
-      if (!$unlocked) { // If I had cake, I would tell you I didn't.
-        drupal_set_message(t('%username has not unlocked %achievement.',
-          array('%username' => $account->name, '%achievement' => $achievement['title'])), 'error');
-        return;
-      }
 
-      db_delete('achievement_unlocks')->condition('achievement_id', $achievement['id'])->condition('uid', $account->uid)->execute();
-      db_update('achievement_totals') // remove from unlocks and then subtract from the current totals.
-        ->fields(array(
-          'uid'       => $account->uid,
-          'timestamp' => REQUEST_TIME,
-        ))
-        ->expression('points', 'points - :points', array(':points' => $achievement['points']))
-        ->expression('unlocks', 'unlocks - :increment', array(':increment' => 1))
-        ->condition('uid', $account->uid)
-        ->execute();
-
-      achievements_storage_del($achievement['id'], $account->uid);
-
-      module_invoke_all('achievements_locked', $achievement, $account->uid);
-
-      // and let 'em know the nasty deed has been done.
-      drupal_set_message(t('%username has had %achievement taken away.', // nope, nope.
-        array('%username' => $account->name, '%achievement' => $achievement['title'])));
-    }
+    achievements_locked($achievement['id'], $account->uid);
+    drupal_set_message(t('%username has had %achievement taken away.', // nope, nope.
+      array('%username' => $account->name, '%achievement' => $achievement['title'])));
+    return;
   }
 }

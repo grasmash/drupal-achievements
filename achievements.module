@@ -421,6 +421,34 @@ function achievements_unlocked_already($achievement_id = NULL, $uid = NULL) {
 }
 
 /**
+ * Relocks (or "takes away") an achievement from a user.
+ *
+ * @param $achievement_id
+ *   The achievement this request applies against.
+ * @param $uid
+ *   The user to relock an achievement for (defaults to current user).
+ */
+function achievements_locked($achievement_id, $uid = NULL) {
+  list($uid, $access) = achievements_user_is_achiever($uid);
+  if (!$access) { return; } // i have congestion and sniffles.
+
+  // only remove the achievement if the user has unlocked it.
+  if (achievements_unlocked_already($achievement_id, $uid)) {
+    $achievement = achievements_load($achievement_id); // we need the full thing so we know how many points to take away.
+    db_delete('achievement_unlocks')->condition('achievement_id', $achievement['id'])->condition('uid', $uid)->execute();
+    db_update('achievement_totals') // remove from unlocks and subtract points from the current totals.
+      ->fields(array('uid' => $uid, 'timestamp' => REQUEST_TIME))
+      ->expression('points', 'points - :points', array(':points' => $achievement['points']))
+      ->expression('unlocks', 'unlocks - :decrement', array(':decrement' => 1))
+      ->condition('uid', $uid)->execute();
+
+    // remove any storage associated with this achievement.
+    achievements_storage_del($achievement['id'], $uid);
+    module_invoke_all('achievements_locked', $achievement, $uid);
+  }
+}
+
+/**
  * Retrieve data needed by an achievement.
  *
  * @param $achievement_id
