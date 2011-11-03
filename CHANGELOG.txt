@@ -4,6 +4,8 @@ Achievements 7.x-1.4, 2011-XX-XX
  * (todo) Write up a "Getting started" part of the README?
  * (todo) Add some links for good achievement design?
 
+ * achievement-latest-unlock.tpl.php added and used in the leaderboard.
+ * All template files have been moved to templates/ subdirectory.
  * Most .tpl.php $variables are now render arrays instead of strings.
   * This allows for easier modifications in preprocess hooks.
   * You WILL need to modify any overridden themes to support this.

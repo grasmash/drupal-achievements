@@ -74,14 +74,23 @@ function achievements_menu() {
  * Implements hook_theme().
  */
 function achievements_theme() {
+  $path = drupal_get_path('module', 'achievements') . '/templates';
+
   return array(
     'achievement' => array(
       'variables'       => array('achievement' => NULL, 'unlock' => NULL),
       'template'        => 'achievement',
+      'path'            => $path,
     ),
     'achievement_notification' => array(
       'variables'       => array('achievement' => NULL, 'unlock' => NULL),
       'template'        => 'achievement-notification',
+      'path'            => $path,
+    ),
+    'achievement_latest_unlock' => array(
+      'variables'       => array('achievement' => NULL, 'unlock' => NULL),
+      'template'        => 'achievement-latest-unlock',
+      'path'            => $path,
     ),
     'achievement_user_stats' => array(
       'variables'       => array('stats' => NULL),
@@ -108,6 +117,13 @@ function template_preprocess_achievement(&$variables) {
 function template_preprocess_achievement_notification(&$variables) {
   achievements_template_shared_variables($variables);
   $variables['classes_array'][] = 'element-hidden';
+}
+
+/**
+ * Process variables for achievement-latest-unlock.tpl.php.
+ */
+function template_preprocess_achievement_latest_unlock(&$variables) {
+  achievements_template_shared_variables($variables);
 }
 
 /**
@@ -150,10 +166,9 @@ function achievements_template_shared_variables(&$variables) {
   );
 
   $variables['achievement_title'] = array(
-    '#theme'  => 'link',
-    '#text'   => $variables['achievement']['title'],
-    '#path'   => 'achievements/leaderboard/' . $variables['achievement']['id'],
-    '#options' => array('html' => FALSE, 'attributes' => array()),
+    '#type'   => 'link',
+    '#title'  => $variables['achievement']['title'],
+    '#href'   => 'achievements/leaderboard/' . $variables['achievement']['id'],
   );
   $variables['unlocked_date'] = array(
     '#markup' => isset($variables['unlock']['timestamp'])

@@ -28,7 +28,7 @@
   </div>
 
   <div class="achievement-body">
-    <div class="achievement-header">Achievement Unlocked</div>
+    <div class="achievement-header"><?php print t('Achievement Unlocked'); ?></div>
     <div class="achievement-title"><?php print render($achievement_title); ?></div>
   </div>
 </div>

@@ -38,14 +38,6 @@ function achievements_leaderboard_totals() {
   $rank = 0 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
-      // since we're showing the "latest achievement" for a user, we have to
-      // determine what image to use and respect 'hidden' status. we already
-      // do this in achievements_template_shared_variables(), so reuse it. we
-      // fake an $unlock so the 'unlocked' image is returned; the POV for this
-      // achievement display is the ranked user/row, NOT the current user.
-      $achievers[$type][$achiever->uid]->latest  = array('achievement' => achievements_load($achiever->achievement_id), 'unlock' => array());
-      achievements_template_shared_variables($achievers[$type][$achiever->uid]->latest); // generate image, munge for hidden, etc.
-
       // determine the current rank and set some speshul classes.
       $rank = $achiever->rank = isset($achiever->rank) ? $achiever->rank : $rank + 1;
       $classes = ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array();
@@ -73,14 +65,22 @@ function achievements_leaderboard_totals() {
             'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
             'class' => array('achievement-leaderboard-unlocks')
           ),
-          array(
-            'data'  =>
-              '<div class="achievement-latest-image">' . render($achievers[$type][$achiever->uid]->latest['image']) . '</div>' .
-              '<div class="achievement-latest-title">' . $achievers[$type][$achiever->uid]->latest['achievement']['title'] . '</div>' .
-              '<div class="achievement-latest-when">' . format_date($achiever->timestamp, 'small') . '</div>',
-            'class' => array('achievement-leaderboard-latest')
-          ),
         ),
+      );
+
+      // since we're showing the "latest achievement" for a user, we have to
+      // determine what image to use and respect 'hidden' status. we already
+      // do this in achievements_template_shared_variables(), so reuse it. we
+      // fake an $unlock so the 'unlocked' image is returned; the POV for this
+      // achievement display is the ranked user/row, NOT the current user.
+      $achievers[$type][$achiever->uid]->latest = array(
+        '#theme'        =>'achievement_latest_unlock',
+        '#achievement'  => achievements_load($achiever->achievement_id),
+        '#unlock'       => array('timestamp' => $achiever->timestamp),
+      );
+      $rows[$type][$achiever->uid]['data'][] = array(
+        'data'    => render($achievers[$type][$achiever->uid]->latest),
+        'class'   => array('achievement-leaderboard-latest')
       );
     }
   }
