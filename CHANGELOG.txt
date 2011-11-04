@@ -10,8 +10,9 @@ Achievements 7.x-1.4, 2011-XX-XX
   * This allows for easier modifications in preprocess hooks.
   * You WILL need to modify any overridden themes to support this.
   * You should be able to just replace "print $a" with "print render($a)";
- * "image_path" added to achievement themes for the context-aware image path.
- * "achievement_title" added to achievement themes for easier link display.
+ * "image_path" added to themes for the context-aware image path.
+ * "achievement_title" added to themes for easier linked title display.
+ * "achievement_points" added to themes as a renderable "$n points" string.
  * Fixed double-encoding bug in titles of achievements/leaderboard/$AID.
  * achievements_locked() added for programmatic taking away of an unlock.
  * achievements_storage_del() added to complement the _set and _get ones.

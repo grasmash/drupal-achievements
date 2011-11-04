@@ -12,6 +12,7 @@
  * - $image_path: The raw path to the context-aware achievement image.
  * - $achievement_url: Direct URL of the current achievement.
  * - $achievement_title: The renderable and linked achievement title.
+ * - $achievement_points: A renderable string of "$n points".
  */
 ?>
 <div class="achievement-latest-image">
@@ -20,5 +21,5 @@
 
 <div class="achievement-details">
   <div class="achievement-latest-title"><?php print render($achievement_title); ?></div>
-  <div class="achievement-latest-points"><?php print t('@points points', array('@points' => $achievement['points'])); ?></div>
+  <div class="achievement-latest-points"><?php print render($achievement_points); ?></div>
 </div>

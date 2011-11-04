@@ -170,6 +170,9 @@ function achievements_template_shared_variables(&$variables) {
     '#title'  => $variables['achievement']['title'],
     '#href'   => 'achievements/leaderboard/' . $variables['achievement']['id'],
   );
+  $variables['achievement_points'] = array(
+    '#markup' => t('@points points', array('@points' => $variables['achievement']['points'])),
+  );
   $variables['unlocked_date'] = array(
     '#markup' => isset($variables['unlock']['timestamp'])
       ? format_date($variables['unlock']['timestamp'], 'custom', 'Y/m/d')

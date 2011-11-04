@@ -13,6 +13,7 @@
  * - $image_path: The raw path to the context-aware achievement image.
  * - $achievement_url: Direct URL of the current achievement.
  * - $achievement_title: The renderable and linked achievement title.
+ * - $achievement_points: A renderable string of "$n points".
  * - $state: The 'unlocked', 'locked', or 'hidden' achievement state.
  * - $classes: String of classes for this achievement.
  */
