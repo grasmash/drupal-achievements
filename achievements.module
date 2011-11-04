@@ -426,7 +426,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
 
     module_invoke_all('achievements_unlocked', $achievement, $uid);
 
-    watchdog('achievements', t('Unlocked: %achievement (+@points).'),
+    watchdog('achievements', 'Unlocked: %achievement (+@points).',
       array('%achievement' => $achievement['title'], '@points' => $achievement['points']),
       WATCHDOG_NOTICE, l(t('view'), 'user/' . $uid . '/achievements')); // nothing fancy.
   }

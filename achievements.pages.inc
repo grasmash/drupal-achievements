@@ -74,7 +74,7 @@ function achievements_leaderboard_totals() {
       // fake an $unlock so the 'unlocked' image is returned; the POV for this
       // achievement display is the ranked user/row, NOT the current user.
       $achievers[$type][$achiever->uid]->latest = array(
-        '#theme'        =>'achievement_latest_unlock',
+        '#theme'        => 'achievement_latest_unlock',
         '#achievement'  => achievements_load($achiever->achievement_id),
         '#unlock'       => array('timestamp' => $achiever->timestamp),
       );
