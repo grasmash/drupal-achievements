@@ -3,6 +3,7 @@ CONTENTS OF THIS FILE
 ---------------------
 
  * Introduction
+ * Installation
  * Creating achievements
 
 
@@ -55,17 +56,29 @@ Current features and design:
  * Your code decides whether achievements are retroactively applied or not.
 
 
+INSTALLATION
+------------
+
+ 1. Copy the achievements/ directory to your sites/SITENAME/modules directory.
+
+ 2. Enable the module and configure it at admin/config/people/achievements.
+
+ 3. Set your desired permissions at admin/people/permissions.
+
+ 4. See "Creating achievements" for how to code your own achievements.
+
+
 CREATING ACHIEVEMENTS
 ---------------------
 
 I've made two entirely deliberate design decisions:
 
- 1) No achievements are shipped by default. Earning the same achievement
+ 1. No achievements are shipped by default. Earning the same achievement
     over and over again at dozens of Drupal sites is mind-numbingly not-fun.
     If you're going to offer achievements, at least _try_ to be creative and
     make them unique to your site.
 
- 2) Creating achievements requires custom code. Achievements that can be
+ 2. Creating achievements requires custom code. Achievements that can be
     automated in a user interface tend to be mind-numbingly not-fun and
     grindish ("when user creates $n comments, $n posts", etc.). Quality
     achievements require custom logic tailored to your site.
@@ -76,4 +89,19 @@ default implementations on every site that uses this module. It's lazy. It's
 not-fun. It reflects poorly on my code and achievement whoredom if I promote
 cookie-cutter gamification on Drupal sites everywhere.
 
-To learn how to create achievements, see achievements.api.php.
+To begin creating achievements:
+
+ 1. You'll need to create or use a custom module to implement the API. Further
+    information about module development and the Drupal APIs you can listen on
+    to trigger your achievements is available in the "Develop for Drupal" docs
+    at http://drupal.org/documentation/develop. At the minimum, read:
+
+     * Module file names and locations: http://drupal.org/node/1074362
+     * Telling Drupal about your module: http://drupal.org/node/1075072
+     * Implementing your first hook: http://drupal.org/node/1095546
+
+ 2. Read about the Achievements API, and some examples, in achievements.api.php.
+
+ 3. Adding new achievements (or changing the info of existing ones) will
+    require you to rebuild the internal cache, which you can refresh from
+    admin/config/people/achievements.
