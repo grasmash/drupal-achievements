@@ -295,16 +295,18 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
         if (isset($value['achievements']) && is_array($value['achievements'])) {
           $achievements['grouped'][$key] = $value; // copy the whole shebang into realz.
           foreach ($achievements['grouped'][$key]['achievements'] as $id => $achievement) {
-            $achievements['grouped'][$key]['achievements'][$id]['id']           = $id;
-            $achievements['grouped'][$key]['achievements'][$id]['group_id']     = $key;
-            $achievements['grouped'][$key]['achievements'][$id]['group_title']  = $value['title'];
+            $achievements['grouped'][$key]['achievements'][$id]['id'] = $id;
+            $achievements['grouped'][$key]['achievements'][$id]['group_id'] = $key;
+            $achievements['grouped'][$key]['achievements'][$id]['group_title'] = $value['title'];
+            $achievements['grouped'][$key]['achievements'][$id]['points'] = isset($achievement['points']) ? $achievement['points'] : 0;
             $achievements['flat'][$id] = &$achievements['grouped'][$key]['achievements'][$id];
           }
         }
         else {
-          $value['id']              = $key;
-          $value['group_id']        = '-none-';
-          $value['group_title']     = NULL; // moo.
+          $value['id'] = $key;
+          $value['group_id'] = '-none-';
+          $value['group_title'] = NULL; // moo.
+          $value['points'] = isset($value['points']) ? $value['points'] : 0;
           $achievements['grouped']['-none-']['achievements'][$key] = $value;
           $achievements['flat'][$key] = &$achievements['grouped']['-none-']['achievements'][$key];
         }

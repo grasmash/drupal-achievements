@@ -1,0 +1,5 @@
+name = Pointless
+description = "Hides points and leaderboards for a non-competitive environment."
+stylesheets[all][] = achievements_pointless.css
+package = Achievements
+core = 7.x
