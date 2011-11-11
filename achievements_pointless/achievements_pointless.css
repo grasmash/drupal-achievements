@@ -2,12 +2,10 @@
 /**
  * Single achievement full display.
  */
-.achievement-points-box .achievement-points,
-.achievement-points-box .achievement-unlocked-rank {
-  display: none;
+.achievement .achievement-points-box .achievement-unlocked-stats {
+  margin-top: 28px;
 }
 
-.achievement-points-box .achievement-unlocked-stats {
-  font-size: 11px;
-  margin-top: 30px;
+.achievement-notification .achievement-points-box .achievement-unlocked-stats {
+  margin-top: 20px;
 }

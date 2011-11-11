@@ -5,6 +5,7 @@ CONTENTS OF THIS FILE
  * Introduction
  * Installation
  * Creating achievements
+ * Optional modules
 
 
 INTRODUCTION
@@ -105,3 +106,17 @@ To begin creating achievements:
  3. Adding new achievements (or changing the info of existing ones) will
     require you to rebuild the internal cache, which you can refresh from
     admin/config/people/achievements.
+
+
+OPTIONAL MODULES
+----------------
+
+Achievements ships with some tweaky and entirely optional modules:
+
+ * POINTLESS: The Pointless module removes all the explicit competitive
+   elements of achievements. Milestones will no longer display a user's
+   unlock rank or the number of points and access to the leaderboards is
+   disabled. This creates an environment where the user unlocks achievements
+   for their own gratification, not to simply one-up another user or to get
+   noticed on a nebulous high-score table.
+
