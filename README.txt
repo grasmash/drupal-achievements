@@ -101,7 +101,7 @@ To begin creating achievements:
      * Telling Drupal about your module: http://drupal.org/node/1075072
      * Implementing your first hook: http://drupal.org/node/1095546
 
- 2. Read about the Achievements API, and some examples, in achievements.api.php.
+ 2. Read about the Achievements API, and examples, in achievements.api.php.
 
  3. Adding new achievements (or changing the info of existing ones) will
     require you to rebuild the internal cache, which you can refresh from
@@ -115,7 +115,7 @@ Achievements ships with some tweaky and entirely optional modules:
 
  * POINTLESS: The Pointless module removes all the explicit competitive
    elements of achievements. Milestones will no longer display a user's
-   unlock rank or the number of points and access to the leaderboards is
+   unlock rank or the number of points, and access to the leaderboards is
    disabled. This creates an environment where the user unlocks achievements
    for their own gratification, not to simply one-up another user or to get
    noticed on a nebulous high-score table.

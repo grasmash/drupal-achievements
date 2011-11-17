@@ -3,6 +3,7 @@ Achievements 7.x-1.5, 2011-XX-XX
 --------------------------------
  * (todo) Add some links for good achievement design?
  * (todo) Allow users to choose if they can opt-out of achievements.
+ * (todo) Use $content for presentation variables in the theme.
 
  * If 'points' is left undefined for an achievement, default to 0.
  * A new and optional submodule is added: achievements_pointless.
@@ -11,6 +12,7 @@ Achievements 7.x-1.5, 2011-XX-XX
   * All access to leaderboard pages and the default block is disabled.
   * No ranking information or achievement points are displayed.
   * user/#/achievements is the sole me-centric interface.
+ * #1341546: Mismatched leaderboard length defaults (thanks makononov).
 
 
 Achievements 7.x-1.4, 2011-11-10

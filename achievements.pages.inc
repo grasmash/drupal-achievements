@@ -35,7 +35,7 @@ function achievements_leaderboard_totals() {
   // the order the query returns is the order of the leaderboard. thus,
   // we start at 1 and increase the rank for every row we're showing.
   // also, be careful to start with the right number on pager queries.
-  $rank = 0 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 25));
+  $rank = 0 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 10));
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
       // determine the current rank and set some speshul classes.
@@ -71,7 +71,7 @@ function achievements_leaderboard_totals() {
       // since we're showing the "latest achievement" for a user, we have to
       // determine what image to use and respect 'hidden' status. we already
       // do this in achievements_template_shared_variables(), so reuse it. we
-      // fake an $unlock so the 'unlocked' image is returned; the POV for this
+      // fake an #unlock so the 'unlocked' image is returned; the POV for this
       // achievement display is the ranked user/row, NOT the current user.
       $achievers[$type][$achiever->uid]->latest = array(
         '#theme'        => 'achievement_latest_unlock',
