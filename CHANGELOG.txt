@@ -12,6 +12,7 @@ Achievements 7.x-1.5, 2011-XX-XX
   * All access to leaderboard pages and the default block is disabled.
   * No ranking information or achievement points are displayed.
   * user/#/achievements is the sole me-centric interface.
+ * The achievements leaderboard block is no longer cached.
  * #1341546: Mismatched leaderboard length defaults (thanks makononov).
 
 

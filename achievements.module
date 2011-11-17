@@ -192,7 +192,7 @@ function achievements_block_info() {
   return array(
     'achievements_leaderboard' => array(
       'info'  => t('Achievements leaderboard'),
-      'cache' => DRUPAL_CACHE_GLOBAL,
+      'cache' => DRUPAL_NO_CACHE,
     ),
   );
 }
