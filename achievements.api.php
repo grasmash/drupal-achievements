@@ -151,26 +151,6 @@ function example_node_insert($node) {
 }
 
 /**
- * Implements hook_query_alter().
- *
- * The following database tags have been created for hook_query_alter() and
- * the matching hook_query_TAG_alter(). If you need more than this, don't
- * hesitate to create an issue asking for them.
- *
- * achievement_totals:
- *   Find the totals of all users in ranking order.
- *
- * achievement_totals_user:
- *   Find the totals of the passed user.
- *
- * achievement_totals_user_nearby:
- *   Find users nearby the ranking of the passed user.
- */
-function example_query_alter() {
-  // futz with morbus' logic. insert explosions and singularities.
-}
-
-/**
  * Implements hook_achievements_info_alter().
  *
  * Modify achievements that have been defined in hook_achievements_info().
@@ -242,5 +222,48 @@ function example_achievements_locked($achievement, $uid) {
 function example_achievements_leaderboard_alter(&$leaderboard) {
   if ($leaderboard['type'] == 'first') {
     $leaderboard['render']['#caption'] = t('Congratulations to our first 10!');
+  }
+}
+
+/**
+ * Implements hook_query_alter().
+ *
+ * The following database tags have been created for hook_query_alter() and
+ * the matching hook_query_TAG_alter(). If you need more than this, don't
+ * hesitate to create an issue asking for them.
+ *
+ * achievement_totals:
+ *   Find the totals of all users in ranking order.
+ *
+ * achievement_totals_user:
+ *   Find the totals of the passed user.
+ *
+ * achievement_totals_user_nearby:
+ *   Find users nearby the ranking of the passed user.
+ */
+function example_query_alter(QueryAlterableInterface $query) {
+  // futz with morbus' logic. insert explosions and singularities.
+}
+
+/**
+ * Implements hook_achievements_access_earn().
+ *
+ * Allows you to programmatically determine if a user has access to earn
+ * achievements. We do already have an "earn achievements" permission, but
+ * this allows more complex methods of determining that privilege. For an
+ * example, see the achievements_optout.module, which allows a user to opt-out
+ * of earning achievements, even if you've already granted them permission to.
+ *
+ * @param $uid
+ *   The user ID whose access is being questioned.
+ *
+ * @return
+ *   TRUE if the $uid can earn achievements, FALSE if they can't.
+ */
+function example_achievements_access_earn($uid) {
+  $account = user_load($uid);
+  if ($account->name == 'Morbus Iff') {
+    // always, mastah, alllwayyYAYsss.
+    return TRUE;
   }
 }

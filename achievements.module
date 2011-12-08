@@ -345,6 +345,7 @@ function achievements_totals_user($nearby = 0, $uid = NULL) {
   // we don't check for access as this is info grubbing only.
 
   $achievers = &drupal_static(__FUNCTION__);
+
   if (!isset($achievers[$uid])) {
     $query = db_select('achievement_totals', 'at');
     $query->addTag('achievement_totals_user')->join('users', 'u', 'u.uid = at.uid');
@@ -566,15 +567,34 @@ function achievements_storage_del($achievement_id = NULL, $uid = NULL) {
  * @return $results
  *   An array with values of:
  *   - $uid is the determined user (default: the global user).
- *   - $access is a TRUE or FALSE as returned by user_access().
+ *   - $access is a TRUE or FALSE determined by user_access() and hooks.
  */
 function achievements_user_is_achiever($uid = NULL) {
-  if (!isset($uid) || $uid == $GLOBALS['user']->uid) {
-    return array($GLOBALS['user']->uid, user_access('earn achievements'));
+  $is_achiever = &drupal_static(__FUNCTION__);
+  $uid = isset($uid) ? $uid : $GLOBALS['user']->uid;
+
+  if (!isset($is_achiever[$uid])) {
+    if ($uid == $GLOBALS['user']->uid) { // if $uid is current user, check normally.
+      $is_achiever[$uid] = array($GLOBALS['user']->uid, user_access('earn achievements'));
+    }
+    else { // if it's not the global user, we need to load them fully, then check.
+      $is_achiever[$uid] = array($uid, user_access('earn achievements', user_load($uid)));
+    }
+
+    // Let other modules decide if this user can earn achievements. Hook
+    // results take precedence over the standard user_access() because we
+    // treat code prowess as stronger rationale than simplistic UI clicking.
+    $module_access = module_invoke_all('achievements_access_earn', $uid);
+
+    if (in_array(TRUE, $module_access, TRUE)) {
+      $is_achiever[$uid] = array($uid, TRUE);
+    }
+    elseif (in_array(FALSE, $module_access, TRUE)) {
+      $is_achiever[$uid] = array($uid, FALSE);
+    }
   }
-  else {
-    return array($uid, user_access('earn achievements', user_load($uid)));
-  }
+
+  return $is_achiever[$uid];
 }
 
 /**
