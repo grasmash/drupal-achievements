@@ -23,8 +23,8 @@ function achievements_optout_user_update(&$edit, $account, $category) {
  */
 function achievements_optout_page_alter(&$page) {
   if (arg(0) == 'user' && arg(2) == 'achievements') {
-    $account = menu_get_object('user'); // cached and fielded. yes!
-    if ($account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
+    $account = menu_get_object('user'); // count() first to prevent warnings on old users prior to optout module enabling.
+    if (isset($account) && count($account->achievements_optout) && $account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
       unset($page['content']['system_main']['achievements']['tabs']);
       unset($page['content']['system_main']['achievements']['stats']);
       $page['content']['system_main']['achievements']['optout'] = array(
