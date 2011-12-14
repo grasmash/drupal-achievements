@@ -44,6 +44,11 @@ function achievements_optout_achievements_access_earn($uid) {
     ->fieldCondition('achievements_optout', 'value', 1);
   $result = $query->execute();
 
-  // results? you opted for no access.
-  return count($result) ? FALSE : TRUE;
+  // they've opted out.
+  if (count($result)) {
+    return FALSE;
+  }
+
+  // NULL for "no change".
+  return NULL;
 }

@@ -258,7 +258,8 @@ function example_query_alter(QueryAlterableInterface $query) {
  *   The user ID whose access is being questioned.
  *
  * @return
- *   TRUE if the $uid can earn achievements, FALSE if they can't.
+ *   TRUE if the $uid can earn achievements, FALSE if they can't,
+ *   or NULL if there's no change to the user's default access.
  */
 function example_achievements_access_earn($uid) {
   $account = user_load($uid);
