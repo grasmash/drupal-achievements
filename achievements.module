@@ -427,6 +427,17 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
       ->expression('unlocks', 'unlocks + :increment', array(':increment' => 1))
       ->execute();
 
+    // update the unlocked_already static cache so that it returns accurate
+    // unlocks for the rest of the page load. we could have just reset the
+    // cache entirely but that would cost us additional database queries
+    // based on the number of unique unlocks in this page load.
+    $unlocks = &drupal_static('achievements_unlocked_already');
+    $unlocks[$uid][$achievement_id] = array(
+      'achievement_id'  => $achievement_id,
+      'rank'            => $last_rank ? $last_rank + 1 : 1,
+      'timestamp'       => REQUEST_TIME,
+    );
+
     module_invoke_all('achievements_unlocked', $achievement, $uid);
 
     watchdog('achievements', 'Unlocked: %achievement (+@points).',

@@ -49,6 +49,6 @@ function achievements_optout_achievements_access_earn($uid) {
     return FALSE;
   }
 
-  // NULL for "no change".
+  // no change.
   return NULL;
 }
