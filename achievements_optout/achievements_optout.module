@@ -9,7 +9,7 @@
  * Implements hook_user_update().
  */
 function achievements_optout_user_update(&$edit, $account, $category) {
-  if ($account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
+  if (count($account->achievements_optout) && $account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
     achievements_user_delete($account);
   }
 }

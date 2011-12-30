@@ -9,6 +9,9 @@ Achievements 7.x-1.5, 2011-XX-XX
      100 points - 0.99 timestamp (later in life)
       90 points - 0.10 (the earliest sap, but not a winner)
 
+ * (todo) add optout to README
+
+
  * Per-load unlocks cache is now updated after new achievement unlocks.
  * Accept user IDs as well as names for manual achievement (un)?locking.
  * If 'points' is left undefined for an achievement, default to 0.
