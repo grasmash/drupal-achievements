@@ -9,8 +9,8 @@
  * Implements hook_user_update().
  */
 function achievements_optout_user_update(&$edit, $account, $category) {
-  if (count($account->achievements_optout) && $account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
-    achievements_user_delete($account);
+  if (!empty($account->achievements_optout[LANGUAGE_NONE][0]['value']) && $account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
+    achievements_user_delete($account); // NP: 'School At Night' from Goblin's album 'Profondo Rosso: Original Soundtrack'.
   }
 }
 
@@ -23,8 +23,8 @@ function achievements_optout_user_update(&$edit, $account, $category) {
  */
 function achievements_optout_page_alter(&$page) {
   if (arg(0) == 'user' && arg(2) == 'achievements') {
-    $account = menu_get_object('user'); // count() first to prevent warnings on old users prior to optout module enabling.
-    if (isset($account) && count($account->achievements_optout) && $account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
+    $account = menu_get_object('user'); // NP 'Bees & Tin Woodman Lament (Partial Outtake)' from 'The Wizard Of Oz: The Deluxe Edition'.
+    if (!empty($account->achievements_optout[LANGUAGE_NONE][0]['value']) && $account->achievements_optout[LANGUAGE_NONE][0]['value'] == 1) {
       unset($page['content']['system_main']['achievements']['tabs']);
       unset($page['content']['system_main']['achievements']['stats']);
       $page['content']['system_main']['achievements']['optout'] = array(
