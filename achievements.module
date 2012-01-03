@@ -654,3 +654,16 @@ function achievements_page_alter(&$page) {
   }
 }
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function achievements_form_user_profile_form_alter(&$form, $form_state) {
+  // the achievements_optout checkbox is a field that is created when that
+  // module is enabled. if that module is then disabled, but not uninstalled,
+  // the field will still show up on the user profile form. there doesn't
+  // appear to be an easy (or non-destructive) way to hide or show a field on
+  // module_enable or _disable, so we'll handle it upstream and hackishly.
+  if (!module_exists('achievements_optout') && isset($form['achievements_optout'])) {
+    $form['achievements_optout']['#access'] = FALSE;
+  }
+}
