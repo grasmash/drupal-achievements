@@ -22,7 +22,7 @@ function achievements_optout_install() {
     'entity_type' => 'user',
     'field_name'  => 'achievements_optout',
     'label'       => t('I DO NOT wish to participate in or unlock achievements'),
-    'description' => t('DANGER! Checking this box will remove your unlocked achievements and delete your stored statistics.'),
+    'description' => t('WARNING: Checking this box will remove your unlocked achievements and delete your stored statistics.'),
     'widget' => array(
       'type'      => 'options_onoff',
       'weight'    => 1,
