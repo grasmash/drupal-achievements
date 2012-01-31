@@ -29,9 +29,9 @@
  *   - description: (required) A description of the achievement.
  *   - points: (required) How many points the user will earn when unlocked.
  *   - images: (optional) An array of (optional) keys 'locked', 'unlocked',
- *     and 'hidden' whose values are image file paths. Achievements exist in
+ *     and 'secret' whose values are image file paths. Achievements exist in
  *     three separate display states: unlocked (the user has it), locked (the
- *     user doesn't have it), and hidden (the user doesn't have it, and the
+ *     user doesn't have it), and secret (the user doesn't have it, and the
  *     achievement is a secret). Each state can have its own default image
  *     associated with it (which administrators can configure), or achievements
  *     can specify their own images for one, some, or all states.
@@ -42,7 +42,7 @@
  *     removes an achievement unlock from a user. If your achievement
  *     tracks statistics that are NOT set with achievements_storage_get()
  *     or _set, you don't have to define the 'storage' key.
- *   - hidden: (optional) The achievement is a sekrit until it is unlocked.
+ *   - secret: (optional) The achievement is a sekrit until it is unlocked.
  *
  *   Achievements can also be categorized into groups. Groups are simply
  *   arrays whose keys are internal group IDs and whose values identify
@@ -66,7 +66,7 @@ function hook_achievements_info() {
       'points'      => 100,
       'images' => array(
         'unlocked'  => '/sites/default/files/example1.png',
-        // 'hidden' and 'locked' will use the defaults.
+        // 'secret' and 'locked' will use the defaults.
       ),
     ),
 
@@ -84,7 +84,7 @@ function hook_achievements_info() {
           'images' => array(
             'unlocked'  => '/sites/default/files/example1.png',
             'locked'    => '/sites/default/files/example2.png',
-            'hidden'    => '/sites/default/files/example3.png',
+            'secret'    => '/sites/default/files/example3.png',
             // all default images have been replaced.
           ),
         ),

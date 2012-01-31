@@ -69,7 +69,7 @@ function achievements_leaderboard_totals() {
       );
 
       // since we're showing the "latest achievement" for a user, we have to
-      // determine what image to use and respect 'hidden' status. we already
+      // determine what image to use and respect 'secret' status. we already
       // do this in achievements_template_shared_variables(), so reuse it. we
       // fake an #unlock so the 'unlocked' image is returned; the POV for this
       // achievement display is the ranked user/row, NOT the current user.
