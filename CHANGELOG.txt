@@ -9,9 +9,8 @@ Achievements 7.x-1.5, 2012-XX-XX
      100 points - 0.99 timestamp (later in life)
       90 points - 0.10 (the earliest sap, but not a winner)
 
- * (todo) add optout to README
+ * (todo) Revise the project page with the latest README when released.
  * (todo) Latest patches in the issue queue.
- * (todo) Add "invisible". Distinguish between "secret" in README/API.
 
  * API CHANGE! API CHANGE! API CHANGE! API CHANGE! API CHANGE! API CHANGE!
   * If you have any 'hidden' type achievements, retype them to 'secret'.
@@ -19,11 +18,15 @@ Achievements 7.x-1.5, 2012-XX-XX
   * "secret" reads better with the newly available "invisible" type (below).
   * IF YOU DON'T RETYPE, HIDDEN ACHIEVEMENTS WILL BE EXPOSED TO USERS.
 
- * Per-load unlocks cache is now updated after new achievement unlocks.
- * Accept user IDs as well as names for manual achievement (un)?locking.
- * If 'points' is left undefined for an achievement, default to 0.
- * The achievements leaderboard block is no longer cached. Sigh.
- * #1341546: Mismatched leaderboard length defaults (thanks makononov).
+ * 'invisible' achievement types can now be created.
+  * These will NOT display on a user's Achievements tab (unless unlocked).
+  * They will display elsewhere as needed (leaderboards, per-page, etc.).
+  * Some possible uses of 'invisible' achievements include:
+   * Tenure-based achievements to thank long-time users, beta testers, etc.
+   * To "reveal" a user's achievements instead of defaulting to all locked.
+  * You can set an achievement to be both 'secret' and 'invisible'.
+   * Makes it invisible on the user's Achievements tab (unless unlocked).
+   * Shows the secret placeholder text when displayed elsewhere.
  * New hook added: hook_achievements_access_earn().
   * Allows you to programmatically determine if a user can earn achievements.
   * See the new submodule, achievements_optout, for an example of its use.
@@ -38,6 +41,11 @@ Achievements 7.x-1.5, 2012-XX-XX
   * All access to leaderboard pages and the default block is disabled.
   * No ranking information or achievement points are displayed.
   * user/#/achievements is the sole me-centric interface.
+ * Per-load unlocks cache is now updated after new achievement unlocks.
+ * Accept user IDs as well as names for manual achievement (un)?locking.
+ * If 'points' is left undefined for an achievement, default to 0.
+ * The achievements leaderboard block is no longer cached. Le sigh.
+ * #1341546: Mismatched leaderboard length defaults (thanks makononov).
 
 
 Achievements 7.x-1.4, 2011-11-10

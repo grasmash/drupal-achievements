@@ -309,6 +309,11 @@ function achievements_user_page($account) {
     $build['achievements']['tabs']['groups'][$group_id]['#theme_wrappers'] = array('achievement_group_wrapper');
 
     foreach ($group['achievements'] as $achievement_id => $achievement) {
+      if (!isset($unlocks[$achievement_id]) && !empty($achievement['invisible'])) {
+        continue; // invisibles only display if this $account has unlocked them.
+      }
+
+      // If it's not an invisible achievement, we've got to show something. $build out what and where.
       $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#achievement'] = $achievement;
       $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#theme'] = 'achievement__user_page';
 
@@ -321,7 +326,7 @@ function achievements_user_page($account) {
         }
       }
       elseif (!isset($unlocks[$achievement_id]) && variable_get('achievements_unlocked_move_to_top', TRUE)) {
-        // if we're forcing unlocks to the top, locked achievements have to be forced to the bottom too.
+        // if we're forcing unlocks to the top, locked achievements have to be forced to the bottom.
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = $locked_weight++;
       }
     }

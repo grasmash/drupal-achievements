@@ -42,7 +42,14 @@
  *     removes an achievement unlock from a user. If your achievement
  *     tracks statistics that are NOT set with achievements_storage_get()
  *     or _set, you don't have to define the 'storage' key.
- *   - secret: (optional) The achievement is a sekrit until it is unlocked.
+ *   - secret: (optional) The achievement displays on a user's Achievements
+ *     tab but does not reveal its title, description, or points, until the
+ *     user has unlocked it. Compatible with 'invisible'.
+ *   - invisible: (optional) The achievement does NOT display on a user's
+ *     Achievements tab, but does show up on the leaderboards when necessary.
+ *     Compatible with 'secret' (i.e., if another user has unlocked an
+ *     invisible achievement, a user who has not unlocked it will see the
+ *     placeholder secret text instead of the actual achievement itself).
  *
  *   Achievements can also be categorized into groups. Groups are simply
  *   arrays whose keys are internal group IDs and whose values identify
