@@ -309,7 +309,7 @@ function achievements_user_page($account) {
     $build['achievements']['tabs']['groups'][$group_id]['#theme_wrappers'] = array('achievement_group_wrapper');
 
     foreach ($group['achievements'] as $achievement_id => $achievement) {
-      if (!isset($unlocks[$achievement_id]) && !empty($achievement['invisible'])) {
+      if (!empty($achievement['invisible']) && !isset($unlocks[$achievement_id])) {
         continue; // invisibles only display if this $account has unlocked them.
       }
 
