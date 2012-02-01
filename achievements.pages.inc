@@ -313,7 +313,7 @@ function achievements_user_page($account) {
         continue; // invisibles only display if this $account has unlocked them.
       }
 
-      // If it's not an invisible achievement, we've got to show something. $build out what and where.
+      // if it's not an invisible achievement, we've got to show something. $build out what and where.
       $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#achievement'] = $achievement;
       $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#theme'] = 'achievement__user_page';
 
