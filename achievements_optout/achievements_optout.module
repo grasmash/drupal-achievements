@@ -15,7 +15,7 @@ function achievements_optout_form_user_profile_form_alter(&$form, $form_state) {
   // We can't use our normal achievements_user_is_achiever() here since it
   // would return FALSE if someone HAD opted-out, making it a permanent
   // choice. Knowing that someone can earn them is good enough though.
-  if (!user_access('earn achievements', $account)) {
+  if (!user_access('earn achievements', $account) && $form['#user_category'] == 'account') {
     $form['achievements_optout']['#access'] = FALSE;
   }
 }
