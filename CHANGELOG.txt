@@ -1,5 +1,5 @@
 
-Achievements 7.x-1.5, 2012-XX-XX
+Achievements 7.x-1.5, 2012-05-01
 --------------------------------
  * (todo) Add some links for good achievement design?
  * (todo) We have an unindexed query in the two leaderboard functions.
@@ -8,9 +8,6 @@ Achievements 7.x-1.5, 2012-XX-XX
      100 points - 0.50 timestamp (really early in life)
      100 points - 0.99 timestamp (later in life)
       90 points - 0.10 (the earliest sap, but not a winner)
-
- * (todo) Revise the project page with the latest README when released.
- * (todo) Latest patches in the issue queue.
 
  * API CHANGE! API CHANGE! API CHANGE! API CHANGE! API CHANGE! API CHANGE!
   * If you have any 'hidden' type achievements, retype them to 'secret'.
