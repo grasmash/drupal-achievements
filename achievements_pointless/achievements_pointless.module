@@ -35,7 +35,7 @@ function achievements_pointless_preprocess_achievement(&$variables) {
  * Process variables for achievement-notification.tpl.php.
  */
 function achievements_pointless_preprocess_achievement_notification(&$variables) {
-  achievements_pointless_template_hide_variables(&$variables);
+  achievements_pointless_template_hide_variables($variables);
   $variables['unlocked_rank']['#markup'] = $variables['unlocked_date']['#markup'];
   // The points box is now entirely empty; replace rank with the unlock timestamp.
 }
@@ -44,7 +44,7 @@ function achievements_pointless_preprocess_achievement_notification(&$variables)
  * Process variables for achievement-latest-unlock.tpl.php.
  */
 function achievements_pointless_preprocess_achievement_latest_unlock(&$variables) {
-  achievements_pointless_template_hide_variables(&$variables);
+  achievements_pointless_template_hide_variables($variables);
 }
 
 /**
