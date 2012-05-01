@@ -390,8 +390,10 @@ function achievements_totals_user($nearby = 0, $uid = NULL) {
  *   The achievement this request applies against.
  * @param $uid
  *   The user to unlock an achievement for (defaults to current user).
+ * @param $timestamp
+ *   Optional; the timestamp when this achievement was unlocked.
  */
-function achievements_unlocked($achievement_id, $uid = NULL) {
+function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUEST_TIME) {
   list($uid, $access) = achievements_user_is_achiever($uid);
   if (!$access) { return; } // i know you want it, but...
 
@@ -410,7 +412,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
         'achievement_id'  => $achievement_id,
         'uid'             => $uid,
         'rank'            => $last_rank ? $last_rank + 1 : 1,
-        'timestamp'       => REQUEST_TIME,
+        'timestamp'       => $timestamp,
         'seen'            => 0,
       ))
       ->execute();
@@ -420,7 +422,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
       ->fields(array(
         'points'          => $achievement['points'],
         'unlocks'         => 1, // OMG CONGRATS
-        'timestamp'       => REQUEST_TIME,
+        'timestamp'       => $timestamp,
         'achievement_id'  => $achievement_id,
       ))
       ->expression('points', 'points + :points', array(':points' => $achievement['points']))
@@ -435,7 +437,7 @@ function achievements_unlocked($achievement_id, $uid = NULL) {
     $unlocks[$uid][$achievement_id] = array(
       'achievement_id'  => $achievement_id,
       'rank'            => $last_rank ? $last_rank + 1 : 1,
-      'timestamp'       => REQUEST_TIME,
+      'timestamp'       => $timestamp,
     );
 
     module_invoke_all('achievements_unlocked', $achievement, $uid);
