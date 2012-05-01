@@ -45,6 +45,7 @@ Achievements 7.x-1.5, 2012-XX-XX
  * Accept user IDs as well as names for manual achievement (un)?locking.
  * If 'points' is left undefined for an achievement, default to 0.
  * The achievements leaderboard block is no longer cached. Le sigh.
+ * #1230506: Hopefully fixing SQL error for unknown achievement IDs.
  * #1341546: Mismatched leaderboard length defaults (thanks makononov).
  * #1373078: Locked achievements leaderboard tweaks (thanks aaronwinborn).
  * #1396776: Allow unlocked timestamp to be passed (thanks jhedstrom).
