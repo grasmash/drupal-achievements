@@ -49,6 +49,7 @@ Achievements 7.x-1.5, 2012-XX-XX
  * #1341546: Mismatched leaderboard length defaults (thanks makononov).
  * #1373078: Locked achievements leaderboard tweaks (thanks aaronwinborn).
  * #1396776: Allow unlocked timestamp to be passed (thanks jhedstrom).
+ * #1508572: Check earn access before admin give (thanks Royce Kimmons).
 
 
 Achievements 7.x-1.4, 2011-11-10

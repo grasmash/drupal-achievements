@@ -140,6 +140,12 @@ function achievements_manual_submit($form, &$form_state) {
 
   // if we've a valid user and achievement ID, give 'em the achievement, ya freeloaders.
   if ($account && $achievement && $form_state['clicked_button']['#achievement_action'] == 'give') {
+    if (!user_access('earn achievements', $account)) { // KLAXON KLAXON CHEATAH.
+      drupal_set_message(t('%username does not have permission to earn achievements.',
+        array('%username' => $form_state['values']['achievements_manual_user'])), 'error');
+      return;
+    }
+
     achievements_unlocked($achievement['id'], $account->uid);
     drupal_set_message(t('%username has been given %achievement.', // yeah, yeah.
       array('%username' => $account->name, '%achievement' => $achievement['title'])));
