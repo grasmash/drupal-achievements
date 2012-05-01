@@ -497,11 +497,23 @@ function achievements_locked($achievement_id, $uid = NULL) {
   if (achievements_unlocked_already($achievement_id, $uid)) {
     $achievement = achievements_load($achievement_id); // we need the full thing so we know how many points to take away.
     db_delete('achievement_unlocks')->condition('achievement_id', $achievement['id'])->condition('uid', $uid)->execute();
-    db_update('achievement_totals') // remove from unlocks and subtract points from the current totals.
-      ->fields(array('uid' => $uid, 'timestamp' => REQUEST_TIME))
-      ->expression('points', 'points - :points', array(':points' => $achievement['points']))
-      ->expression('unlocks', 'unlocks - :decrement', array(':decrement' => 1))
-      ->condition('uid', $uid)->execute();
+
+    // Load up a previous unlock if they've got one.
+    $previous_unlock = db_select('achievement_unlocks')
+      ->fields('achievement_unlocks', array('achievement_id'))
+      ->condition('uid', $uid)->orderBy('timestamp', 'DESC')
+      ->range(0, 1)->execute()->fetchField();
+
+    if ($previous_unlock) {
+      db_update('achievement_totals') // subtract points and set the previous unlock as their latest.
+        ->fields(array('uid' => $uid, 'timestamp' => REQUEST_TIME, 'achievement_id' => $previous_unlock))
+        ->expression('points', 'points - :points', array(':points' => $achievement['points']))
+        ->expression('unlocks', 'unlocks - :decrement', array(':decrement' => 1))
+        ->condition('uid', $uid)->execute();
+    }
+    else { // With no previous unlock, remove from leaderboard entirely.
+      db_delete('achievement_totals')->condition('uid', $uid)->execute();
+    }
 
     // remove any storage associated with this achievement.
     achievements_storage_del($achievement['id'], $uid);
