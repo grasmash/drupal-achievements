@@ -1,0 +1,6 @@
+name = Recent
+description = "Enables leaderboards limited to recent unlocks and point totals."
+configure = admin/config/people/achievements-recent
+dependencies[] = achievements
+package = Achievements
+core = 7.x

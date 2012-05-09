@@ -1,6 +1,5 @@
 name = Achievements
 description = "Unlock achievements and earn points based on milestones."
-files[] = achievements.pages.inc
 stylesheets[all][] = achievements.css
 configure = admin/config/people/achievements
 package = Achievements
