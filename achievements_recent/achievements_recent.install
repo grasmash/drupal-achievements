@@ -36,13 +36,13 @@ function achievements_recent_schema() {
         'not null'      => TRUE,
         'type'          => 'int',
       ),
-      'timestamp_earliest' => array(
+      'earliest' => array(
         'default'       => 0,
         'description'   => 'The Unix timestamp when the {users}.uid first received an achievement in the last recent days.',
         'not null'      => TRUE,
         'type'          => 'int',
       ),
-      'timestamp_latest' => array(
+      'timestamp' => array(
         'default'       => 0,
         'description'   => 'The Unix timestamp when the {users}.uid last received an achievement.',
         'not null'      => TRUE,
@@ -57,12 +57,12 @@ function achievements_recent_schema() {
       ),
     ),
     'indexes' => array(
-      'days_uid_points'               => array('days', 'uid', 'points'),
-      'days_uid_unlocks'              => array('days', 'uid', 'unlocks'),
-      'days_uid_timestamp_earliest'   => array('days', 'uid', 'timestamp_earliest'),
-      'days_points_timestamp_latest'  => array('days', 'points', 'timestamp_latest'),
-      'days_unlocks_timestamp_latest' => array('days', 'unlocks', 'timestamp_latest'),
-      'days_uid_points_unlocks'       => array('days', 'uid', 'points', 'unlocks'),
+      'days_uid_points'         => array('days', 'uid', 'points'),
+      'days_uid_unlocks'        => array('days', 'uid', 'unlocks'),
+      'days_uid_earliest'       => array('days', 'uid', 'earliest'),
+      'days_points_timestamp'   => array('days', 'points', 'timestamp'),
+      'days_unlocks_timestamp'  => array('days', 'unlocks', 'timestamp'),
+      'days_uid_points_unlocks' => array('days', 'uid', 'points', 'unlocks'),
     ),
     'primary key' => array('days', 'uid'),
   );

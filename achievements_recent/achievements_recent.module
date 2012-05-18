@@ -9,6 +9,24 @@
  * Implements hook_menu().
  */
 function achievements_recent_menu() {
+  $items['achievements/leaderboard/all-time'] = array(
+    'title'             => 'All-time leaderboard',
+    'type'              => MENU_DEFAULT_LOCAL_TASK,
+    'weight'            => -1000,
+  );
+  foreach (achievements_recent_valid_days() as $days => $days_human) {
+    $items['achievements/leaderboard/' . $days . "-day"] = array(
+      'access arguments'  => array('access achievements'),
+      'description'       => 'View the recent achievements leaderboard.',
+      'file'              => 'achievements.pages.inc',
+      'file path'         => drupal_get_path('module', 'achievements'),
+      'page callback'     => 'achievements_leaderboard_totals',
+      'page arguments'    => array("$days"), // string not index.
+      'title'             => $days_human . ' leaderboard',
+      'type'              => MENU_LOCAL_TASK,
+      'weight'            => -$days,
+    );
+  }
   $items['admin/config/people/achievements-recent'] = array(
     'access arguments'  => array('administer achievements'),
     'description'       => 'Initialize the recent achievement leaderboards.',
@@ -35,20 +53,20 @@ function achievements_recent_menu() {
  *   frame, FALSE is returned instead. Depending on your needs, check
  *   $totals['unlocks'] to determine if they've unlocked anything in $days.
  */
-function achievements_recent_totals_recalculate($uid = NULL, $days = NULL) {
+function achievements_recent_leaderboard_totals_recalculate($uid = NULL, $days = NULL) {
   list($uid, $access) = achievements_user_is_achiever($uid);
   if (!$access || !achievements_recent_valid_days($days)) {
     return FALSE;
   }
 
   $totals = array(
-    'days'                => $days,
-    'uid'                 => $uid,
-    'points'              => 0,
-    'unlocks'             => 0,
-    'timestamp_earliest'  => NULL,
-    'timestamp_latest'    => NULL,
-    'achievement_id'      => NULL,
+    'days'            => $days,
+    'uid'             => $uid,
+    'points'          => 0,
+    'unlocks'         => 0,
+    'earliest'        => NULL,
+    'timestamp'       => NULL,
+    'achievement_id'  => NULL,
   );
   $achievements = achievements_load();
   $unlocks = achievements_unlocked_already(NULL, $uid);
@@ -59,12 +77,12 @@ function achievements_recent_totals_recalculate($uid = NULL, $days = NULL) {
       $totals['points'] += $achievements[$unlock['achievement_id']]['points'];
       $totals['unlocks']++; // Parent code should check for 0 unlocks, not 0 points.
 
-      if (!isset($totals['timestamp_earliest']) || $unlock['timestamp'] <= $totals['timestamp_earliest']) {
-        $totals['timestamp_earliest'] = $unlock['timestamp'];
+      if (!isset($totals['earliest']) || $unlock['timestamp'] <= $totals['earliest']) {
+        $totals['earliest'] = $unlock['timestamp'];
       }
 
-      if ($unlock['timestamp'] >= $totals['timestamp_latest']) {
-        $totals['timestamp_latest'] = $unlock['timestamp'];
+      if ($unlock['timestamp'] >= $totals['timestamp']) {
+        $totals['timestamp'] = $unlock['timestamp'];
         $totals['achievement_id'] = $unlock['achievement_id'];
       }
     }
@@ -92,10 +110,10 @@ function achievements_recent_leaderboard_init($days = NULL) {
     // Calculate and save 'em.
     $limit = 1000; $imported = $skipped = 0;
     foreach ($accounts as $account) {
-      $totals = achievements_recent_totals_recalculate($account->uid, $days);
+      $totals = achievements_recent_leaderboard_totals_recalculate($account->uid, $days);
       if ($totals) { // NP: 'Smile Song' from Shannon Chan-Kent's album 'My Little Pony: Friendship is Magic Season 2'.
         db_merge('achievement_totals_days')->key(array('uid' => $account->uid, 'days' => $days))->fields($totals)->execute();
-        if (++$imported >= $limit) { break; } // This stuff is pretty db intensive, so we'll limit how many we do at once.
+        if (++$imported >= $limit) { break; } // This process generates thousands of queries so limit how many we do at once.
       }
       else {
         $skipped++;
