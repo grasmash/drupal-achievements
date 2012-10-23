@@ -40,6 +40,24 @@ function achievements_recent_menu() {
 }
 
 /**
+ * Implements hook_block_info().
+ */
+function achievements_recent_block_info() {
+  $blocks = array();
+
+  foreach (achievements_recent_valid_days() as $days => $days_human) {
+    // Can't use '_recent_' as it'll be too long for DB delta column.
+    // Ease your mind: block deltas feel the same as the tabbed URLs.
+    $blocks['achievements_leaderboard_' . $days . '_day'] = array(
+      'info'  => t('Achievements: @days_human leaderboard', array('@days_human' => $days_human)),
+      'cache' => DRUPAL_NO_CACHE,
+    );
+  }
+
+  return $blocks;
+}
+
+/**
  * Recalculate a user's stats based on the number of days.
  *
  * @param $uid

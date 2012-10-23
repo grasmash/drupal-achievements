@@ -9,6 +9,8 @@ Achievements 7.x-1.6, 2012-XX-XX
      100 points - 0.99 timestamp (later in life)
       90 points - 0.10 (the earliest sap, but not a winner)
 
+ * #1820556: Don't show achievement popups if the overlay is active.
+
 
 Achievements 7.x-1.5, 2012-05-01
 --------------------------------

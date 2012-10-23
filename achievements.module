@@ -191,7 +191,7 @@ function achievements_template_shared_variables(&$variables) {
 function achievements_block_info() {
   return array(
     'achievements_leaderboard' => array(
-      'info'  => t('Achievements leaderboard'),
+      'info'  => t('Achievements: All-time leaderboard'),
       'cache' => DRUPAL_NO_CACHE,
     ),
   );
@@ -205,7 +205,7 @@ function achievements_block_view($delta = '') {
     include_once(drupal_get_path('module', 'achievements') . '/achievements.pages.inc');
     return array( // stupid file that I have to include. WHERE"S MY FUNCTION REGSITERYR.
       'content' => achievements_leaderboard_block(),
-      'subject' => t('Leaderboard'),
+      'subject' => t('All-time leaderboard'),
     );
   }
 }
@@ -348,7 +348,7 @@ function achievements_totals_user($nearby = 0, $uid = NULL, $days = NULL) {
   // we don't check for access as this is info grubbing only.
 
   $achievers = &drupal_static(__FUNCTION__);
-  $days = isset($days) && $days > 0 ? $days : 0;
+  $days = !empty($days) ? $days : 0; // used in array keys.
   $day_frame = module_exists('achievements_recent') && $days > 0;
   $leaderboard_table = $day_frame ? 'achievement_totals_days' : 'achievement_totals';
 
@@ -661,7 +661,9 @@ function achievements_user_delete($account) {
  * Implements hook_page_alter().
  */
 function achievements_page_alter(&$page) {
-  if (achievements_user_is_achiever()) {
+  // Achievement popups won't show if the overlay is active, so we'll defer until it isn't.
+  // See http://drupal.stackexchange.com/questions/35382/hide-module-when-path-is-overlay.
+  if (achievements_user_is_achiever() && !(module_exists('overlay') && path_is_admin($_GET['q']))) {
     $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp')) // find everything we've yet to see.
       ->condition('uid', $GLOBALS['user']->uid)->condition('seen', 0)->orderBy('timestamp')->execute()->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC);
 

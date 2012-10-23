@@ -72,7 +72,7 @@ function hook_achievements_info() {
       'storage'     => 'comment-count',
       'points'      => 100,
       'images' => array(
-        'unlocked'  => '/sites/default/files/example1.png',
+        'unlocked'  => 'sites/default/files/example1.png',
         // 'secret' and 'locked' will use the defaults.
       ),
     ),
@@ -89,9 +89,9 @@ function hook_achievements_info() {
           'description' => t("Go back to bed: it's still the weekend!"),
           'points'      => 5,
           'images' => array(
-            'unlocked'  => '/sites/default/files/example1.png',
-            'locked'    => '/sites/default/files/example2.png',
-            'secret'    => '/sites/default/files/example3.png',
+            'unlocked'  => 'sites/default/files/example1.png',
+            'locked'    => 'sites/default/files/example2.png',
+            'secret'    => 'sites/default/files/example3.png',
             // all default images have been replaced.
           ),
         ),
