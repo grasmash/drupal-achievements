@@ -20,10 +20,7 @@ function achievements_permission() {
       'title' => t('Administer achievements'),
     ),
     'manually grant achievements' => array(
-      'title' => t('Manually grant any achievements'),
-    ),
-    'grant manual achievements' => array(
-      'title' => t('Grant achievements defined as manual-only'),
+      'title' => t('Manually grant achievements'),
     ),
   );
 }
@@ -136,14 +133,7 @@ function achievements_theme() {
  * Access callback for manually granting/taking achievements.
  */
 function achievements_access($account, $achievement, $action) {
-  if (!user_access('manually grant achievements') && !user_access('grant manual achievements')) {
-    return FALSE;
-  }
-
-  // Check if this is a manual-only achievement.
-  if (empty($achievement['manual-only']) && !user_access('manually grant achievements')) {
-    // This is not a manual-only achievement, and the user does not have
-    // permission to grant all achievements.
+  if (!user_access('manually grant achievements')) {
     return FALSE;
   }
 
