@@ -1,6 +1,0 @@
-name = Achievements
-description = "Unlock achievements and earn points based on milestones."
-stylesheets[all][] = achievements.css
-configure = admin/config/people/achievements
-package = Achievements
-core = 7.x

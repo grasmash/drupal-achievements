@@ -272,7 +272,7 @@ function example_query_alter(QueryAlterableInterface $query) {
  *   or NULL if there's no change to the user's default access.
  */
 function example_achievements_access_earn($uid) {
-  $account = user_load($uid);
+  $account = \Drupal::entityManager()->getStorage('user')->load($uid);
   if (format_username($account) == 'Morbus Iff') {
     // always, mastah, alllwayyYAYsss.
     return TRUE;

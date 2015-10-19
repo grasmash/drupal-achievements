@@ -1,0 +1,20 @@
+achievements.settings:
+  type: mapping
+  label: Settings
+  mapping:
+    achievements_image_hidden:
+      type: 'NULL'
+    achievements_leaderboard_count_per_page:
+      type: integer
+    achievements_leaderboard_relative:
+      type: string
+    achievements_leaderboard_relative_nearby_ranks:
+      type: integer
+    achievements_leaderboard_block_count_top:
+      type: integer
+    achievements_leaderboard_block_relative:
+      type: string
+    achievements_leaderboard_block_relative_nearby_ranks:
+      type: integer
+    achievements_unlocked_move_to_top:
+      type: boolean

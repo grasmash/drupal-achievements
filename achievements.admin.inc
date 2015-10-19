@@ -49,21 +49,24 @@ function achievements_settings() {
     '#value'              => t('Take achievement'),
   );
 
-  $form['achievements_rankings'] = array(
-    '#description'        => t('These settings affect the <a href="@url">global leaderboard</a>. Enabling the "relative leaderboard" will show the current user\'s position and, optionally, a number of ranks before and after that position. For example, if the current user is ranked 12th and you configure 3 nearby ranks, the relative leaderboard will show ranks 9 through 15.', array('@url' => url('achievements/leaderboard'))),
-    '#title'              => t('Leaderboard ranks'),
-    '#type'               => 'fieldset',
-  );
+  // @FIXME
+// url() expects a route name or an external URI.
+// $form['achievements_rankings'] = array(
+//     '#description'        => t('These settings affect the <a href="@url">global leaderboard</a>. Enabling the "relative leaderboard" will show the current user\'s position and, optionally, a number of ranks before and after that position. For example, if the current user is ranked 12th and you configure 3 nearby ranks, the relative leaderboard will show ranks 9 through 15.', array('@url' => url('achievements/leaderboard'))),
+//     '#title'              => t('Leaderboard ranks'),
+//     '#type'               => 'fieldset',
+//   );
+
   $form['achievements_rankings']['achievements_leaderboard_count_per_page'] = array(
     '#type'               => 'select',
     '#title'              => t('Number of top ranks per page'),
-    '#default_value'      => variable_get('achievements_leaderboard_count_per_page', 10),
-    '#options'            => drupal_map_assoc(array(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)),
+    '#default_value'      => \Drupal::config('achievements.settings')->get('achievements_leaderboard_count_per_page'),
+    '#options'            => array_combine(array(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100), array(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)),
   );
   $form['achievements_rankings']['achievements_leaderboard_relative'] = array(
     '#type'               => 'radios',
     '#title'              => t('Relative leaderboard display'),
-    '#default_value'      => variable_get('achievements_leaderboard_relative', 'nearby_ranks'),
+    '#default_value'      => \Drupal::config('achievements.settings')->get('achievements_leaderboard_relative'),
     '#options'            => array(
       'disabled'          => t('Don\'t show the relative leaderboard'),
       'user_only'         => t('Show only the current user'),
@@ -73,8 +76,8 @@ function achievements_settings() {
   $form['achievements_rankings']['achievements_leaderboard_relative_nearby_ranks'] = array(
     '#type'               => 'select',
     '#title'              => t('Number of nearby ranks to display'),
-    '#default_value'      => variable_get('achievements_leaderboard_relative_nearby_ranks', 2),
-    '#options'            => drupal_map_assoc(range(1, 10)),
+    '#default_value'      => \Drupal::config('achievements.settings')->get('achievements_leaderboard_relative_nearby_ranks'),
+    '#options'            => array_combine(range(1, 10), range(1, 10)),
   );
 
   $form['achievements_config'] = array(
@@ -83,16 +86,21 @@ function achievements_settings() {
   );
   $module_path = drupal_get_path('module', 'achievements');
   foreach (array('unlocked', 'locked', 'secret') as $image_type) {
-    $form['achievements_config']['achievements_image_' . $image_type] = array(
-      '#default_value'      => variable_get('achievements_image_' . $image_type, $module_path . '/images/default-' . $image_type . '-70.jpg'),
-      '#title'              => t('Default @image_type picture', array('@image_type' => $image_type)),
-      '#type'               => 'textfield',
-    );
+    // @FIXME
+// // @FIXME
+// // The correct configuration object could not be determined. You'll need to
+// // rewrite this call manually.
+// $form['achievements_config']['achievements_image_' . $image_type] = array(
+//       '#default_value'      => variable_get('achievements_image_' . $image_type, $module_path . '/images/default-' . $image_type . '-70.jpg'),
+//       '#title'              => t('Default @image_type picture', array('@image_type' => $image_type)),
+//       '#type'               => 'textfield',
+//     );
+
   }
   $form['achievements_config']['achievements_unlocked_move_to_top'] = array(
     '#type'           => 'checkbox',
     '#title'          => t("Move the user's unlocked achievements to the top of their achievement page."),
-    '#default_value'  => variable_get('achievements_unlocked_move_to_top', TRUE), // default to gamer-style.
+    '#default_value'  => \Drupal::config('achievements.settings')->get('achievements_unlocked_move_to_top'), // default to gamer-style.
   );
 
   return system_settings_form($form);
@@ -123,7 +131,7 @@ function achievements_manual_submit($form, &$form_state) {
   // well, we've got form values, so load 'em in and check for validity.
   $account = !is_numeric($form_state['values']['achievements_manual_user'])
     ? user_load_by_name($form_state['values']['achievements_manual_user'])
-    : user_load($form_state['values']['achievements_manual_user']);
+    : \Drupal::entityManager()->getStorage('user')->load($form_state['values']['achievements_manual_user']);
   $achievement = achievements_load($form_state['values']['achievements_manual_achievement']);
 
   if (!isset($account->uid) || $account->uid == 0) { // Wha? Who?
@@ -140,7 +148,7 @@ function achievements_manual_submit($form, &$form_state) {
 
   // if we've a valid user and achievement ID, give 'em the achievement, ya freeloaders.
   if ($account && $achievement && $form_state['clicked_button']['#achievement_action'] == 'give') {
-    if (!user_access('earn achievements', $account)) { // KLAXON KLAXON CHEATAH.
+    if (!$account->hasPermission('earn achievements')) { // KLAXON KLAXON CHEATAH.
       drupal_set_message(t('%username does not have permission to earn achievements.',
         array('%username' => $form_state['values']['achievements_manual_user'])), 'error');
       return;

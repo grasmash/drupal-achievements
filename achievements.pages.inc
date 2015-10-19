@@ -15,18 +15,22 @@ function achievements_leaderboard_totals() {
   $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Points'), t('Unlocks'), t('Latest achievement'));
   $achievers = $rows = array('top' => array(), 'relative' => array());
 
+  // determine whether we're doing a day frame or normal all-time.
+  $day_frame = \Drupal::moduleHandler()->moduleExists('achievements_recent') && $days > 0;
+  $leaderboard_table = $day_frame ? 'achievement_totals_days' : 'achievement_totals';
+
   // load up all our achievers for the page.
   $query = db_select('achievement_totals', 'at')->extend('PagerDefault');
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
   $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp', 'achievement_id'))->fields('u', array('name'));
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index. ever. bastids.
-  $query->limit(variable_get('achievements_leaderboard_count_per_page', 10));
+  $query->limit(\Drupal::config('achievements.settings')->get('achievements_leaderboard_count_per_page'));
   $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
 
-  if (user_is_logged_in() && variable_get('achievements_leaderboard_relative', 'nearby_ranks') != 'disabled') {
-    $achievers['relative'] = (variable_get('achievements_leaderboard_relative', 'nearby_ranks') == 'nearby_ranks')
-      ? achievements_totals_user(variable_get('achievements_leaderboard_relative_nearby_ranks', 2))
-      : achievements_totals_user(); // you and me, togetheRrrr FoReEEvvvVeeEeeRRrRR.
+  if (\Drupal::currentUser()->isAuthenticated() && \Drupal::config('achievements.settings')->get('achievements_leaderboard_relative') != 'disabled') {
+    $achievers['relative'] = (\Drupal::config('achievements.settings')->get('achievements_leaderboard_relative') == 'nearby_ranks')
+      ? achievements_totals_user(\Drupal::config('achievements.settings')->get('achievements_leaderboard_relative_nearby_ranks'), NULL, $days)
+      : achievements_totals_user(0, NULL, $days); // you and me, togetheRrrr FoReEEvvvVeeEeeRRrRR.
   }
 
   // display our achievers in "how awesome they are" order.
@@ -35,38 +39,47 @@ function achievements_leaderboard_totals() {
   // the order the query returns is the order of the leaderboard. thus,
   // we start at 1 and increase the rank for every row we're showing.
   // also, be careful to start with the right number on pager queries.
-  $rank = 0 + ($GLOBALS['pager_page_array'][0] * variable_get('achievements_leaderboard_count_per_page', 10));
+  $rank = 0 + ($GLOBALS['pager_page_array'][0] * \Drupal::config('achievements.settings')->get('achievements_leaderboard_count_per_page'));
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
       // determine the current rank and set some speshul classes.
       $rank = $achiever->rank = isset($achiever->rank) ? $achiever->rank : $rank + 1;
-      $classes = ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array();
+      $classes = ($achiever->uid == \Drupal::currentUser()->uid) ? array('achievement-leaderboard-current-user') : array();
       if ($rank <= 3) {  // give special classes if its the current user or if it's a cherished leader position.
         $classes[] = 'achievement-leaderboard-top-rank';
         $classes[] = 'achievement-leaderboard-top-rank-' . $rank;
       }
 
-      $rows[$type][$achiever->uid] = array(
-        'class' => $classes,
-        'data'  => array(
-          array(
-            'data'  => $rank,
-            'class' => array('achievement-leaderboard-rank')
-          ),
-          array(
-            'data'  => theme('username', array('account' => $achiever)),
-            'class' => array('achievement-leaderboard-username')
-          ),
-          array(
-            'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
-            'class' => array('achievement-leaderboard-points')
-          ),
-          array(
-            'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
-            'class' => array('achievement-leaderboard-unlocks')
-          ),
-        ),
-      );
+      // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $rows[$type][$achiever->uid] = array(
+//         'class' => $classes,
+//         'data'  => array(
+//           array(
+//             'data'  => $rank,
+//             'class' => array('achievement-leaderboard-rank')
+//           ),
+//           array(
+//             'data'  => theme('username', array('account' => $achiever)),
+//             'class' => array('achievement-leaderboard-username')
+//           ),
+//           array(
+//             'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+//             'class' => array('achievement-leaderboard-points')
+//           ),
+//           array(
+//             'data'  => l($achiever->unlocks, 'user/' . $achiever->uid . '/achievements'),
+//             'class' => array('achievement-leaderboard-unlocks')
+//           ),
+//         ),
+//       );
+
 
       // since we're showing the "latest achievement" for a user, we have to
       // determine what image to use and respect 'secret' status. we already
@@ -99,7 +112,7 @@ function achievements_leaderboard_totals() {
       ),
     );
     if ($type == 'top' || count($rows['relative'])) {
-      drupal_alter('achievements_leaderboard', $leaderboard);
+      \Drupal::moduleHandler()->alter('achievements_leaderboard', $leaderboard);
       $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
     }
   }
@@ -124,12 +137,12 @@ function achievements_leaderboard_block() {
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
   $query->fields('at', array('uid', 'points', 'unlocks'))->fields('u', array('name'));
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
-  $query->range(0, variable_get('achievements_leaderboard_block_count_top', 5));
+  $query->range(0, \Drupal::config('achievements.settings')->get('achievements_leaderboard_block_count_top'));
   $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
 
-  if (user_is_logged_in() && !isset($achievers['top'][$GLOBALS['user']->uid]) && variable_get('achievements_leaderboard_block_relative', 'nearby_ranks') != 'disabled') {
-    $achievers['relative'] = (variable_get('achievements_leaderboard_block_relative', 'nearby_ranks') == 'nearby_ranks')
-      ? achievements_totals_user(variable_get('achievements_leaderboard_block_relative_nearby_ranks', 1))
+  if (\Drupal::currentUser()->isAuthenticated() && !isset($achievers['top'][\Drupal::currentUser()->uid]) && \Drupal::config('achievements.settings')->get('achievements_leaderboard_block_relative') != 'disabled') {
+    $achievers['relative'] = (\Drupal::config('achievements.settings')->get('achievements_leaderboard_block_relative') == 'nearby_ranks')
+      ? achievements_totals_user(\Drupal::config('achievements.settings')->get('achievements_leaderboard_block_relative_nearby_ranks'))
       : achievements_totals_user(); // you and me, togetheRrrr almost nEveVvaeeeeEEERrrrrR111!
   }
 
@@ -137,29 +150,38 @@ function achievements_leaderboard_block() {
   foreach (array('top', 'relative') as $type) {
     foreach ($achievers[$type] as $achiever) {
       $rank = $achiever->rank = isset($achiever->rank) ? $achiever->rank : $rank + 1;
-      $classes = ($achiever->uid == $GLOBALS['user']->uid) ? array('achievement-leaderboard-current-user') : array();
+      $classes = ($achiever->uid == \Drupal::currentUser()->uid) ? array('achievement-leaderboard-current-user') : array();
       if ($rank <= 3) {  // give special classes if its the current user or if it's a cherished leader position.
         $classes[] = 'achievement-leaderboard-top-rank';
         $classes[] = 'achievement-leaderboard-top-rank-' . $rank;
       }
 
-      $rows[$type][$achiever->uid] = array(
-        'class' => $classes,
-        'data'  => array(
-          array(
-            'data'  => $rank,
-            'class' => array('achievement-leaderboard-rank')
-          ),
-          array(
-            'data'  => theme('username', array('account' => $achiever)),
-            'class' => array('achievement-leaderboard-username')
-          ),
-          array(
-            'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
-            'class' => array('achievement-leaderboard-points')
-          ),
-        ),
-      );
+      // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $rows[$type][$achiever->uid] = array(
+//         'class' => $classes,
+//         'data'  => array(
+//           array(
+//             'data'  => $rank,
+//             'class' => array('achievement-leaderboard-rank')
+//           ),
+//           array(
+//             'data'  => theme('username', array('account' => $achiever)),
+//             'class' => array('achievement-leaderboard-username')
+//           ),
+//           array(
+//             'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+//             'class' => array('achievement-leaderboard-points')
+//           ),
+//         ),
+//       );
+
     }
   }
 
@@ -177,16 +199,19 @@ function achievements_leaderboard_block() {
       ),
     );
     if ($type == 'top' || count($rows['relative'])) {
-      drupal_alter('achievements_leaderboard', $leaderboard);
+      \Drupal::moduleHandler()->alter('achievements_leaderboard', $leaderboard);
       $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
     }
   }
 
-  $build['achievements']['see-more'] = array(
-    '#prefix' => '<div class="achievement-see-more">',
-    '#markup' =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
-    '#suffix' => '</div>',
-  );
+  // @FIXME
+// l() expects a Url object, created from a route name or external URI.
+// $build['achievements']['see-more'] = array(
+//     '#prefix' => '<div class="achievement-see-more">',
+//     '#markup' =>  l(t('View full leaderboard »'), 'achievements/leaderboard'),
+//     '#suffix' => '</div>',
+//   );
+
 
   return $build;
 }
@@ -195,7 +220,14 @@ function achievements_leaderboard_block() {
  * Menu callback; display a single achievement page with leaderboards.
  */
 function achievements_leaderboard_for($achievement) {
-  drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])), PASS_THROUGH);
+  // @FIXME
+// drupal_set_title() has been removed. There are now a few ways to set the title
+// dynamically, depending on the situation.
+// 
+// 
+// @see https://www.drupal.org/node/2067859
+// drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])), PASS_THROUGH);
+
 
   $build['achievements']['achievement'] = array(
     '#achievement'  => $achievement,
@@ -216,27 +248,36 @@ function achievements_leaderboard_for($achievement) {
   foreach (array('first', 'recent') as $type) {
     $rows = array(); // clear previous run.
     foreach ($achievers[$type] as $achiever) {
-      $rows[$achiever->uid] = array(
-        'class' => array(),
-        'data' => array(
-          array(
-            'data'  => $achiever->rank,
-            'class' => array('achievement-leaderboard-rank')
-          ),
-          array(
-            'data'  => theme('username', array('account' => $achiever)),
-            'class' => array('achievement-leaderboard-username')
-          ),
-          array(
-            'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
-            'class' => array('achievement-leaderboard-points')
-          ),
-          array(
-            'data'  => format_date($achiever->timestamp, 'short'),
-            'class' => array('achievement-leaderboard-when')
-          ),
-        ),
-      );
+      // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $rows[$achiever->uid] = array(
+//         'class' => array(),
+//         'data' => array(
+//           array(
+//             'data'  => $achiever->rank,
+//             'class' => array('achievement-leaderboard-rank')
+//           ),
+//           array(
+//             'data'  => theme('username', array('account' => $achiever)),
+//             'class' => array('achievement-leaderboard-username')
+//           ),
+//           array(
+//             'data'  => l($achiever->points, 'user/' . $achiever->uid . '/achievements'),
+//             'class' => array('achievement-leaderboard-points')
+//           ),
+//           array(
+//             'data'  => format_date($achiever->timestamp, 'short'),
+//             'class' => array('achievement-leaderboard-when')
+//           ),
+//         ),
+//       );
+
     }
 
     $leaderboard = array(
@@ -245,14 +286,14 @@ function achievements_leaderboard_for($achievement) {
       'type'      => $type,
       'render'    => array(
         '#attributes' => array('class' => array('achievement-leaderboard-' . $type)),
-        '#caption'    => t('@type achievement unlocks', array('@type' => drupal_ucfirst($type))),
+        '#caption'    => t('@type achievement unlocks', array('@type' => \Drupal\Component\Utility\Unicode::ucfirst($type))),
         '#header'     => array(t('#'), t('Who'), t('Points'), t('When')),
         '#empty'      => t('No one has unlocked this yet. Keep trying!'),
         '#rows'       => $rows,
         '#theme'      => 'table',
       ),
     );
-    drupal_alter('achievements_leaderboard', $leaderboard);
+    \Drupal::moduleHandler()->alter('achievements_leaderboard', $leaderboard);
     $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
   }
 
@@ -320,12 +361,12 @@ function achievements_user_page($account) {
       if (isset($unlocks[$achievement_id])) {
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#unlock'] = $unlocks[$achievement_id];
 
-        if (variable_get('achievements_unlocked_move_to_top', TRUE)) {
+        if (\Drupal::config('achievements.settings')->get('achievements_unlocked_move_to_top')) {
           $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = -$unlocks[$achievement_id]['timestamp'];
           // by setting the negative weight to the timestamp, the latest unlocks are always shown at the top.
         }
       }
-      elseif (!isset($unlocks[$achievement_id]) && variable_get('achievements_unlocked_move_to_top', TRUE)) {
+      elseif (!isset($unlocks[$achievement_id]) && \Drupal::config('achievements.settings')->get('achievements_unlocked_move_to_top')) {
         // if we're forcing unlocks to the top, locked achievements have to be forced to the bottom.
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#weight'] = $locked_weight++;
 
@@ -393,7 +434,7 @@ function achievements_confirm_submit($form, &$form_state) {
   $achievement = $form['#achievement'];
   $account = $form['#account'];
 
-  if (!user_access('earn achievements', $account)) {
+  if (!$account->hasPermission('earn achievements')) {
     drupal_set_message(t('%username does not have permission to earn achievements.',
       array('%username' => format_username($form['#account']))), 'error');
     return;

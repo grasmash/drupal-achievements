@@ -133,7 +133,14 @@ function achievements_theme() {
  * Access callback for manually granting/taking achievements.
  */
 function achievements_access($account, $achievement, $action) {
-  if (!user_access('manually grant achievements')) {
+  if (!\Drupal::currentUser()->hasPermission('manually grant achievements') && !\Drupal::currentUser()->hasPermission('grant manual achievements')) {
+    return FALSE;
+  }
+
+  // Check if this is a manual-only achievement.
+  if (empty($achievement['manual-only']) && !\Drupal::currentUser()->hasPermission('manually grant achievements')) {
+    // This is not a manual-only achievement, and the user does not have
+    // permission to grant all achievements.
     return FALSE;
   }
 
@@ -189,7 +196,10 @@ function achievements_template_shared_variables(&$variables) {
   $variables['state'] = isset($variables['unlock']) ? 'unlocked' : 'locked';
   $variables['classes_array'][] = 'achievement-' . $variables['state'];
   $variables['classes_array'][] = 'ui-corner-all'; // add rounded rects for tabs.
-  $variables['achievement_url'] = url('achievements/leaderboard/' . $variables['achievement']['id']);
+  // @FIXME
+// url() expects a route name or an external URI.
+// $variables['achievement_url'] = url('achievements/leaderboard/' . $variables['achievement']['id']);
+
 
   if (isset($variables['achievement']['secret']) && !achievements_unlocked_already($variables['achievement']['id'])) {
     $variables['achievement']['points']      = t('???'); // IIiII haveEeeA aa seecFRrit and I'll NEEVvaaha hTellLL..
@@ -200,9 +210,14 @@ function achievements_template_shared_variables(&$variables) {
 
   // set the displayed image to a secret-or-not default-or-not determined value. sheesh.
   $default = drupal_get_path('module', 'achievements') . '/images/default-' . $variables['state'] . '-70.jpg';
-  $variables['image_path'] = isset($variables['achievement']['images'][$variables['state']])
-    ? $variables['achievement']['images'][$variables['state']] // user-defined image, yay!
-    : variable_get('achievements_image_' . $variables['state'], $default);
+  // @FIXME
+// // @FIXME
+// // The correct configuration object could not be determined. You'll need to
+// // rewrite this call manually.
+// $variables['image_path'] = isset($variables['achievement']['images'][$variables['state']])
+//     ? $variables['achievement']['images'][$variables['state']] // user-defined image, yay!
+//     : variable_get('achievements_image_' . $variables['state'], $default);
+
 
   $variables['image'] = array(
     '#theme' => 'image_formatter',
@@ -275,13 +290,13 @@ function achievements_block_configure($delta = '') {
     $form['achievements_rankings']['achievements_leaderboard_block_count_top'] = array(
       '#type'           => 'select',
       '#title'          => t('Number of top ranks'),
-      '#default_value'  => variable_get('achievements_leaderboard_block_count_top', 5),
-      '#options'        => drupal_map_assoc(range(0, 30)),
+      '#default_value'  => \Drupal::config('achievements.settings')->get('achievements_leaderboard_block_count_top'),
+      '#options'        => array_combine(range(0, 30), range(0, 30)),
     );
     $form['achievements_rankings']['achievements_leaderboard_block_relative'] = array(
       '#type'           => 'radios',
       '#title'          => t('Relative leaderboard display'),
-      '#default_value'  => variable_get('achievements_leaderboard_block_relative', 'nearby_ranks'),
+      '#default_value'  => \Drupal::config('achievements.settings')->get('achievements_leaderboard_block_relative'),
       '#options'        => array(
         'disabled'      => t('Don\'t show the relative leaderboard'),
         'user_only'     => t('Show only the current user'),
@@ -291,8 +306,8 @@ function achievements_block_configure($delta = '') {
     $form['achievements_rankings']['achievements_leaderboard_block_relative_nearby_ranks'] = array(
       '#type'           => 'select',
       '#title'          => t('Number of nearby ranks to display'),
-      '#default_value'  => variable_get('achievements_leaderboard_block_relative_nearby_ranks', 1),
-      '#options'        => drupal_map_assoc(range(1, 10)),
+      '#default_value'  => \Drupal::config('achievements.settings')->get('achievements_leaderboard_block_relative_nearby_ranks'),
+      '#options'        => array_combine(range(1, 10), range(1, 10)),
     );
 
     return $form;
@@ -304,9 +319,9 @@ function achievements_block_configure($delta = '') {
  */
 function achievements_block_save($delta = '', $edit = array()) {
   if ($delta == 'achievements_leaderboard') { // bleh, this is wasteful code that should be automated.
-    variable_set('achievements_leaderboard_block_count_top', $edit['achievements_leaderboard_block_count_top']);
-    variable_set('achievements_leaderboard_block_relative', $edit['achievements_leaderboard_block_relative']);
-    variable_set('achievements_leaderboard_block_relative_nearby_ranks', $edit['achievements_leaderboard_block_relative_nearby_ranks']);
+    \Drupal::configFactory()->getEditable('achievements.settings')->set('achievements_leaderboard_block_count_top', $edit['achievements_leaderboard_block_count_top'])->save();
+    \Drupal::configFactory()->getEditable('achievements.settings')->set('achievements_leaderboard_block_relative', $edit['achievements_leaderboard_block_relative'])->save();
+    \Drupal::configFactory()->getEditable('achievements.settings')->set('achievements_leaderboard_block_relative_nearby_ranks', $edit['achievements_leaderboard_block_relative_nearby_ranks'])->save();
   }
 }
 
@@ -330,13 +345,13 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
   $achievements = &drupal_static(__FUNCTION__);
 
   if (!isset($achievements) || $reset) {
-    if (!$reset && $cache = cache_get('achievements_info')) {
+    if (!$reset && $cache = \Drupal::cache()->get('achievements_info')) {
       $achievements = $cache->data;
     }
     else {
       $achievements = array('flat' => array(), 'grouped' => array());
-      $result = module_invoke_all('achievements_info');
-      drupal_alter('achievements_info', $result);
+      $result = \Drupal::moduleHandler()->invokeAll('achievements_info');
+      \Drupal::moduleHandler()->alter('achievements_info', $result);
 
       // determine if we're looking at an achievement or group and create our
       // master $achievements array. we store the achievements in two separate
@@ -368,7 +383,7 @@ function achievements_load($achievement_id = NULL, $grouped = FALSE, $reset = FA
         $achievements['grouped']['-none-']['title'] = t('Miscellany');
       }
 
-      cache_set('achievements_info', $achievements, 'cache', CACHE_TEMPORARY);
+      \Drupal::cache('cache')->set('achievements_info', $achievements, CACHE_TEMPORARY);
     }
   }
 
@@ -397,6 +412,9 @@ function achievements_totals_user($nearby = 0, $uid = NULL) {
   // we don't check for access as this is info grubbing only.
 
   $achievers = &drupal_static(__FUNCTION__);
+  $days = !empty($days) ? $days : 0; // used in array keys.
+  $day_frame = \Drupal::moduleHandler()->moduleExists('achievements_recent') && $days > 0;
+  $leaderboard_table = $day_frame ? 'achievement_totals_days' : 'achievement_totals';
 
   if (!isset($achievers[$uid])) {
     $query = db_select('achievement_totals', 'at');
@@ -455,8 +473,7 @@ function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUES
     $achievement = achievements_load($achievement_id, FALSE, TRUE);
   }
   if (empty($achievement)) { // still nothing even after cache refresh? ouch.
-    watchdog('achievements', '%achievement_id is not a valid achievement ID.',
-      array('%achievement_id' => $achievement_id), WATCHDOG_ERROR);
+    \Drupal::logger('achievements')->error('%achievement_id is not a valid achievement ID.', array('%achievement_id' => $achievement_id));
     return FALSE;
   }
 
@@ -497,11 +514,14 @@ function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUES
       'timestamp'       => $timestamp,
     );
 
-    module_invoke_all('achievements_unlocked', $achievement, $uid);
+    \Drupal::moduleHandler()->invokeAll('achievements_unlocked', [$achievement, $uid]);
 
-    watchdog('achievements', 'Unlocked: %achievement (+@points).',
-      array('%achievement' => $achievement['title'], '@points' => $achievement['points']),
-      WATCHDOG_NOTICE, l(t('view'), 'user/' . $uid . '/achievements')); // nothing fancy.
+    // @FIXME
+// l() expects a Url object, created from a route name or external URI.
+// watchdog('achievements', 'Unlocked: %achievement (+@points).',
+//       array('%achievement' => $achievement['title'], '@points' => $achievement['points']),
+//       WATCHDOG_NOTICE, l(t('view'), 'user/' . $uid . '/achievements'));
+ // nothing fancy.
   }
 }
 
@@ -574,7 +594,7 @@ function achievements_locked($achievement_id, $uid = NULL) {
 
     // remove any storage associated with this achievement.
     achievements_storage_del($achievement['id'], $uid);
-    module_invoke_all('achievements_locked', $achievement, $uid);
+    \Drupal::moduleHandler()->invokeAll('achievements_locked', [$achievement, $uid]);
   }
 }
 
@@ -653,20 +673,20 @@ function achievements_storage_del($achievement_id = NULL, $uid = NULL) {
  */
 function achievements_user_is_achiever($uid = NULL) {
   $is_achiever = &drupal_static(__FUNCTION__);
-  $uid = isset($uid) ? $uid : $GLOBALS['user']->uid;
+  $uid = isset($uid) ? $uid : \Drupal::currentUser()->uid;
 
   if (!isset($is_achiever[$uid])) {
-    if ($uid == $GLOBALS['user']->uid) { // if $uid is current user, check normally.
-      $is_achiever[$uid] = array($GLOBALS['user']->uid, user_access('earn achievements'));
+    if ($uid == \Drupal::currentUser()->uid) { // if $uid is current user, check normally.
+      $is_achiever[$uid] = array(\Drupal::currentUser()->uid, \Drupal::currentUser()->hasPermission('earn achievements'));
     }
     else { // if it's not the global user, we need to load them fully, then check.
-      $is_achiever[$uid] = array($uid, user_access('earn achievements', user_load($uid)));
+      $is_achiever[$uid] = array($uid, \Drupal::currentUser()->hasPermission('earn achievements'));
     }
 
     // Let other modules decide if this user can earn achievements. Hook
     // results take precedence over the standard user_access() because we
     // treat code prowess as stronger rationale than simplistic UI clicking.
-    $module_access = module_invoke_all('achievements_access_earn', $uid);
+    $module_access = \Drupal::moduleHandler()->invokeAll('achievements_access_earn', [$uid]);
 
     if (in_array(TRUE, $module_access, TRUE)) {
       $is_achiever[$uid] = array($uid, TRUE);
@@ -689,10 +709,10 @@ function achievements_user_cancel($edit, $account, $method) {
 /**
  * Implements hook_user_delete().
  */
-function achievements_user_delete($account) {
-  db_delete('achievement_totals')->condition('uid', $account->uid)->execute();
-  db_delete('achievement_unlocks')->condition('uid', $account->uid)->execute();
-  db_delete('achievement_storage')->condition('uid', $account->uid)->execute();
+function achievements_user_delete(\Drupal\user\UserInterface $account) {
+  db_delete('achievement_totals')->condition('uid', $account->id())->execute();
+  db_delete('achievement_unlocks')->condition('uid', $account->id())->execute();
+  db_delete('achievement_storage')->condition('uid', $account->id())->execute();
 }
 
 /**
@@ -701,16 +721,40 @@ function achievements_user_delete($account) {
 function achievements_page_alter(&$page) {
   // Achievement popups won't show if the overlay is active, so we'll defer until it isn't.
   // See http://drupal.stackexchange.com/questions/35382/hide-module-when-path-is-overlay.
-  if (achievements_user_is_achiever() && !(module_exists('overlay') && path_is_admin($_GET['q']))) {
+  if (achievements_user_is_achiever() && !(\Drupal::moduleHandler()->moduleExists('overlay') && path_is_admin($_GET['q']))) {
     $unlocks = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id', 'rank', 'timestamp')) // find everything we've yet to see.
-      ->condition('uid', $GLOBALS['user']->uid)->condition('seen', 0)->orderBy('timestamp')->execute()->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC);
+      ->condition('uid', \Drupal::currentUser()->uid)->condition('seen', 0)->orderBy('timestamp')->execute()->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC);
 
     // if unseen unlocks are available, load in our JS libraries,
     // display our achievement notification, and flag 'em as seen.
     if (count($unlocks)) {
-      drupal_add_library('system', 'ui.dialog');
-      drupal_add_library('system', 'effects.fade');
-      drupal_add_js(drupal_get_path('module', 'achievements') . '/achievements.js');
+      // @FIXME
+// The Assets API has totally changed. CSS, JavaScript, and libraries are now
+// attached directly to render arrays using the #attached property.
+// 
+// 
+// @see https://www.drupal.org/node/2169605
+// @see https://www.drupal.org/node/2408597
+// drupal_add_library('system', 'ui.dialog');
+
+      // @FIXME
+// The Assets API has totally changed. CSS, JavaScript, and libraries are now
+// attached directly to render arrays using the #attached property.
+// 
+// 
+// @see https://www.drupal.org/node/2169605
+// @see https://www.drupal.org/node/2408597
+// drupal_add_library('system', 'effects.fade');
+
+      // @FIXME
+// The Assets API has totally changed. CSS, JavaScript, and libraries are now
+// attached directly to render arrays using the #attached property.
+// 
+// 
+// @see https://www.drupal.org/node/2169605
+// @see https://www.drupal.org/node/2408597
+// drupal_add_js(drupal_get_path('module', 'achievements') . '/achievements.js');
+
 
       foreach ($unlocks as $unlock) {
         $achievement = achievements_load($unlock['achievement_id']);
@@ -722,7 +766,7 @@ function achievements_page_alter(&$page) {
       }
 
       db_update('achievement_unlocks')->fields(array('seen' => 1))
-        ->condition('uid', $GLOBALS['user']->uid)->condition('seen', 0)->execute();
+        ->condition('uid', \Drupal::currentUser()->uid)->condition('seen', 0)->execute();
     }
   }
 }
@@ -736,7 +780,7 @@ function achievements_form_user_profile_form_alter(&$form, $form_state) {
   // the field will still show up on the user profile form. There doesn't
   // appear to be an easy (or non-destructive) way to hide or show a field on
   // module_enable or _disable, so we'll handle it upstream and hackishly.
-  if (!module_exists('achievements_optout') && isset($form['achievements_optout'])) {
+  if (!\Drupal::moduleHandler()->moduleExists('achievements_optout') && isset($form['achievements_optout'])) {
     $form['achievements_optout']['#access'] = FALSE;
   }
 }

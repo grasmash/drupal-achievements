@@ -136,19 +136,19 @@ function achievements_schema() {
  * Implements hook_uninstall().
  */
 function achievements_uninstall() {
-  variable_del('achievements_image_secret');
-  variable_del('achievements_image_locked');
-  variable_del('achievements_image_unlocked');
-  variable_del('achievements_leaderboard_block_count_top');
-  variable_del('achievements_leaderboard_block_relative');
-  variable_del('achievements_leaderboard_block_relative_nearby_ranks');
-  variable_del('achievements_leaderboard_count_per_page');
-  variable_del('achievements_leaderboard_count_top');
-  variable_del('achievements_leaderboard_relative');
-  variable_del('achievements_leaderboard_relative_nearby_ranks');
-  variable_del('achievements_manual_achievement');
-  variable_del('achievements_manual_user');
-  variable_del('achievements_unlocked_move_to_top');
+  \Drupal::config('achievements.settings')->clear('achievements_image_secret')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_image_locked')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_image_unlocked')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_count_top')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_relative')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_relative_nearby_ranks')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_count_per_page')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_count_top')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_relative')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_relative_nearby_ranks')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_manual_achievement')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_manual_user')->save();
+  \Drupal::config('achievements.settings')->clear('achievements_unlocked_move_to_top')->save();
 }
 
 /**
@@ -191,14 +191,18 @@ function achievements_update_7101() {
  */
 function achievements_update_7102() {
   $module_path = drupal_get_path('module', 'achievements');
-  if (variable_get('achievements_image_hidden', NULL) == $module_path . '/images/default-hidden-70.jpg') {
-    variable_set('achievements_image_secret', $module_path . '/images/default-secret-70.jpg');
+  if (\Drupal::config('achievements.settings')->get('achievements_image_hidden') == $module_path . '/images/default-hidden-70.jpg') {
+    \Drupal::configFactory()->getEditable('achievements.settings')->set('achievements_image_secret', $module_path . '/images/default-secret-70.jpg')->save();
   }
   else {
-    variable_set('achievements_image_secret', variable_get('achievements_image_hidden'));
+    // @FIXME
+// Could not extract the default value because it is either indeterminate, or
+// not scalar. You'll need to provide a default value in
+// config/install/achievements.settings.yml and config/schema/achievements.schema.yml.
+\Drupal::configFactory()->getEditable('achievements.settings')->set('achievements_image_secret', \Drupal::config('achievements.settings')->get('achievements_image_hidden'))->save();
   }
 
-  variable_del('achievements_image_hidden'); // Send a warning to the administrator just in case they haven't seen the CHANGELOG.
+  \Drupal::config('achievements.settings')->clear('achievements_image_hidden')->save(); // Send a warning to the administrator just in case they haven't seen the CHANGELOG.
   drupal_set_message(t('"hidden" achievements MUST be retyped to "secret" else they will be exposed. See CHANGELOG.txt for more information.'), 'warning');
 }
 
