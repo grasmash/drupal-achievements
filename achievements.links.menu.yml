@@ -1,0 +1,5 @@
+achievements.config:
+  title: 'Achievements'
+  parent: user.admin_index
+  description: 'Configure the achievements system.'
+  route_name: achievements.admin

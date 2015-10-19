@@ -2,19 +2,19 @@ achievements.settings:
   type: mapping
   label: Settings
   mapping:
-    achievements_image_hidden:
-      type: 'NULL'
-    achievements_leaderboard_count_per_page:
+    image_hidden:
+      type: boolean
+    leaderboard_count_per_page:
       type: integer
-    achievements_leaderboard_relative:
+    leaderboard_relative:
       type: string
-    achievements_leaderboard_relative_nearby_ranks:
+    leaderboard_relative_nearby_ranks:
       type: integer
-    achievements_leaderboard_block_count_top:
+    leaderboard_block_count_top:
       type: integer
-    achievements_leaderboard_block_relative:
+    leaderboard_block_relative:
       type: string
-    achievements_leaderboard_block_relative_nearby_ranks:
+    leaderboard_block_relative_nearby_ranks:
       type: integer
-    achievements_unlocked_move_to_top:
+    unlocked_move_to_top:
       type: boolean

@@ -1,0 +1,14 @@
+achievements.admin:
+  path: '/admin/config/people/achievements/admin'
+  defaults:
+    _form: '\Drupal\achievements\Form\AdminForm'
+    _title: 'Administer achievements'
+  requirements:
+    _permission: 'administer achievements'
+achievements.leaderboard:
+  path: '/achievements/leaderboard'
+  defaults:
+    _controller: '\Drupal\achievements\Controller\LeaderboardController::leaderboard'
+    _title: 'Leaderboard'
+  requirements:
+    _permission: 'access achievements'
