@@ -55,6 +55,8 @@ function achievements_menu() {
     'page callback'     => 'achievements_user_page',
     'page arguments'    => array(1),
     'title'             => 'Achievements',
+    'title callback'    => 'achievements_user_page_title',
+    'title arguments'   => array(1),
     'type'              => MENU_LOCAL_TASK,
   );
   $items['user/%user/achievements/%achievements/grant'] = array(

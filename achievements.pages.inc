@@ -266,7 +266,6 @@ function achievements_leaderboard_for($achievement) {
  *   The user object this request applies against.
  */
 function achievements_user_page($account) {
-  drupal_set_title(t('Achievements for @name', array('@name' => format_username($account))));
   $unlocks = achievements_unlocked_already(NULL, $account->uid);
   $achievers = achievements_totals_user(0, $account->uid);
   $achiever = reset($achievers);
@@ -463,4 +462,14 @@ function theme_achievement_groups_wrapper($variables) {
 function theme_achievement_group_wrapper($variables) {
   $group_id = 'achievement-group-' . $variables['element']['#group_id'];
   return '<div id="' . $group_id . '" class="achievement-group">' . $variables['element']['#children'] . '</div>';
+}
+
+/**
+ * Page title callback for the user achievements page.
+ *
+ * @param object $account
+ *   A Drupal user object.
+ */
+function achievements_user_page_title($account) {
+  return t('Achievements for @name', array('@name' => format_username($account)));
 }
