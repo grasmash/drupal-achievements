@@ -271,14 +271,14 @@ function achievements_leaderboard_for($achievement) {
  *   The user object this request applies against.
  */
 function achievements_user_page($account) {
-  drupal_set_title(t('Achievements for @name', array('@name' => $account->name)));
+  drupal_set_title(t('Achievements for @name', array('@name' => format_username($account))));
   $unlocks = achievements_unlocked_already(NULL, $account->uid);
   $achiever = array_pop(achievements_totals_user(0, $account->uid));
 
   $build['achievements']['stats'] = array(
     '#theme'  => 'achievement_user_stats',
     '#stats'  => array(
-      'name'          => $account->name,
+      'name'          => format_username($account),
       'rank'          => isset($achiever->rank) ? $achiever->rank : 0,
       'points'        => isset($achiever->points) ? $achiever->points : 0,
       'unlocks_count' => count($unlocks),

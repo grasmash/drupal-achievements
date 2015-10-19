@@ -270,7 +270,7 @@ function example_query_alter(QueryAlterableInterface $query) {
  */
 function example_achievements_access_earn($uid) {
   $account = user_load($uid);
-  if ($account->name == 'Morbus Iff') {
+  if (format_username($account) == 'Morbus Iff') {
     // always, mastah, alllwayyYAYsss.
     return TRUE;
   }
