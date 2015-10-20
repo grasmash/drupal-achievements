@@ -50,6 +50,9 @@
  *     Compatible with 'secret' (i.e., if another user has unlocked an
  *     invisible achievement, a user who has not unlocked it will see the
  *     placeholder secret text instead of the actual achievement itself).
+ *   - manual-only: (optional) Set this to TRUE if the achievement has no
+ *     automated way of being granted--meaning only a user with the `grant manual
+ *     achievements` can grant the achievement (or take it away).
  *
  *   Achievements can also be categorized into groups. Groups are simply
  *   arrays whose keys are internal group IDs and whose values identify
