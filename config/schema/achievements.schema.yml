@@ -1,5 +1,5 @@
 achievements.settings:
-  type: mapping
+  type: config_object
   label: Settings
   mapping:
     image_hidden:

@@ -31,9 +31,7 @@ class AdminForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return [
-      'achievements.settings',
-    ];
+    return ['achievements.settings'];
   }
 
   /**
@@ -107,18 +105,21 @@ class AdminForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    parent::submitForm($form, $form_state);
 
-    $this->config('achievements.settings')
-      ->save();
+    $settings = [
+      'leaderboard_count_per_page',
+      'leaderboard_relative',
+      'leaderboard_relative_nearby_ranks',
+      'unlocked_move_to_top',
+    ];
+    foreach ($settings as $name) {
+      $this->config('achievements.settings')
+        ->set($name, $form_state->getValue($name));
+    }
+
+    $this->config('achievements.settings')->save();
+    parent::submitForm($form, $form_state);
   }
 
 }

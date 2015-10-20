@@ -11,18 +11,10 @@ use Drupal\simpletest\WebTestBase;
 
 /**
  * Provides automated tests for the achievements module.
+ *
+ * @group achievements
  */
 class LeaderboardControllerTest extends WebTestBase {
-  /**
-   * {@inheritdoc}
-   */
-  public static function getInfo() {
-    return array(
-      'name' => "achievements LeaderboardController's controller functionality",
-      'description' => 'Test Unit for module achievements and controller LeaderboardController.',
-      'group' => 'Other',
-    );
-  }
 
   /**
    * {@inheritdoc}
