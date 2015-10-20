@@ -12,8 +12,8 @@
  */
 function achievements_leaderboard_totals() {
   // force no sorting on # so it doesn't get the 'active' CSS, which screws up relative non-header display.
-  $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Points'), t('Unlocks'), t('Latest achievement'));
-  $achievers = $rows = array('top' => array(), 'relative' => array());
+  $header = [['data' => t('#'), 'sort' => NULL], t('Who'), t('Points'), t('Unlocks'), t('Latest achievement')];
+  $achievers = $rows = ['top' => [], 'relative' => []];
 
   // determine whether we're doing a day frame or normal all-time.
   $day_frame = \Drupal::moduleHandler()->moduleExists('achievements_recent') && $days > 0;
@@ -22,7 +22,7 @@ function achievements_leaderboard_totals() {
   // load up all our achievers for the page.
   $query = db_select('achievement_totals', 'at')->extend('PagerDefault');
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
-  $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp', 'achievement_id'))->fields('u', array('name'));
+  $query->fields('at', ['uid', 'points', 'unlocks', 'timestamp', 'achievement_id'])->fields('u', ['name']);
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index. ever. bastids.
   $query->limit(\Drupal::config('achievements.settings')->get('achievements_leaderboard_count_per_page'));
   $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
@@ -40,11 +40,11 @@ function achievements_leaderboard_totals() {
   // we start at 1 and increase the rank for every row we're showing.
   // also, be careful to start with the right number on pager queries.
   $rank = 0 + ($GLOBALS['pager_page_array'][0] * \Drupal::config('achievements.settings')->get('achievements_leaderboard_count_per_page'));
-  foreach (array('top', 'relative') as $type) {
+  foreach (['top', 'relative'] as $type) {
     foreach ($achievers[$type] as $achiever) {
       // determine the current rank and set some speshul classes.
       $rank = $achiever->rank = isset($achiever->rank) ? $achiever->rank : $rank + 1;
-      $classes = ($achiever->uid == \Drupal::currentUser()->uid) ? array('achievement-leaderboard-current-user') : array();
+      $classes = ($achiever->uid == \Drupal::currentUser()->uid) ? ['achievement-leaderboard-current-user'] : [];
       if ($rank <= 3) {  // give special classes if its the current user or if it's a cherished leader position.
         $classes[] = 'achievement-leaderboard-top-rank';
         $classes[] = 'achievement-leaderboard-top-rank-' . $rank;
@@ -86,40 +86,40 @@ function achievements_leaderboard_totals() {
       // do this in achievements_template_shared_variables(), so reuse it. we
       // fake an #unlock so the 'unlocked' image is returned; the POV for this
       // achievement display is the ranked user/row, NOT the current user.
-      $achievers[$type][$achiever->uid]->latest = array(
+      $achievers[$type][$achiever->uid]->latest = [
         '#theme'        => 'achievement_latest_unlock',
         '#achievement'  => achievements_load($achiever->achievement_id),
-        '#unlock'       => array('timestamp' => $achiever->timestamp),
-      );
-      $rows[$type][$achiever->uid]['data'][] = array(
+        '#unlock'       => ['timestamp' => $achiever->timestamp],
+      ];
+      $rows[$type][$achiever->uid]['data'][] = [
         'data'    => render($achievers[$type][$achiever->uid]->latest),
-        'class'   => array('achievement-leaderboard-latest')
-      );
+        'class'   => ['achievement-leaderboard-latest']
+      ];
     }
   }
 
-  foreach (array('top', 'relative') as $type) {
-    $leaderboard = array(
+  foreach (['top', 'relative'] as $type) {
+    $leaderboard = [
       'achievers' => $achievers,
       'block'     => FALSE,
       'type'      => $type,
-      'render'    => array(
-        '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
+      'render'    => [
+        '#attributes' => ['class' => ['achievement-leaderboard', 'achievement-leaderboard-' . $type]],
         '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
         '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
         '#rows'       => $rows[$type],
         '#theme'      => 'table',
-      ),
-    );
+      ],
+    ];
     if ($type == 'top' || count($rows['relative'])) {
       \Drupal::moduleHandler()->alter('achievements_leaderboard', $leaderboard);
       $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
     }
   }
 
-  $build['achievements']['leaderboard_pager'] = array(
+  $build['achievements']['leaderboard_pager'] = [
     '#theme'  => 'pager',
-  );
+  ];
 
   return $build;
 }
@@ -130,12 +130,12 @@ function achievements_leaderboard_totals() {
  * @see achievement_leaderboard_totals()
  */
 function achievements_leaderboard_block() {
-  $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Pts'));
-  $achievers = $rows = array('top' => array(), 'relative' => array());
+  $header = [['data' => t('#'), 'sort' => NULL], t('Who'), t('Pts')];
+  $achievers = $rows = ['top' => [], 'relative' => []];
 
   $query = db_select('achievement_totals', 'at');
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
-  $query->fields('at', array('uid', 'points', 'unlocks'))->fields('u', array('name'));
+  $query->fields('at', ['uid', 'points', 'unlocks'])->fields('u', ['name']);
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index.
   $query->range(0, \Drupal::config('achievements.settings')->get('achievements_leaderboard_block_count_top'));
   $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
@@ -147,10 +147,10 @@ function achievements_leaderboard_block() {
   }
 
   $rank = 0; // innocent widdle variable!
-  foreach (array('top', 'relative') as $type) {
+  foreach (['top', 'relative'] as $type) {
     foreach ($achievers[$type] as $achiever) {
       $rank = $achiever->rank = isset($achiever->rank) ? $achiever->rank : $rank + 1;
-      $classes = ($achiever->uid == \Drupal::currentUser()->uid) ? array('achievement-leaderboard-current-user') : array();
+      $classes = ($achiever->uid == \Drupal::currentUser()->uid) ? ['achievement-leaderboard-current-user'] : [];
       if ($rank <= 3) {  // give special classes if its the current user or if it's a cherished leader position.
         $classes[] = 'achievement-leaderboard-top-rank';
         $classes[] = 'achievement-leaderboard-top-rank-' . $rank;
@@ -185,19 +185,19 @@ function achievements_leaderboard_block() {
     }
   }
 
-  foreach (array('top', 'relative') as $type) {
-    $leaderboard = array(
+  foreach (['top', 'relative'] as $type) {
+    $leaderboard = [
       'achievers' => $achievers,
       'block'     => TRUE,
       'type'      => $type,
-      'render'    => array(
-        '#attributes' => array('class' => array('achievement-leaderboard', 'achievement-leaderboard-' . $type)),
+      'render'    => [
+        '#attributes' => ['class' => ['achievement-leaderboard', 'achievement-leaderboard-' . $type]],
         '#header'     => $type == 'top' ? $header : NULL, // relative piggybacks off of top.
         '#empty'      => $type == 'top' ? t('No one has been ranked yet.') : NULL,
         '#rows'       => $rows[$type],
         '#theme'      => 'table',
-      ),
-    );
+      ],
+    ];
     if ($type == 'top' || count($rows['relative'])) {
       \Drupal::moduleHandler()->alter('achievements_leaderboard', $leaderboard);
       $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
@@ -229,24 +229,24 @@ function achievements_leaderboard_for($achievement) {
 // drupal_set_title(t('Achievement: @title', array('@title' => $achievement['title'])), PASS_THROUGH);
 
 
-  $build['achievements']['achievement'] = array(
+  $build['achievements']['achievement'] = [
     '#achievement'  => $achievement,
     '#unlock'       => achievements_unlocked_already($achievement['id']),
     '#theme'        => 'achievement__leaderboard_for',
-  );
+  ];
 
   // get stats for first and most recent unlocks.
   $query = db_select('achievement_unlocks', 'au');
   $query->join('achievement_totals', 'at', 'at.uid = au.uid');
   $query->join('users', 'u', 'u.uid = au.uid'); // same basic start for both queries.
   $query->condition('au.achievement_id', $achievement['id']); // ... with a slight tweak.
-  $query->fields('au', array('uid', 'rank', 'timestamp'))->fields('at', array('points', 'unlocks'))->fields('u', array('name'));
+  $query->fields('au', ['uid', 'rank', 'timestamp'])->fields('at', ['points', 'unlocks'])->fields('u', ['name']);
   $query2 = clone $query; // allows us to save a few lines of duplicate query building. never used clone before. awesome.
   $achievers['first']  = $query->orderBy('rank')->range(0, 10)->execute()->fetchAllAssoc('uid'); // FI... sigh.
   $achievers['recent'] = $query2->orderBy('timestamp', 'DESC')->range(0, 10)->execute()->fetchAllAssoc('uid');
 
-  foreach (array('first', 'recent') as $type) {
-    $rows = array(); // clear previous run.
+  foreach (['first', 'recent'] as $type) {
+    $rows = []; // clear previous run.
     foreach ($achievers[$type] as $achiever) {
       // @FIXME
 // theme() has been renamed to _theme() and should NEVER be called directly.
@@ -280,19 +280,19 @@ function achievements_leaderboard_for($achievement) {
 
     }
 
-    $leaderboard = array(
+    $leaderboard = [
       'achievers' => $achievers,
       'block'     => FALSE,
       'type'      => $type,
-      'render'    => array(
-        '#attributes' => array('class' => array('achievement-leaderboard-' . $type)),
-        '#caption'    => t('@type achievement unlocks', array('@type' => \Drupal\Component\Utility\Unicode::ucfirst($type))),
-        '#header'     => array(t('#'), t('Who'), t('Points'), t('When')),
+      'render'    => [
+        '#attributes' => ['class' => ['achievement-leaderboard-' . $type]],
+        '#caption'    => t('@type achievement unlocks', ['@type' => \Drupal\Component\Utility\Unicode::ucfirst($type)]),
+        '#header'     => [t('#'), t('Who'), t('Points'), t('When')],
         '#empty'      => t('No one has unlocked this yet. Keep trying!'),
         '#rows'       => $rows,
         '#theme'      => 'table',
-      ),
-    );
+      ],
+    ];
     \Drupal::moduleHandler()->alter('achievements_leaderboard', $leaderboard);
     $build['achievements']['leaderboard'][$type] = $leaderboard['render'];
   }
@@ -311,43 +311,43 @@ function achievements_user_page($account) {
   $achievers = achievements_totals_user(0, $account->uid);
   $achiever = reset($achievers);
 
-  $build['achievements']['stats'] = array(
+  $build['achievements']['stats'] = [
     '#theme'  => 'achievement_user_stats',
-    '#stats'  => array(
+    '#stats'  => [
       'name'          => format_username($account),
       'rank'          => isset($achiever->rank) ? $achiever->rank : 0,
       'points'        => isset($achiever->points) ? $achiever->points : 0,
       'unlocks_count' => count($unlocks),
       'total_count'   => count(achievements_load()),
-    ),
-  );
+    ],
+  ];
 
   $achievements_grouped = achievements_load(NULL, TRUE);
 
   // theme wrappers let us wrap our children with a rethemable/overridable DIV.
-  $build['achievements']['tabs']['#theme_wrappers'] = array('achievement_groups_wrapper');
+  $build['achievements']['tabs']['#theme_wrappers'] = ['achievement_groups_wrapper'];
 
   // use jQuery tabs if more than one group.
   if (count($achievements_grouped) > 1) {
     foreach ($achievements_grouped as $group_id => $group) {
-      $links['achievement-group-' . $group_id] = array(
+      $links['achievement-group-' . $group_id] = [
         'title'     => $group['title'],
         'fragment'  => 'achievement-group-' . $group_id,
         'href'      => '', // just the fragment, please.
         'external'  => TRUE, // no base_path dammit. GZUS.
-      );
+      ];
     }
-    $build['achievements']['tabs']['navigation'] = array('#theme' => 'links', '#links' => $links);
-    $build['achievements']['tabs']['navigation']['#attached']['library'][] = array('system', 'ui.tabs');
-    $build['achievements']['tabs']['navigation']['#attached']['js']= array( // I AM NOT A JS EXPERT. OOooOH NO.
-      'jQuery(document).ready(function(){jQuery("#achievement-groups").tabs();});' => array('type' => 'inline')
-    );
+    $build['achievements']['tabs']['navigation'] = ['#theme' => 'links', '#links' => $links];
+    $build['achievements']['tabs']['navigation']['#attached']['library'][] = ['system', 'ui.tabs'];
+    $build['achievements']['tabs']['navigation']['#attached']['js']= [ // I AM NOT A JS EXPERT. OOooOH NO.
+      'jQuery(document).ready(function(){jQuery("#achievement-groups").tabs();});' => ['type' => 'inline']
+    ];
   }
 
   foreach ($achievements_grouped as $group_id => $group) {
     $locked_weight = 0; // we can't use definition order.
     $build['achievements']['tabs']['groups'][$group_id]['#group_id'] = $group_id; // add a DIV in the wrapper.
-    $build['achievements']['tabs']['groups'][$group_id]['#theme_wrappers'] = array('achievement_group_wrapper');
+    $build['achievements']['tabs']['groups'][$group_id]['#theme_wrappers'] = ['achievement_group_wrapper'];
 
     foreach ($group['achievements'] as $achievement_id => $achievement) {
       if (!empty($achievement['invisible']) && !isset($unlocks[$achievement_id])) {
@@ -374,9 +374,9 @@ function achievements_user_page($account) {
 
       // Manual grant/take link.
       if (user_permission('manually grant achievements')) {
-        $contextual_links = array(
-          'achievements' => array('user', array($account->uid, 'achievements', $achievement_id)),
-        );
+        $contextual_links = [
+          'achievements' => ['user', [$account->uid, 'achievements', $achievement_id]],
+        ];
 
         $build['achievements']['tabs']['groups'][$group_id][$achievement_id]['#achievement']['#contextual_links'] = $contextual_links;
       }
@@ -408,15 +408,15 @@ function achievements_autocomplete($string = '') {
 function achievements_confirm($form, &$form_state, $account, $achievement, $action) {
   $form['#achievement'] = $achievement;
   $form['#account'] = $account;
-  $form['action'] = array(
+  $form['action'] = [
     '#type' => 'value',
     '#value' => $action,
-  );
+  ];
 
-  $tokens = array(
+  $tokens = [
     '%achievement' => $achievement['title'],
     '%user' => format_username($account),
-  );
+  ];
   $question = $action == 'grant'
     ? t('Grant %achievement to %user?', $tokens)
     : t('Take %achievement away from %user', $tokens);
@@ -436,20 +436,20 @@ function achievements_confirm_submit($form, &$form_state) {
 
   if (!$account->hasPermission('earn achievements')) {
     drupal_set_message(t('%username does not have permission to earn achievements.',
-      array('%username' => format_username($form['#account']))), 'error');
+      ['%username' => format_username($form['#account'])]), 'error');
     return;
   }
 
   if ($action == 'grant') {
     achievements_unlocked($achievement['id'], $account->uid);
     drupal_set_message(t('%username has been given %achievement.', // yeah, yeah.
-      array('%username' => format_username($account), '%achievement' => $achievement['title'])));
+      ['%username' => format_username($account), '%achievement' => $achievement['title']]));
     return;
   }
   elseif ($action == 'take') {
     achievements_locked($achievement['id'], $account->uid);
     drupal_set_message(t('%username has had %achievement taken away.', // nope, nope.
-      array('%username' => format_username($account), '%achievement' => $achievement['title'])));
+      ['%username' => format_username($account), '%achievement' => $achievement['title']]));
     return;
   }
 }
@@ -471,13 +471,13 @@ function achievements_autocomplete_search(&$value, $key, $string) {
  */
 function theme_achievement_user_stats($variables) {
   $output = '<div class="achievement-user-stats">'; // VERY CONFUSING CODE COMMENT ABOUT PSYNAPTIC. YOU THOUGHT I WAS KIDDING?
-  $output .= t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
+  $output .= t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', [
     '@name'           => $variables['stats']['name'],
     '@rank'           => $variables['stats']['rank'],
     '@points'         => $variables['stats']['points'],
     '@unlocks_count'  => $variables['stats']['unlocks_count'],
     '@total_count'    => $variables['stats']['total_count'],
-  ));
+  ]);
   $output .= '</div>';
   return $output;
 }
@@ -512,5 +512,5 @@ function theme_achievement_group_wrapper($variables) {
  *   A Drupal user object.
  */
 function achievements_user_page_title($account) {
-  return t('Achievements for @name', array('@name' => format_username($account)));
+  return t('Achievements for @name', ['@name' => format_username($account)]);
 }
