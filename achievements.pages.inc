@@ -8,32 +8,25 @@
 /**
  * Menu callback; show the site-wide leaderboard.
  *
- * @param $days
- *   If the achievements_recent.module is enabled, it will use the $days
- *   parameter to constrain the leaderboard to one of its day frames.
+ * @see achievement_leaderboard_block()
  */
-function achievements_leaderboard_totals($days = NULL) {
+function achievements_leaderboard_totals() {
   // force no sorting on # so it doesn't get the 'active' CSS, which screws up relative non-header display.
   $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Points'), t('Unlocks'), t('Latest achievement'));
   $achievers = $rows = array('top' => array(), 'relative' => array());
 
-  // determine whether we're doing a day frame or normal all-time.
-  $day_frame = module_exists('achievements_recent') && $days > 0;
-  $leaderboard_table = $day_frame ? 'achievement_totals_days' : 'achievement_totals';
-
   // load up all our achievers for the page.
-  $query = db_select($leaderboard_table, 'at')->extend('PagerDefault');
+  $query = db_select('achievement_totals', 'at')->extend('PagerDefault');
   $query->addTag('achievement_totals')->join('users', 'u', 'u.uid = at.uid');
   $query->fields('at', array('uid', 'points', 'unlocks', 'timestamp', 'achievement_id'))->fields('u', array('name'));
-  $day_frame ? $query->condition('days', $days) : NULL; // hey, it's better than a 3 line code-style-friendly if.
   $query->orderBy('at.points', 'DESC')->orderBy('at.timestamp'); // @bug DESC/ASC doesn't index. ever. bastids.
   $query->limit(variable_get('achievements_leaderboard_count_per_page', 10));
   $achievers['top'] = $query->execute()->fetchAllAssoc('uid');
 
   if (user_is_logged_in() && variable_get('achievements_leaderboard_relative', 'nearby_ranks') != 'disabled') {
     $achievers['relative'] = (variable_get('achievements_leaderboard_relative', 'nearby_ranks') == 'nearby_ranks')
-      ? achievements_totals_user(variable_get('achievements_leaderboard_relative_nearby_ranks', 2), NULL, $days)
-      : achievements_totals_user(0, NULL, $days); // you and me, togetheRrrr FoReEEvvvVeeEeeRRrRR.
+      ? achievements_totals_user(variable_get('achievements_leaderboard_relative_nearby_ranks', 2))
+      : achievements_totals_user(); // you and me, togetheRrrr FoReEEvvvVeeEeeRRrRR.
   }
 
   // display our achievers in "how awesome they are" order.
@@ -120,6 +113,8 @@ function achievements_leaderboard_totals($days = NULL) {
 
 /**
  * Block callback; show the global leaderboard.
+ *
+ * @see achievement_leaderboard_totals()
  */
 function achievements_leaderboard_block() {
   $header = array(array('data' => t('#'), 'sort' => NULL), t('Who'), t('Pts'));
