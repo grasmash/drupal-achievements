@@ -19,6 +19,9 @@ function achievements_permission() {
     'administer achievements' => array(
       'title' => t('Administer achievements'),
     ),
+    'manually grant achievements' => array(
+      'title' => t('Manually grant achievements'),
+    ),
   );
 }
 
@@ -50,6 +53,26 @@ function achievements_menu() {
     'page arguments'    => array(1),
     'title'             => 'Achievements',
     'type'              => MENU_LOCAL_TASK,
+  );
+  $items['user/%user/achievements/%achievements/grant'] = array(
+    'access callback' => 'achievements_access',
+    'access arguments' => array(1, 3, 'grant'),
+    'file' => 'achievements.pages.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('achievements_confirm', 1, 3, 'grant'),
+    'type' => MENU_LOCAL_ACTION,
+    'context' => MENU_CONTEXT_INLINE,
+    'title' => 'Grant achievement',
+  );
+  $items['user/%user/achievements/%achievements/take'] = array(
+    'access callback' => 'achievements_access',
+    'access arguments' => array(1, 3, 'take'),
+    'file' => 'achievements.pages.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('achievements_confirm', 1, 3, 'take'),
+    'type' => MENU_LOCAL_ACTION,
+    'context' => MENU_CONTEXT_INLINE,
+    'title' => 'Take achievement away',
   );
   $items['admin/config/people/achievements'] = array(
     'access arguments'  => array('administer achievements'),
@@ -102,6 +125,33 @@ function achievements_theme() {
       'render element'  => 'element',
     ),
   );
+}
+
+/**
+ * Access callback for manually granting/taking achievements.
+ */
+function achievements_access($account, $achievement, $action) {
+  if (!user_access('manually grant achievements')) {
+    return FALSE;
+  }
+
+  // Account must be able to have achievements.
+  list($uid, $access) = achievements_user_is_achiever($account->uid);
+  if (!$access) {
+    return FALSE;
+  }
+
+  // Only allow access to actions that make sense.
+  $unlocked = achievements_unlocked_already($achievement['id'], $account->uid);
+
+  if ($unlocked === NULL) {
+    // User does not have achievement.
+    return $action !== 'take';
+  }
+  else {
+    // User has achievement.
+    return $action !== 'grant';
+  }
 }
 
 /**
