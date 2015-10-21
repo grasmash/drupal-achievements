@@ -62,7 +62,7 @@ class AdminForm extends ConfigFormBase {
     $form['achievements_rankings']['leaderboard_relative'] = [
       '#type' => 'radios',
       '#title' => $this->t('Relative leaderboard display'),
-      '#default_value' => $config->get('achievements_leaderboard_relative'),
+      '#default_value' => $config->get('leaderboard_relative'),
       '#options' => [
         'disabled' => $this->t("Don't show the relative leaderboard"),
         'user_only' => $this->t('Show only the current user'),
@@ -72,7 +72,7 @@ class AdminForm extends ConfigFormBase {
     $form['achievements_rankings']['leaderboard_relative_nearby_ranks'] = [
       '#type' => 'select',
       '#title' => $this->t('Number of nearby ranks to display'),
-      '#default_value' => $config->get('achievements_leaderboard_relative_nearby_ranks'),
+      '#default_value' => $config->get('leaderboard_relative_nearby_ranks'),
       '#options' => array_combine(range(1, 10), range(1, 10)),
     ];
 
