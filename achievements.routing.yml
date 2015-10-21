@@ -15,7 +15,7 @@ achievements.leaderboard:
 
 # AchievementType routing definition
 entity.achievement_type.collection:
-  path: '/admin/structure/achievement_type'
+  path: '/admin/config/people/achievements/types'
   defaults:
     _entity_list: 'achievement_type'
     _title: 'Achievement type'
@@ -23,7 +23,7 @@ entity.achievement_type.collection:
     _permission: 'administer achievements'
 
 entity.achievement_type.add_form:
-  path: '/admin/structure/achievement_type/add'
+  path: '/admin/people/achievements/types/add'
   defaults:
     _entity_form: 'achievement_type.add'
     _title: 'Add Achievement type'
@@ -31,7 +31,7 @@ entity.achievement_type.add_form:
     _permission: 'administer achievements'
 
 entity.achievement_type.edit_form:
-  path: '/admin/structure/achievement_type/{achievement_type}'
+  path: '/admin/people/achievements/types/{achievement_type}'
   defaults:
     _entity_form: 'achievement_type.edit'
     _title: 'Edit Achievement type'
@@ -39,7 +39,7 @@ entity.achievement_type.edit_form:
     _permission: 'administer achievements'
 
 entity.achievement_type.delete_form:
-  path: '/admin/structure/achievement_type/{achievement_type}/delete'
+  path: '/admin/people/achievements/types/{achievement_type}/delete'
   defaults:
     _entity_form: 'achievement_type.delete'
     _title: 'Delete Achievement type'

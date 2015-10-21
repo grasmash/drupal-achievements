@@ -23,26 +23,33 @@ class AchievementTypeForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
+    /** @var \Drupal\achievements\AchievementTypeInterface $achievement_type */
     $achievement_type = $this->entity;
-    $form['label'] = array(
+    $form['title'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Label'),
+      '#title' => $this->t('Title'),
       '#maxlength' => 255,
       '#default_value' => $achievement_type->label(),
-      '#description' => $this->t("Label for the Achievement type."),
       '#required' => TRUE,
-    );
+    ];
 
-    $form['id'] = array(
+    $form['id'] = [
       '#type' => 'machine_name',
       '#default_value' => $achievement_type->id(),
-      '#machine_name' => array(
+      '#machine_name' => [
         'exists' => '\Drupal\achievements\Entity\AchievementType::load',
-      ),
+        'source' => ['title'],
+      ],
       '#disabled' => !$achievement_type->isNew(),
-    );
+    ];
 
-    /* You will need additional form elements for your custom properties. */
+    $form['description'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Description'),
+      '#required' => TRUE,
+      '#default_value' => $achievement_type->getDescription(),
+      '#description' => $this->t('The description of the achievement.'),
+    ];
 
     return $form;
   }

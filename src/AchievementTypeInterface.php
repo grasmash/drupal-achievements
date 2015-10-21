@@ -13,6 +13,13 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  * Provides an interface for defining Achievement type entities.
  */
 interface AchievementTypeInterface extends ConfigEntityInterface {
-  // Add get/set methods for your configuration properties here.
+
+  /**
+   * Gets the description.
+   *
+   * @return string
+   *   The description of this achievment type.
+   */
+  public function getDescription();
 
 }

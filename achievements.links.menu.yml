@@ -8,5 +8,5 @@ entity.achievement_type.collection:
   title: 'Achievement type'
   route_name: entity.achievement_type.collection
   description: 'List Achievement type'
-  parent: system.admin_structure
+  parent: achievements.admin 
 

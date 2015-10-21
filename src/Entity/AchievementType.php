@@ -28,7 +28,7 @@ use Drupal\achievements\AchievementTypeInterface;
  *   admin_permission = "administer site configuration",
  *   entity_keys = {
  *     "id" = "id",
- *     "label" = "label",
+ *     "label" = "title",
  *     "uuid" = "uuid"
  *   },
  *   links = {
@@ -36,6 +36,16 @@ use Drupal\achievements\AchievementTypeInterface;
  *     "edit-form" = "/admin/structure/achievement_type/{achievement_type}/edit",
  *     "delete-form" = "/admin/structure/achievement_type/{achievement_type}/delete",
  *     "collection" = "/admin/structure/visibility_group"
+ *   },
+ *   config_export = {
+ *     "id",
+ *     "title",
+ *     "description",
+ *     "storage",
+ *     "secret",
+ *     "invisible",
+ *     "manual_only",
+ *     "points"
  *   }
  * )
  */
@@ -52,6 +62,20 @@ class AchievementType extends ConfigEntityBase implements AchievementTypeInterfa
    *
    * @var string
    */
-  protected $label;
+  protected $title;
+
+  /**
+   * The achievement type description.
+   *
+   * @var string
+   */
+  protected $description;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDescription() {
+    return $this->description;
+  }
 
 }
