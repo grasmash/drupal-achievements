@@ -12,3 +12,37 @@ achievements.leaderboard:
     _title: 'Leaderboard'
   requirements:
     _permission: 'access achievements'
+
+# AchievementType routing definition
+entity.achievement_type.collection:
+  path: '/admin/structure/achievement_type'
+  defaults:
+    _entity_list: 'achievement_type'
+    _title: 'Achievement type'
+  requirements:
+    _permission: 'administer achievements'
+
+entity.achievement_type.add_form:
+  path: '/admin/structure/achievement_type/add'
+  defaults:
+    _entity_form: 'achievement_type.add'
+    _title: 'Add Achievement type'
+  requirements:
+    _permission: 'administer achievements'
+
+entity.achievement_type.edit_form:
+  path: '/admin/structure/achievement_type/{achievement_type}'
+  defaults:
+    _entity_form: 'achievement_type.edit'
+    _title: 'Edit Achievement type'
+  requirements:
+    _permission: 'administer achievements'
+
+entity.achievement_type.delete_form:
+  path: '/admin/structure/achievement_type/{achievement_type}/delete'
+  defaults:
+    _entity_form: 'achievement_type.delete'
+    _title: 'Delete Achievement type'
+  requirements:
+    _permission: 'administer achievements'
+

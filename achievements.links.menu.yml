@@ -3,3 +3,10 @@ achievements.config:
   parent: user.admin_index
   description: 'Configure the achievements system.'
   route_name: achievements.admin
+# Achievement type menu items definition
+entity.achievement_type.collection:
+  title: 'Achievement type'
+  route_name: entity.achievement_type.collection
+  description: 'List Achievement type'
+  parent: system.admin_structure
+

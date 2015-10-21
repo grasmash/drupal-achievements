@@ -1,0 +1,12 @@
+achievements.achievement_type.*:
+  type: config_entity
+  label: 'Achievement type config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string
