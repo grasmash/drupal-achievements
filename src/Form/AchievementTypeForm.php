@@ -51,6 +51,36 @@ class AchievementTypeForm extends EntityForm {
       '#description' => $this->t('The description of the achievement.'),
     ];
 
+    // @todo How to handle images?
+
+    $form['storage'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Storage'),
+      '#description' => $this->t('@todo'),
+      '#default_value' => $achievement_type->getStorage(),
+    ];
+
+    $form['secret'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Secret'),
+      '#description' => $this->t('The achievement is only visible once a user has unlocked it.'),
+      '#default_value' => $achievement_type->isSecret(),
+    ];
+
+    $form['invisible'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Invisible'),
+      '#description' => $this->t('The achievement does <em>not</em> display.'),
+      '#default_value' => $achievement_type->isInvisible(),
+    ];
+
+    $form['manual_only'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Manual-only'),
+      '#description' => $this->t('This should be set if the achievement can only be manually granted to a user.'),
+      '#default_value' => $achievement_type->isManualOnly(),
+    ];
+
     return $form;
   }
 

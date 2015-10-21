@@ -22,4 +22,35 @@ interface AchievementTypeInterface extends ConfigEntityInterface {
    */
   public function getDescription();
 
+  /**
+   * Gets the storage.
+   *
+   * @return string
+   */
+  public function getStorage();
+
+  /**
+   * Determine if the achievement is secret.
+   *
+   * @return bool
+   *   Returns TRUE if the achievement is secret.
+   */
+  public function isSecret();
+
+  /**
+   * Determine if the achievement is invisible.
+   *
+   * @return bool
+   *   Returns TRUE if the achievement is invisible.
+   */
+  public function isInvisible();
+
+  /**
+   * Determine if an achievement can only be granted manually.
+   *
+   * @return bool
+   *   Returns TRUE if the achievement can only be granted manually.
+   */
+  public function isManualOnly();
+
 }

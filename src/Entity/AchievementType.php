@@ -72,10 +72,66 @@ class AchievementType extends ConfigEntityBase implements AchievementTypeInterfa
   protected $description;
 
   /**
+   * The achievement storage.
+   *
+   * @var string
+   */
+  protected $storage;
+
+  /**
+   * Flag denoting the achievement is invisible.
+   *
+   * @var bool
+   */
+  protected $invisible;
+
+  /**
+   * Flag denoting the achievement is secret.
+   *
+   * @var bool
+   */
+  protected $secret;
+
+  /**
+   * Flag denoting the achievment is manual-only.
+   *
+   * @var bool
+   */
+  protected $manual_only;
+
+  /**
    * {@inheritdoc}
    */
   public function getDescription() {
     return $this->description;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getStorage() {
+    return $this->storage;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isSecret() {
+    return $this->secret;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isInvisible() {
+    return $this->invisible;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isManualOnly() {
+    return $this->manual_only;
   }
 
 }

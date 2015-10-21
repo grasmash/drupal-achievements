@@ -5,8 +5,26 @@ achievements.achievement_type.*:
     id:
       type: string
       label: 'ID'
-    label:
+    title:
       type: label
-      label: 'Label'
+      label: 'Title'
     uuid:
       type: string
+    description:
+      type: text
+      label: 'Description'
+    storage:
+      type: string
+      label: 'Storage'
+    secret:
+      type: boolean
+      label: 'Secret'
+    invisible:
+      type: boolean
+      label: 'Invisible'
+    manual_only:
+      type: boolean
+      label: 'Manual-only'
+    points:
+      type: integer
+      label: 'Points'
