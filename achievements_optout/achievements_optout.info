@@ -1,7 +1,0 @@
-name = Opt-out
-description = "Allows users to opt-out of achievements entirely."
-dependencies[] = achievements
-dependencies[] = field
-dependencies[] = options
-package = Achievements
-core = 7.x
