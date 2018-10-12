@@ -1,5 +1,5 @@
-<?php
 
+{#
 /**
  * @file
  * Default theme implementation for a user's latest unlock on the leaderboard.
@@ -14,12 +14,12 @@
  * - $achievement_title: The renderable and linked achievement title.
  * - $achievement_points: A renderable string of "$n points".
  */
-?>
+#}
 <div class="achievement-latest-image">
-  <?php print render($image); ?>
+  {{ image }}
 </div>
 
 <div class="achievement-details">
-  <div class="achievement-latest-title"><?php print render($achievement_title); ?></div>
-  <div class="achievement-latest-points"><?php print render($achievement_points); ?></div>
+  <div class="achievement-latest-title">{{ achievement_title }}</div>
+  <div class="achievement-latest-points">{{ achievement_points }}</div>
 </div>

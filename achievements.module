@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Url;
+
 /**
  * @file
  * Unlock achievements and earn points based on milestones.
@@ -27,9 +29,6 @@ function achievements_theme() {
       'template'        => 'achievement-latest-unlock',
       'path'            => $path,
     ],
-    'achievement_user_stats' => [
-      'variables'       => ['stats' => NULL],
-    ],
     'achievement_groups_wrapper' => [
       'render element'  => 'element',
     ],
@@ -38,6 +37,8 @@ function achievements_theme() {
     ],
   ];
 }
+
+
 
 /**
  * Process variables for achievement.tpl.php.
@@ -51,7 +52,8 @@ function template_preprocess_achievement(&$variables) {
  */
 function template_preprocess_achievement_notification(&$variables) {
   achievements_template_shared_variables($variables);
-  $variables['classes_array'][] = 'element-hidden';
+  $variables['classes'][] = 'element-hidden';
+  $variables['classes'][] = 'achievement-notification';
 }
 
 /**
@@ -69,42 +71,42 @@ function template_preprocess_achievement_latest_unlock(&$variables) {
  * of the various helper $variables needed for theme display.
  */
 function achievements_template_shared_variables(&$variables) {
+  /** @var \Drupal\achievements\Entity\AchievementEntity $achievement */
+  $achievement = $variables['achievement'];
   $variables['state'] = isset($variables['unlock']) ? 'unlocked' : 'locked';
-  $variables['classes_array'][] = 'achievement-' . $variables['state'];
-  $variables['classes_array'][] = 'ui-corner-all'; // add rounded rects for tabs.
-  // @FIXME
-// url() expects a route name or an external URI.
-// $variables['achievement_url'] = url('achievements/leaderboard/' . $variables['achievement']['id']);
+  $variables['classes'][] = 'achievement-' . $variables['state'];
+  $variables['classes'][] = 'ui-corner-all'; // add rounded rects for tabs.
+  $variables['achievement_url'] =   $url = Url::fromUri('internal:/achievements/leaderboard/' . $achievement->id());
 
-
-  if (isset($variables['achievement']['secret'])
-    && !achievements_unlocked_already($variables['achievement']['id'])) {
-    $variables['achievement']['points'] = t('???');
-    $variables['achievement']['title'] = t('Secret achievement');
-    $variables['achievement']['description'] = t('Continue playing to unlock this secret achievement.');
+  if ($achievement->isSecret()
+    && !achievements_unlocked_already($achievement->id())) {
+    $achievement->set('points', t('???'));
+    $achievement->set('title', t('Secret achievement'));
+    $achievement->set('destcription', t('Continue playing to unlock this secret achievement.'));
     $variables['state'] = 'secret';
   }
 
   $variables['image'] = [
     '#theme' => 'image_formatter',
     '#item' => [
-      'uri'   => $variables['image_path'],
-      'alt'   => $variables['achievement']['title'],
-      'title' => $variables['achievement']['title'],
+      // @todo Add path dynamically!
+      'uri'   => "/" . \Drupal::moduleHandler()->getModule('achievements')->getPath() . '/images/default-locked-70.jpg',
+      'alt'   => $achievement->label(),
+      'title' => $achievement->label(),
     ],
     '#path' => [
-      'path'    => 'achievements/leaderboard/' . $variables['achievement']['id'],
+      'path'    => 'achievements/leaderboard/' . $achievement->id(),
       'options' => ['html' => TRUE],
     ],
   ];
 
   $variables['achievement_title'] = [
     '#type'   => 'link',
-    '#title'  => $variables['achievement']['title'],
-    '#href'   => 'achievements/leaderboard/' . $variables['achievement']['id'],
+    '#title'  => $achievement->label(),
+    '#url'   => Url::fromUri('internal:/achievements/leaderboard/' . $achievement->id()),
   ];
   $variables['achievement_points'] = [
-    '#markup' => t('@points points', ['@points' => $variables['achievement']['points']]),
+    '#markup' => t('@points points', ['@points' => $achievement->getPoints()]),
   ];
   $variables['unlocked_date'] = [
     '#markup' => isset($variables['unlock']['timestamp'])
@@ -429,55 +431,44 @@ function achievements_user_delete(\Drupal\user\UserInterface $account) {
 /**
  * Implements hook_page_alter().
  */
-function achievements_page_alter(&$page) {
+function achievements_page_bottom(array &$page_bottom) {
   // Achievement popups won't show if the overlay is active, so we'll defer until it isn't.
   // See http://drupal.stackexchange.com/questions/35382/hide-module-when-path-is-overlay.
-  if (achievements_user_is_achiever() && !(\Drupal::moduleHandler()->moduleExists('overlay') && path_is_admin($_GET['q']))) {
-    $unlocks = db_select('achievement_unlocks', 'au')->fields('au', ['achievement_id', 'rank', 'timestamp']) // find everything we've yet to see.
-      ->condition('uid', \Drupal::currentUser()->uid)->condition('seen', 0)->orderBy('timestamp')->execute()->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC);
+  if (achievements_user_is_achiever()) {
+    $unlocks = db_select('achievement_unlocks', 'au')
+      ->fields('au', [
+          'achievement_id',
+          'rank',
+          'timestamp'
+        ])
+      ->condition('uid', \Drupal::currentUser()->id())
+      ->condition('seen', 0)
+      ->orderBy('timestamp')
+      ->execute()
+      ->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC);
 
     // if unseen unlocks are available, load in our JS libraries,
     // display our achievement notification, and flag 'em as seen.
     if (count($unlocks)) {
-      // @FIXME
-// The Assets API has totally changed. CSS, JavaScript, and libraries are now
-// attached directly to render arrays using the #attached property.
-//
-//
-// @see https://www.drupal.org/node/2169605
-// @see https://www.drupal.org/node/2408597
-// drupal_add_library('system', 'ui.dialog');
-
-      // @FIXME
-// The Assets API has totally changed. CSS, JavaScript, and libraries are now
-// attached directly to render arrays using the #attached property.
-//
-//
-// @see https://www.drupal.org/node/2169605
-// @see https://www.drupal.org/node/2408597
-// drupal_add_library('system', 'effects.fade');
-
-      // @FIXME
-// The Assets API has totally changed. CSS, JavaScript, and libraries are now
-// attached directly to render arrays using the #attached property.
-//
-//
-// @see https://www.drupal.org/node/2169605
-// @see https://www.drupal.org/node/2408597
-// drupal_add_js(drupal_get_path('module', 'achievements') . '/achievements.js');
-
-
       foreach ($unlocks as $unlock) {
         $achievement = achievements_load($unlock['achievement_id']);
-        $page['page_bottom']['achievements'][$unlock['achievement_id']] = [
+        $page_bottom['achievements'][$unlock['achievement_id']] = [
           '#theme'        => 'achievement_notification',
           '#achievement'  => $achievement,
           '#unlock'       => $unlock,
+          '#attached'     => [
+            'library'     => [
+              'achievements/achievements',
+            ],
+          ],
         ];
       }
 
-      db_update('achievement_unlocks')->fields(['seen' => 1])
-        ->condition('uid', \Drupal::currentUser()->uid)->condition('seen', 0)->execute();
+      db_update('achievement_unlocks')
+        ->fields(['seen' => 1])
+        ->condition('uid', \Drupal::currentUser()->id())
+        ->condition('seen', 0)
+        ->execute();
     }
   }
 }
