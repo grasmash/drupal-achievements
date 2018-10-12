@@ -1,13 +1,13 @@
-achievements.achievement_type.*:
+achievements.achievement_entity.*:
   type: config_entity
-  label: 'Achievement type config'
+  label: 'Achievement entity config'
   mapping:
     id:
       type: string
       label: 'ID'
-    title:
+    label:
       type: label
-      label: 'Title'
+      label: 'Label'
     uuid:
       type: string
     description:

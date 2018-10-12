@@ -80,19 +80,6 @@ class AdminForm extends ConfigFormBase {
       '#title' => $this->t('Additional configuration'),
       '#type' => 'fieldset',
     );
-    $module_path = drupal_get_path('module', 'achievements');
-    foreach (array('unlocked', 'locked', 'secret') as $image_type) {
-      // @FIXME
-// // @FIXME
-// // The correct configuration object could not be determined. You'll need to
-// // rewrite this call manually.
-// $form['achievements_config']['achievements_image_' . $image_type] = array(
-//       '#default_value'      => variable_get('achievements_image_' . $image_type, $module_path . '/images/default-' . $image_type . '-70.jpg'),
-//       '#title'              => t('Default @image_type picture', array('@image_type' => $image_type)),
-//       '#type'               => 'textfield',
-//     );
-
-    }
     $form['achievements_config']['unlocked_move_to_top'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t("Move the user's unlocked achievements to the top of their achievement page."),

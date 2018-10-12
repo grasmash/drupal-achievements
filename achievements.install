@@ -136,9 +136,6 @@ function achievements_schema() {
  * Implements hook_uninstall().
  */
 function achievements_uninstall() {
-  \Drupal::config('achievements.settings')->clear('achievements_image_secret')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_image_locked')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_image_unlocked')->save();
   \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_count_top')->save();
   \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_relative')->save();
   \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_relative_nearby_ranks')->save();
@@ -150,59 +147,3 @@ function achievements_uninstall() {
   \Drupal::config('achievements.settings')->clear('achievements_manual_user')->save();
   \Drupal::config('achievements.settings')->clear('achievements_unlocked_move_to_top')->save();
 }
-
-/**
- * Add support for achievement notification popups.
- */
-function achievements_update_7100() {
-  db_add_field('achievement_unlocks', 'seen', array(
-    'default'           => 0,
-    'description'       => 'A boolean indicating whether the user has been notified of this unlock.',
-    'not null'          => TRUE,
-    'type'              => 'int',
-  ));
-
-  db_add_index('achievement_unlocks', 'uid_seen_timestamp', array('uid', 'seen', 'timestamp'));
-  db_update('achievement_unlocks')->fields(array('seen' => 1))->execute();
-}
-
-/**
- * Add support for "latest achievement" in the leaderboard.
- */
-function achievements_update_7101() {
-  db_add_field('achievement_totals', 'achievement_id', array(
-    'default'       => '',
-    'description'   => 'The ID of the achievement the {users}.uid has most recently unlocked.',
-    'length'        => 32,
-    'not null'      => TRUE,
-    'type'          => 'varchar',
-  ));
-
-  $achievers = db_select('achievement_totals', 'at')->fields('at', array('uid', 'timestamp'))->execute()->fetchAllAssoc('uid');
-  foreach ($achievers as $achiever) { // pre-fill all the current achievers with their latest unlock.
-    $achievement_id = db_select('achievement_unlocks', 'au')->fields('au', array('achievement_id')) // MINE MINE MINE.
-      ->condition('uid', $achiever->uid)->condition('timestamp', $achiever->timestamp)->range(0, 1)->execute()->fetchField();
-    db_update('achievement_totals')->fields(array('achievement_id' => $achievement_id))->condition('uid', $achiever->uid)->execute();
-  }
-}
-
-/**
- * Rename the "hidden" achievement variable to "secret".
- */
-function achievements_update_7102() {
-  $module_path = drupal_get_path('module', 'achievements');
-  if (\Drupal::config('achievements.settings')->get('achievements_image_hidden') == $module_path . '/images/default-hidden-70.jpg') {
-    \Drupal::configFactory()->getEditable('achievements.settings')->set('achievements_image_secret', $module_path . '/images/default-secret-70.jpg')->save();
-  }
-  else {
-    // @FIXME
-// Could not extract the default value because it is either indeterminate, or
-// not scalar. You'll need to provide a default value in
-// config/install/achievements.settings.yml and config/schema/achievements.schema.yml.
-\Drupal::configFactory()->getEditable('achievements.settings')->set('achievements_image_secret', \Drupal::config('achievements.settings')->get('achievements_image_hidden'))->save();
-  }
-
-  \Drupal::config('achievements.settings')->clear('achievements_image_hidden')->save(); // Send a warning to the administrator just in case they haven't seen the CHANGELOG.
-  drupal_set_message(t('"hidden" achievements MUST be retyped to "secret" else they will be exposed. See CHANGELOG.txt for more information.'), 'warning');
-}
-
