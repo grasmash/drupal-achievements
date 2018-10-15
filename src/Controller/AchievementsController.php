@@ -116,7 +116,7 @@ class AchievementsController extends ControllerBase {
         }
       }
       elseif (!isset($unlocks[$achievement_id]) && $achievements_unlocked_move_to_top) {
-        // if we're forcing unlocks to the top, locked achievements have to be forced to the bottom.
+        // If we're forcing unlocks to the top, locked achievements have to be forced to the bottom.
         $build[$achievement_id]['#weight'] = $locked_weight++;
       }
     }

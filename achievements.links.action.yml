@@ -3,4 +3,3 @@ entity.achievement_entity.add_form:
   title: 'Add Achievement entity'
   appears_on:
     - entity.achievement_entity.collection
-

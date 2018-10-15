@@ -19,7 +19,7 @@ class AchievementId extends Standard {
    * This usually needs to be overridden to provide a proper title.
    */
   public function title() {
-    $achievement_id =  $this->argument;
+    $achievement_id = $this->argument;
     $config = \Drupal::config("achievements.achievement_entity.$achievement_id");
     $label = $config->get('label');
 

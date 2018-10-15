@@ -161,9 +161,11 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
             $filename = 'default-locked-70.jpg';
           }
           break;
+
         case 'unlocked':
           $filename = 'default-unlocked-70.jpg';
           break;
+
         default:
           $filename = 'default-locked-70.jpg';
       }
@@ -175,6 +177,9 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
     return $this->image_path;
   }
 
+  /**
+   *
+   */
   public function isDefaultRevision() {
     return TRUE;
   }

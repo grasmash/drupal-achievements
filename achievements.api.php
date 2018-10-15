@@ -47,7 +47,7 @@ function achievements_example_entity_insert(Drupal\Core\Entity\EntityInterface $
     //
     // Knowing that we currently have 50 and 100 comment achievements, we simply
     // loop through each milestone and check if the current count value matches.
-    foreach (array(1, 50, 100) as $count) {
+    foreach ([1, 50, 100] as $count) {
       if ($current_count == $count) {
         achievements_unlocked('comment_count_' . $count, $comment->getOwnerId());
       }
@@ -86,12 +86,12 @@ function example_achievements_info_alter(&$achievements) {
  * the relevant information has been stored or updated in the database.
  *
  * @param $achievement
- *  An array of information about the achievement.
+ *   An array of information about the achievement.
  * @param $uid
- *  The user ID who has unlocked the achievement.
+ *   The user ID who has unlocked the achievement.
  */
 function example_achievements_unlocked($achievement, $uid) {
-  // post to twitter or facebook, unlock an additional reward, etc., etc.
+  // Post to twitter or facebook, unlock an additional reward, etc., etc.
 }
 
 /**
@@ -102,12 +102,12 @@ function example_achievements_unlocked($achievement, $uid) {
  * is currently only possible from the UI at admin/config/people/achievements.
  *
  * @param $achievement
- *  An array of information about the achievement.
+ *   An array of information about the achievement.
  * @param $uid
- *  The user ID who is having the achievement taken away.
+ *   The user ID who is having the achievement taken away.
  */
 function example_achievements_locked($achievement, $uid) {
-  // react to achievement removal. bad user, BaAaDdd UUserrRR!
+  // React to achievement removal. bad user, BaAaDdd UUserrRR!
 }
 
 /**
@@ -157,7 +157,7 @@ function example_achievements_leaderboard_alter(&$leaderboard) {
  *   Find users nearby the ranking of the passed user.
  */
 function example_query_alter(QueryAlterableInterface $query) {
-  // futz with morbus' logic. insert explosions and singularities.
+  // Futz with morbus' logic. insert explosions and singularities.
 }
 
 /**

@@ -124,4 +124,3 @@ Achievements ships with some tweaky and entirely optional modules:
    disabled. This creates an environment where the user unlocks achievements
    for their own gratification, not to simply one-up another user or to get
    noticed on a nebulous high-score table.
-

@@ -5,6 +5,9 @@ namespace Drupal\achievements\Entity;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 
+/**
+ *
+ */
 class AchievementEntityViewBuilder extends EntityViewBuilder {
 
   /**
@@ -23,4 +26,5 @@ class AchievementEntityViewBuilder extends EntityViewBuilder {
 
     return $build;
   }
+
 }

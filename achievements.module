@@ -1,11 +1,12 @@
 <?php
 
-use Drupal\Core\Url;
-
 /**
  * @file
  * Unlock achievements and earn points based on milestones.
  */
+
+use Drupal\user\UserInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_theme().
@@ -67,13 +68,13 @@ function template_preprocess_achievement_latest_unlock(&$variables) {
  *     name, rank, points, unlocks_count, and total_count.
  */
 function template_preprocess_achievement_user_stats(&$variables) {
-  $variables['message'] = t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', array(
+  $variables['message'] = t('@name is ranked #@rank with @points points. @unlocks_count of @total_count achievements have been unlocked.', [
     '@name'           => $variables['stats']['name'],
     '@rank'           => $variables['stats']['rank'],
     '@points'         => $variables['stats']['points'],
     '@unlocks_count'  => $variables['stats']['unlocks_count'],
     '@total_count'    => $variables['stats']['total_count'],
-  ));
+  ]);
 }
 
 /**
@@ -89,8 +90,9 @@ function achievements_template_shared_variables(&$variables) {
   $variables['state'] = isset($variables['unlock']) ? 'unlocked' : 'locked';
   $variables['classes'][] = 'achievement';
   $variables['classes'][] = 'achievement-' . $variables['state'];
-  $variables['classes'][] = 'ui-corner-all'; // add rounded rects for tabs.
-  $variables['achievement_url'] =   $url = Url::fromUri('internal:/achievements/leaderboard/' . $achievement->id());
+  // Add rounded rects for tabs.
+  $variables['classes'][] = 'ui-corner-all';
+  $variables['achievement_url'] = $url = Url::fromUri('internal:/achievements/leaderboard/' . $achievement->id());
 
   if ($achievement->isSecret()
     && !achievements_unlocked_already($achievement->id())) {
@@ -127,13 +129,13 @@ function achievements_template_shared_variables(&$variables) {
   ];
   $variables['unlocked_date'] = [
     '#markup' => isset($variables['unlock']['timestamp'])
-      ? format_date($variables['unlock']['timestamp'], 'custom', 'Y/m/d')
-      : '',
+    ? format_date($variables['unlock']['timestamp'], 'custom', 'Y/m/d')
+    : '',
   ];
   $variables['unlocked_rank'] = [
     '#markup' => isset($variables['unlock']['rank'])
-      ? t('Rank #@rank', ['@rank' => $variables['unlock']['rank']])
-      : '',
+    ? t('Rank #@rank', ['@rank' => $variables['unlock']['rank']])
+    : '',
   ];
 }
 
@@ -147,6 +149,9 @@ function achievements_load($achievement_id) {
   return $achievements[$achievement_id];
 }
 
+/**
+ *
+ */
 function achievements_load_all($reset = FALSE) {
   $achievements = &drupal_static(__FUNCTION__);
   if (!isset($achievements) || $reset) {
@@ -168,6 +173,8 @@ function achievements_load_all($reset = FALSE) {
  *   The user to unlock an achievement for (defaults to current user).
  * @param $timestamp
  *   Optional; the timestamp when this achievement was unlocked.
+ *
+ * @return bool|void
  */
 function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUEST_TIME) {
   list($uid, $access) = achievements_user_is_achiever($uid);
@@ -184,6 +191,7 @@ function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUES
   }
 
   if (!achievements_unlocked_already($achievement_id, $uid)) {
+    // If a user is rank 2, that means they were the second person to unlock it.
     $last_rank = db_select('achievement_unlocks', 'au')
       ->fields('au', ['rank'])
       ->condition('achievement_id', $achievement_id)
@@ -206,7 +214,8 @@ function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUES
       ->key(['uid' => $uid])
       ->fields([
         'points'          => $achievement->getPoints(),
-        'unlocks'         => 1, // OMG CONGRATS
+    // OMG CONGRATS.
+        'unlocks'         => 1,
         'timestamp'       => $timestamp,
         'achievement_id'  => $achievement_id,
       ])
@@ -214,7 +223,7 @@ function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUES
       ->expression('unlocks', 'unlocks + :increment', [':increment' => 1])
       ->execute();
 
-    // update the unlocked_already static cache so that it returns accurate
+    // Update the unlocked_already static cache so that it returns accurate
     // unlocks for the rest of the page load. we could have just reset the
     // cache entirely but that would cost us additional database queries
     // based on the number of unique unlocks in this page load.
@@ -227,12 +236,13 @@ function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUES
 
     \Drupal::moduleHandler()->invokeAll('achievements_unlocked', [$achievement, $uid]);
 
-    // @FIXME
-// l() expects a Url object, created from a route name or external URI.
-// watchdog('achievements', 'Unlocked: %achievement (+@points).',
-//       array('%achievement' => $achievement['title'], '@points' => $achievement['points']),
-//       WATCHDOG_NOTICE, l(t('view'), 'user/' . $uid . '/achievements'));
- // nothing fancy.
+    \Drupal::logger('achievements')
+      ->info('Unlocked: @achievement (+@points), user @uid', [
+        '@achievement' => $achievement['title'],
+        '@points' => $achievement['points'],
+        '@uid' => $uid,
+      ]
+    );
   }
 }
 
@@ -270,41 +280,36 @@ function achievements_unlocked_already($achievement_id = NULL, $uid = NULL) {
   if (isset($achievement_id)) {
     return isset($unlocks[$uid][$achievement_id]) ? $unlocks[$uid][$achievement_id] : NULL;
   }
-  else { // all of 'em.
+  else {
     return $unlocks[$uid];
   }
 }
 
 /**
- * Returns a user-centric leaderboard.
+ * Returns list of achievements for a given user.
  *
- * @param $nearby
- *   How many nearby ranks/users should be returned (defaults to 0).
  * @param $uid
  *   The user to return achievement info for (defaults to current user).
  *
- * @return $results
+ * @return results
  *   Either an empty array (for users who have yet to unlock anything) or
- *   or an array of user(s) and their achievement statistics, keyed to uid.
+ *   or an array of achievements.
  */
 function achievements_totals_user($uid = NULL) {
   list($uid, $access) = achievements_user_is_achiever($uid);
-  // we don't check for access as this is info grubbing only.
 
   $achievers = &drupal_static(__FUNCTION__);
-  $leaderboard_table = 'achievement_totals';
-
   if (!isset($achievers[$uid])) {
     $query = db_select('achievement_totals', 'at');
     $query->addTag('achievement_totals_user')
       ->join('users_field_data', 'u', 'u.uid = at.uid');
     $query->fields('at', [
-        'uid',
-        'points',
-        'unlocks',
-        'timestamp',
-        'achievement_id',
-      ])
+      'uid',
+      'points',
+      'unlocks',
+      'timestamp',
+      'achievement_id',
+    ])
       ->fields('u', ['name']);
     $achievers[$uid] = $query->condition('at.uid', $uid)
       ->execute()
@@ -349,7 +354,8 @@ function achievements_locked($achievement_id, $uid = NULL) {
 
   // Only remove the achievement if the user has unlocked it.
   if (achievements_unlocked_already($achievement_id, $uid)) {
-    $achievement = achievements_load($achievement_id); // we need the full thing so we know how many points to take away.
+    // We need the full thing so we know how many points to take away.
+    $achievement = achievements_load($achievement_id);
     db_delete('achievement_unlocks')
       ->condition('achievement_id', $achievement['id'])
       ->condition('uid', $uid)
@@ -365,20 +371,22 @@ function achievements_locked($achievement_id, $uid = NULL) {
       ->fetchField();
 
     if ($previous_unlock) {
-      db_update('achievement_totals') // subtract points and set the previous unlock as their latest.
+      // Subtract points and set the previous unlock as their latest.
+      db_update('achievement_totals')
         ->fields(['uid' => $uid, 'timestamp' => REQUEST_TIME, 'achievement_id' => $previous_unlock])
         ->expression('points', 'points - :points', [':points' => $achievement['points']])
         ->expression('unlocks', 'unlocks - :decrement', [':decrement' => 1])
         ->condition('uid', $uid)
         ->execute();
     }
-    else { // With no previous unlock, remove from leaderboard entirely.
+    // With no previous unlock, remove from leaderboard entirely.
+    else {
       db_delete('achievement_totals')
         ->condition('uid', $uid)
         ->execute();
     }
 
-    // remove any storage associated with this achievement.
+    // Remove any storage associated with this achievement.
     achievements_storage_del($achievement['id'], $uid);
     \Drupal::moduleHandler()->invokeAll('achievements_locked', [$achievement, $uid]);
   }
@@ -392,7 +400,7 @@ function achievements_locked($achievement_id, $uid = NULL) {
  * @param $uid
  *   The user this stored data applies to (defaults to current user).
  *
- * @return $data
+ * @return data
  *   The data stored for this achievement and user (unserialized).
  */
 function achievements_storage_get($achievement_id = NULL, $uid = NULL) {
@@ -429,7 +437,7 @@ function achievements_storage_set($achievement_id = NULL, $data = NULL, $uid = N
   $connection->merge('achievement_storage')
     ->key([
       'uid' => $uid,
-      'achievement_id' => $achievement_id
+      'achievement_id' => $achievement_id,
     ])
     ->fields(['data' => serialize($data)])
     ->execute();
@@ -445,7 +453,9 @@ function achievements_storage_set($achievement_id = NULL, $data = NULL, $uid = N
  */
 function achievements_storage_del($achievement_id = NULL, $uid = NULL) {
   list($uid, $access) = achievements_user_is_achiever($uid);
-  if (!$access) { return; }
+  if (!$access) {
+    return;
+  }
 
   $achievement = achievements_load($achievement_id);
   $storage = isset($achievement['storage']) ? $achievement['storage'] : $achievement['id'];
@@ -467,7 +477,7 @@ function achievements_storage_del($achievement_id = NULL, $uid = NULL) {
  * @param $uid
  *   The user to check for "earn achievements" (defaults to current user).
  *
- * @return $results
+ * @return results
  *   An array with values of:
  *   - $uid is the determined user (default: the global user).
  *   - $access is a TRUE or FALSE determined by user_access() and hooks.
@@ -477,10 +487,12 @@ function achievements_user_is_achiever($uid = NULL) {
   $uid = isset($uid) ? $uid : \Drupal::currentUser()->id();
 
   if (!array_key_exists($uid, $is_achiever)) {
-    if ($uid == \Drupal::currentUser()->id()) { // if $uid is current user, check normally.
+    // If $uid is current user, check normally.
+    if ($uid == \Drupal::currentUser()->id()) {
       $is_achiever[$uid] = [\Drupal::currentUser()->id(), \Drupal::currentUser()->hasPermission('earn achievements')];
     }
-    else { // if it's not the global user, we need to load them fully, then check.
+    // If it's not the global user, we need to load them fully, then check.
+    else {
       $is_achiever[$uid] = [$uid, \Drupal::currentUser()->hasPermission('earn achievements')];
     }
 
@@ -504,13 +516,14 @@ function achievements_user_is_achiever($uid = NULL) {
  * Implements hook_user_cancel().
  */
 function achievements_user_cancel($edit, $account, $method) {
-  achievements_user_delete($account); // no stats for non-players.
+  // No stats for non-players.
+  achievements_user_delete($account);
 }
 
 /**
  * Implements hook_user_delete().
  */
-function achievements_user_delete(\Drupal\user\UserInterface $account) {
+function achievements_user_delete(UserInterface $account) {
   db_delete('achievement_totals')->condition('uid', $account->id())->execute();
   db_delete('achievement_unlocks')->condition('uid', $account->id())->execute();
   db_delete('achievement_storage')->condition('uid', $account->id())->execute();
@@ -525,17 +538,17 @@ function achievements_page_bottom(array &$page_bottom) {
   if (achievements_user_is_achiever()) {
     $unlocks = db_select('achievement_unlocks', 'au')
       ->fields('au', [
-          'achievement_id',
-          'rank',
-          'timestamp'
-        ])
+        'achievement_id',
+        'rank',
+        'timestamp',
+      ])
       ->condition('uid', \Drupal::currentUser()->id())
       ->condition('seen', 0)
       ->orderBy('timestamp')
       ->execute()
       ->fetchAllAssoc('achievement_id', PDO::FETCH_ASSOC);
 
-    // if unseen unlocks are available, load in our JS libraries,
+    // If unseen unlocks are available, load in our JS libraries,
     // display our achievement notification, and flag 'em as seen.
     if (count($unlocks)) {
       foreach ($unlocks as $unlock) {
@@ -559,208 +572,4 @@ function achievements_page_bottom(array &$page_bottom) {
         ->execute();
     }
   }
-}
-
-/**
- * Implements hook_views_data().
- */
-function achievements_views_data() {
-  $data = [];
-
-  $join = [
-    'users_field_data' => [
-      'type' => 'INNER',
-      'left_field' => 'uid',
-      'left_table' => 'users_field_data',
-      'field' => 'uid',
-    ],
-  ];
-  $achievement_id = array(
-    'title' => t("Achievement ID"),
-    'help' => t(''),
-    'field' => array(
-      'id' => 'standard',
-    ),
-    'argument' => [
-      'id' => 'achievement_id',
-    ],
-  );
-  $config = array(
-    'title' => t("Achievement Config"),
-    'help' => t('Configuration for the achievement.'),
-    'real field' => 'achievement_id',
-    'field' => array(
-      'id' => 'achievement_config',
-    ),
-  );
-  $uid = [
-    'title' => t('User ID'),
-    'help' => t('The user ID of the achiever.'),
-    'field' => [
-      'id' => 'numeric',
-    ],
-    'argument' => [
-      'id' => 'user_uid',
-    ],
-    'filter' => [
-      'title' => t('User ID'),
-      'id' => 'user_name',
-    ],
-    'sort' => [
-      'id' => 'standard',
-    ],
-    'relationship' => [
-      'base' => 'users_field_data',
-      'base field' => 'uid',
-      'id' => 'standard',
-      'label' => t('User'),
-    ],
-  ];
-  $timestamp = [
-    'title' => t('Timestamp'),
-    'help' => t('The date the node was last updated.'),
-    'field' => [
-      'id' => 'date',
-    ],
-    'sort' => [
-      'id' => 'date',
-    ],
-    'filter' => [
-      'id' => 'date',
-    ],
-  ];
-
-  $data['achievement_storage'] = [];
-  $data['achievement_storage']['table'] = [];
-  $data['achievement_storage']['table']['group'] = t('Achievements Storage');
-  $data['achievement_storage']['table']['base'] = array(
-    'field' => 'uid',
-    'title' => t('User achievement storage data'),
-    'help' => t(''),
-    'weight' => -10,
-  );
-  $data['achievement_storage']['table']['join'] = $join;
-  $data['achievement_storage']['uid'] = $uid;
-  $data['achievement_storage']['data'] = [
-    'title' => t('Data'),
-    'help' => t(''),
-    'field' => [
-      'id' => 'serialized',
-    ],
-  ];
-
-  $data['achievement_totals'] = [];
-  $data['achievement_totals']['table'] = [];
-  $data['achievement_totals']['table']['group'] = t('Achievements Totals');
-  $data['achievement_totals']['table']['base'] = array(
-    'field' => 'uid',
-    'title' => t('User achievement totals'),
-    'help' => t(''),
-    'weight' => -10,
-  );
-  $data['achievement_totals']['table']['join'] = $join;
-  $data['achievement_totals']['uid'] = $uid;
-  $data['achievement_totals']['timestamp'] = $timestamp;
-  $data['achievement_totals']['config'] = $config;
-  $data['achievement_totals']['achievement_id'] = $achievement_id;
-  $data['achievement_totals']['points'] = array(
-    'title' => t('Points'),
-    'help' => t('Just a numeric field.'),
-    'field' => array(
-      'id' => 'numeric',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'id' => 'standard',
-    ),
-    'filter' => array(
-      'id' => 'numeric',
-    ),
-    'argument' => array(
-      'id' => 'numeric',
-    ),
-  );
-  $data['achievement_totals']['unlocks'] = array(
-    'title' => t('Unlocks'),
-    'help' => t('Just a numeric field.'),
-    'field' => array(
-      'id' => 'numeric',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'id' => 'standard',
-    ),
-    'filter' => array(
-      'id' => 'numeric',
-    ),
-    'argument' => array(
-      'id' => 'numeric',
-    ),
-  );
-  $data['achievement_totals']['latest_achievement'] = [
-    'title' => t('Latest achievement for user'),
-    'help' => t(''),
-    'real field' => 'uid',
-    'field' => [
-      'id' => 'latest_achievement',
-    ],
-    'relationship' => [
-      'base' => 'users_field_data',
-      'base field' => 'uid',
-      'id' => 'standard',
-      'label' => t('User'),
-    ],
-  ];
-
-  $data['achievement_unlocks'] = [];
-  $data['achievement_unlocks']['table'] = [];
-  $data['achievement_unlocks']['table']['group'] = t('Achievements Unlocks');
-  $data['achievement_unlocks']['table']['base'] = array(
-    'field' => 'uid',
-    'title' => t('User achievement unlocks'),
-    'help' => t(''),
-    'weight' => -10,
-  );
-  $data['achievement_unlocks']['table']['join']  = $join;
-  $data['achievement_unlocks']['config']         = $config;
-  $data['achievement_unlocks']['achievement_id'] = $achievement_id;
-  $data['achievement_unlocks']['uid']            = $uid;
-  $data['achievement_unlocks']['timestamp']      = $timestamp;
-  $data['achievement_unlocks']['rank'] = array(
-    'title' => t('Rank'),
-    'help' => t('Just a numeric field.'),
-    'field' => array(
-      'id' => 'numeric',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'id' => 'standard',
-    ),
-    'filter' => array(
-      'id' => 'numeric',
-    ),
-    'argument' => array(
-      'id' => 'numeric',
-    ),
-  );
-  $data['achievement_unlocks']['seen'] = array(
-    'title' => t('Seen'),
-    'help' => t('Has the user seen the achievement?'),
-    'field' => array(
-      'id' => 'boolean',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'id' => 'standard',
-    ),
-    'filter' => array(
-      'id' => 'boolean',
-    ),
-    'argument' => array(
-      'id' => 'numeric',
-    ),
-  );
-
-
-  return $data;
 }

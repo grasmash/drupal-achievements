@@ -33,7 +33,7 @@ class LatestAchievement extends FieldPluginBase {
       $latest_unlock = [
         '#theme' => 'achievement_latest_unlock',
         '#achievement_entity' => achievements_load($latest[0]->achievement_id),
-        '#unlock' => array('timestamp' => $latest[0]->timestamp),
+        '#unlock' => ['timestamp' => $latest[0]->timestamp],
       ];
 
       $rendered = \Drupal::service('renderer')->renderRoot($latest_unlock);

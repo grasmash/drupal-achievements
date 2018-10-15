@@ -1,17 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\achievements\Form\AdminForm.
- */
-
 namespace Drupal\achievements\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Config\ConfigFactory;
 
 /**
  * Class AdminForm.
@@ -20,12 +13,14 @@ use Drupal\Core\Config\ConfigFactory;
  */
 class AdminForm extends ConfigFormBase {
 
+  /**
+   *
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory')
     );
   }
-
 
   /**
    * {@inheritdoc}
@@ -47,7 +42,6 @@ class AdminForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('achievements.settings');
 
-
     return parent::buildForm($form, $form_state);
   }
 
@@ -56,8 +50,7 @@ class AdminForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $settings = [
-    ];
+    $settings = [];
     foreach ($settings as $name) {
       $this->config('achievements.settings')
         ->set($name, $form_state->getValue($name));

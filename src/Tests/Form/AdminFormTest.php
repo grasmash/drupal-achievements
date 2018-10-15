@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\achievements\Tests\Form\AdminFormTest.
- */
-
 namespace Drupal\achievements\Tests\Form;
 
 use Drupal\Component\Utility\SafeMarkup;

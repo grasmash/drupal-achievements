@@ -10,4 +10,3 @@ entity.achievement_entity.collection:
   description: 'List Achievement entity (bundles)'
   parent: system.admin_structure
   weight: 99
-

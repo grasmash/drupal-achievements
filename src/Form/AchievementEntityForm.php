@@ -181,6 +181,7 @@ class AchievementEntityForm extends EntityForm {
    * @param string $path
    *   A path relative to the Drupal root or to the public files directory, or
    *   a stream wrapper URI.
+   *
    * @return mixed
    *   A valid path that can be displayed through the theme system, or FALSE if
    *   the path could not be validated.
@@ -203,7 +204,6 @@ class AchievementEntityForm extends EntityForm {
     }
     return FALSE;
   }
-
 
   /**
    * {@inheritdoc}
