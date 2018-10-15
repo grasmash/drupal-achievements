@@ -4,6 +4,7 @@ namespace Drupal\achievements\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StreamWrapper\PublicStream;
 
 /**
  * Class AchievementEntityForm.
@@ -54,7 +55,7 @@ class AchievementEntityForm extends EntityForm {
     $form['invisible'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Invisible'),
-      '#description' => $this->t('The achievement does <em>not</em> display.'),
+      '#description' => $this->t('The achievement does <em>not</em> display. Ever.'),
       '#default_value' => $achievement_entity->isInvisible(),
     ];
 
@@ -65,7 +66,169 @@ class AchievementEntityForm extends EntityForm {
       '#default_value' => $achievement_entity->getPoints(),
     ];
 
+    $form['image'] = [
+      '#type' => 'details',
+      '#title' => t('Image'),
+      '#open' => TRUE,
+    ];
+    $form['image']['use_default_image'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Use the default image supplied by the module'),
+      '#default_value' => $achievement_entity->useDefaultImage(),
+      '#tree' => FALSE,
+    ];
+    $form['image']['settings'] = [
+      '#type' => 'container',
+      '#states' => [
+        // Hide the image settings when using the default image.
+        'invisible' => [
+          'input[name="use_default_image"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+    $form['image']['settings']['image_path'] = [
+      '#type' => 'textfield',
+      '#title' => t('Path to custom image'),
+      '#default_value' => $achievement_entity->getImagePath(),
+    ];
+    $form['image']['settings']['image_upload'] = [
+      '#type' => 'file',
+      '#title' => t('Upload custom image'),
+      '#maxlength' => 40,
+      '#description' => t("If you don't have direct file access to the server, use this field to upload your image."),
+      '#upload_validators' => [
+        'file_validate_is_image' => [],
+      ],
+    ];
+    // Inject human-friendly values and form element descriptions for image.
+    foreach (['image' => 'image.svg'] as $type => $default) {
+      if (isset($form[$type]['settings'][$type . '_path'])) {
+        $element = &$form[$type]['settings'][$type . '_path'];
+
+        // If path is a public:// URI, display the path relative to the files
+        // directory; stream wrappers are not end-user friendly.
+        $original_path = $element['#default_value'];
+        $friendly_path = NULL;
+        if (file_uri_scheme($original_path) == 'public') {
+          $friendly_path = file_uri_target($original_path);
+          $element['#default_value'] = $friendly_path;
+        }
+
+        // Prepare local file path for description.
+        if ($original_path && isset($friendly_path)) {
+          $local_file = strtr($original_path, ['public:/' => PublicStream::basePath()]);
+        }
+        else {
+          $local_file = $this->moduleHandler->getModule('achievements')->getPath() . '/' . $default;
+        }
+
+        $element['#description'] = t('Examples: <code>@implicit-public-file</code> (for a file in the public filesystem), <code>@explicit-file</code>, or <code>@local-file</code>.', [
+          '@implicit-public-file' => isset($friendly_path) ? $friendly_path : $default,
+          '@explicit-file' => file_uri_scheme($original_path) !== FALSE ? $original_path : 'public://' . $default,
+          '@local-file' => $local_file,
+        ]);
+      }
+    }
+
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    if ($this->moduleHandler->moduleExists('file')) {
+
+      // Check for a new uploaded image..
+      if (isset($form['image'])) {
+        $file = _file_save_upload_from_form($form['image']['settings']['image_upload'], $form_state, 0);
+        if ($file) {
+          // Put the temporary file in form_values so we can save it on submit.
+          $form_state->setValue('image_upload', $file);
+        }
+      }
+
+      // When intending to use the default image, unset the image_path.
+      if ($form_state->getValue('default_image')) {
+        $form_state->unsetValue('image_path');
+      }
+
+      // When intending to use the default favicon, unset the favicon_path.
+      if ($form_state->getValue('default_image')) {
+        $form_state->unsetValue('image_path');
+      }
+
+      // If the user provided a path for an image file, make sure a file
+      // exists at that path.
+      if ($form_state->getValue('image_path')) {
+        $path = $this->validatePath($form_state->getValue('image_path'));
+        if (!$path) {
+          $form_state->setErrorByName('image_path', $this->t('The custom image path is invalid.'));
+        }
+      }
+    }
+  }
+
+  /**
+   * Helper function for the system_theme_settings form.
+   *
+   * Attempts to validate normal system paths, paths relative to the public files
+   * directory, or stream wrapper URIs. If the given path is any of the above,
+   * returns a valid path or URI that the theme system can display.
+   *
+   * @param string $path
+   *   A path relative to the Drupal root or to the public files directory, or
+   *   a stream wrapper URI.
+   * @return mixed
+   *   A valid path that can be displayed through the theme system, or FALSE if
+   *   the path could not be validated.
+   */
+  protected function validatePath($path) {
+    // Absolute local file paths are invalid.
+    if (\Drupal::service('file_system')->realpath($path) == $path) {
+      return FALSE;
+    }
+    // A path relative to the Drupal root or a fully qualified URI is valid.
+    if (is_file($path)) {
+      return $path;
+    }
+    // Prepend 'public://' for relative file paths within public filesystem.
+    if (file_uri_scheme($path) === FALSE) {
+      $path = 'public://' . $path;
+    }
+    if (is_file($path)) {
+      return $path;
+    }
+    return FALSE;
+  }
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues();
+
+    // If the user uploaded a new logo or favicon, save it to a permanent location
+    // and use it in place of the default theme-provided file.
+    if (!empty($values['image_upload'])) {
+      $filename = file_unmanaged_copy($values['image_upload']->getFileUri());
+      $values['use_default_image'] = 0;
+      $values['image_path'] = $filename;
+    }
+    unset($values['image_upload']);
+
+    // If the user entered a path relative to the system files directory for
+    // a logo or favicon, store a public:// URI so the theme system can handle it.
+    if (!empty($values['image_path'])) {
+      $values['image_path'] = $this->validatePath($values['image_path']);
+    }
+
+    $form_state->setValues($values);
+
+    parent::submitForm($form, $form_state);
   }
 
   /**

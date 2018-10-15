@@ -136,14 +136,4 @@ function achievements_schema() {
  * Implements hook_uninstall().
  */
 function achievements_uninstall() {
-  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_count_top')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_relative')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_block_relative_nearby_ranks')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_count_per_page')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_count_top')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_relative')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_leaderboard_relative_nearby_ranks')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_manual_achievement')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_manual_user')->save();
-  \Drupal::config('achievements.settings')->clear('achievements_unlocked_move_to_top')->save();
 }

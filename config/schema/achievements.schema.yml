@@ -4,17 +4,3 @@ achievements.settings:
   mapping:
     image_hidden:
       type: boolean
-    leaderboard_count_per_page:
-      type: integer
-    leaderboard_relative:
-      type: string
-    leaderboard_relative_nearby_ranks:
-      type: integer
-    leaderboard_block_count_top:
-      type: integer
-    leaderboard_block_relative:
-      type: string
-    leaderboard_block_relative_nearby_ranks:
-      type: integer
-    unlocked_move_to_top:
-      type: boolean

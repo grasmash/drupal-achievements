@@ -19,7 +19,10 @@ class AchievementConfig extends Serialized {
    */
   public function render(ResultRow $values) {
     $achievement_id = $values->{$this->field_alias};
-    $config = \Drupal::config("achievements.achievement_entity.$achievement_id");
+    if (empty($values->aid)) {
+      $values->aid = $achievement_id;
+    }
+    $config = \Drupal::config("achievements.achievement_entity.{$values->aid}");
     unset($values->{$this->field_alias});
     $values->{$this->field_alias} = serialize($config->getRawData());
 

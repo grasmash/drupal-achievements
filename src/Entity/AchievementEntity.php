@@ -11,7 +11,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   id = "achievement_entity",
  *   label = @Translation("Achievement entity"),
  *   handlers = {
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "view_builder" = "Drupal\achievements\Entity\AchievementEntityViewBuilder",
  *     "list_builder" = "Drupal\achievements\AchievementEntityListBuilder",
  *     "form" = {
  *       "add" = "Drupal\achievements\Form\AchievementEntityForm",
@@ -84,6 +84,20 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
   protected $secret;
 
   /**
+   *
+   *
+   * @var bool
+   */
+  protected $use_default_image = TRUE;
+
+  /**
+   *
+   *
+   * @var string
+   */
+  protected $image_path;
+
+  /**
    * The number of points an achievement is worth.
    *
    * @var int
@@ -125,5 +139,44 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
     return $this->invisible;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function useDefaultImage() {
+    return $this->use_default_image;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getImagePath($type = 'locked') {
+
+    if (!isset($this->image_path)) {
+      switch ($type) {
+        case 'locked':
+          if ($this->isSecret()) {
+            $filename = 'default-secret-70.jpg';
+          }
+          else {
+            $filename = 'default-locked-70.jpg';
+          }
+          break;
+        case 'unlocked':
+          $filename = 'default-unlocked-70.jpg';
+          break;
+        default:
+          $filename = 'default-locked-70.jpg';
+      }
+
+      $module_path = "/" . \Drupal::moduleHandler()->getModule('achievements')->getPath();
+      return $module_path . '/images/' . $filename;
+    }
+
+    return $this->image_path;
+  }
+
+  public function isDefaultRevision() {
+    return TRUE;
+  }
 
 }

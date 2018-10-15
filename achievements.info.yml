@@ -6,3 +6,5 @@ stylesheets:
 package: Achievements
 core: 8.x
 type: module
+dependencies:
+  - drupal:file

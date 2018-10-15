@@ -28,3 +28,9 @@ achievements.achievement_entity.*:
     points:
       type: integer
       label: 'Points'
+    use_default_image:
+      type: boolean
+      label: 'Use default image'
+    image_path:
+      type: string
+      label: 'Image path'
