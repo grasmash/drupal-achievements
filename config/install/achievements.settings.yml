@@ -1,8 +1,1 @@
 image_hidden: null
-leaderboard_count_per_page: 10
-leaderboard_relative: nearby_ranks
-leaderboard_relative_nearby_ranks: 2
-leaderboard_block_count_top: 5
-leaderboard_block_relative: nearby_ranks
-leaderboard_block_relative_nearby_ranks: 1
-unlocked_move_to_top: true

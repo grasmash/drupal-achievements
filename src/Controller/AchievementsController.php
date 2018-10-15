@@ -74,14 +74,15 @@ class AchievementsController extends ControllerBase {
     $achievements = achievements_load_all();
 
     $build['stats'] = [
-      '#theme'  => 'achievement_user_stats',
-      '#stats'  => [
-        'name'          => $user->getDisplayName(),
-        'rank'          => isset($achiever->rank) ? $achiever->rank : 0,
-        'points'        => isset($achiever->points) ? $achiever->points : 0,
+      '#theme' => 'achievement_user_stats',
+      '#stats' => [
+        'name' => $user->getDisplayName(),
+        'rank' => isset($achiever->rank) ? $achiever->rank : 0,
+        'points' => isset($achiever->points) ? $achiever->points : 0,
         'unlocks_count' => count($unlocks),
-        'total_count'   => count($achievements),
+        'total_count' => count($achievements),
       ],
+      '#weight' => -100000000000000,
     ];
 
     $build['#theme_wrappers'] = ['container'];
@@ -91,6 +92,7 @@ class AchievementsController extends ControllerBase {
         'achievements/achievements',
       ],
     ];
+    $config = \Drupal::config('achievements.settings');
 
     foreach ($achievements as $achievement_id => $achievement) {
       if (!empty($achievement->isInvisible()) && !isset($unlocks[$achievement_id])) {
@@ -98,26 +100,20 @@ class AchievementsController extends ControllerBase {
         continue;
       }
 
-      $locked_weight = 0;
       // If it's not an invisible achievement, we've got to show something.
       // $build out what and where.
       $build[$achievement_id]['#achievement_entity'] = $achievement;
       $build[$achievement_id]['#theme'] = 'achievement';
 
-      $achievements_unlocked_move_to_top = \Drupal::config('achievements.settings')
-        ->get('achievements_unlocked_move_to_top');
-
       if (isset($unlocks[$achievement_id])) {
         $build[$achievement_id]['#unlock'] = $unlocks[$achievement_id];
-        if ($achievements_unlocked_move_to_top) {
-          $build[$achievement_id]['#weight'] = -$unlocks[$achievement_id]['timestamp'];
-          // By setting the negative weight to the timestamp,
-          // the latest unlocks are always shown at the top.
-        }
+        // By setting the negative weight to the timestamp,
+        // the latest unlocks are always shown at the top.
+        $build[$achievement_id]['#weight'] = -$unlocks[$achievement_id]['timestamp'];
       }
-      elseif (!isset($unlocks[$achievement_id]) && $achievements_unlocked_move_to_top) {
-        // If we're forcing unlocks to the top, locked achievements have to be forced to the bottom.
-        $build[$achievement_id]['#weight'] = $locked_weight++;
+      // Locked.
+      else {
+        $build[$achievement_id]['#weight'] = 1;
       }
     }
 

@@ -291,7 +291,7 @@ function achievements_unlocked_already($achievement_id = NULL, $uid = NULL) {
  * @param $uid
  *   The user to return achievement info for (defaults to current user).
  *
- * @return results
+ * @return array
  *   Either an empty array (for users who have yet to unlock anything) or
  *   or an array of achievements.
  */
