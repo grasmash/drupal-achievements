@@ -22,13 +22,13 @@
           height:         height,
           width:          500,
           position:       {
-            my: "right bottom",
-            at: "right bottom",
-            of: window,
-            collision: "none"
+            my:           "right bottom",
+            at:           "right bottom",
+            of:            window,
+            collision:    "none"
           },
           closeText:      '',
-          close:          onClose
+          close:           onClose
         });
 
       if (notifications.length) {
@@ -38,7 +38,7 @@
       function showDialogs() {
         var length = notifications.length;
 
-        notifications.eq(length - 1).bind('dialogopen', function() {
+        notifications.on('dialogopen', function( event, ui ) {
           var i, notification, top;
 
           for (i = 0; i < length; i += 1) {
@@ -60,11 +60,12 @@
 
         notifications.dialog('open').hover(
           function () {
+            // Pretty sure this doesn't work, though it does get called.
             clearTimeout(timeout);
           },
           function () {
             // the longer the list, longer the onscreen time.
-            timeout = setTimeout(closeDialog, 1500 + (notifications.length * 500));
+            timeout = setTimeout(closeDialog, 1500 + (length * 500));
           }
         );
       }
