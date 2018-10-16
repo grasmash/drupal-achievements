@@ -68,12 +68,12 @@ class AchievementEntityForm extends EntityForm {
 
     $form['image'] = [
       '#type' => 'details',
-      '#title' => t('Image'),
+      '#title' => t('Images'),
       '#open' => TRUE,
     ];
     $form['image']['use_default_image'] = [
       '#type' => 'checkbox',
-      '#title' => t('Use the default image supplied by the module'),
+      '#title' => t('Use the default images supplied by the module'),
       '#default_value' => $achievement_entity->useDefaultImage(),
       '#tree' => FALSE,
     ];
@@ -86,22 +86,37 @@ class AchievementEntityForm extends EntityForm {
         ],
       ],
     ];
-    $form['image']['settings']['image_path'] = [
+    $form['image']['settings']['unlocked_image_path'] = [
       '#type' => 'textfield',
-      '#title' => t('Path to custom image'),
-      '#default_value' => $achievement_entity->getImagePath(),
+      '#title' => t('Path to custom image for unlocked achievements'),
+      '#default_value' => $achievement_entity->getImagePath('unlocked', TRUE),
     ];
-    $form['image']['settings']['image_upload'] = [
+    $form['image']['settings']['unlocked_image_upload'] = [
       '#type' => 'file',
-      '#title' => t('Upload custom image'),
+      '#title' => t('Upload custom image for unlocked achievement'),
       '#maxlength' => 40,
       '#description' => t("If you don't have direct file access to the server, use this field to upload your image."),
       '#upload_validators' => [
         'file_validate_is_image' => [],
       ],
     ];
+    $form['image']['settings']['locked_image_path'] = [
+      '#type' => 'textfield',
+      '#title' => t('Path to custom image for locked achievement'),
+      '#default_value' => $achievement_entity->getImagePath('locked', TRUE),
+    ];
+    $form['image']['settings']['locked_image_upload'] = [
+      '#type' => 'file',
+      '#title' => t('Upload custom image for locked achievement'),
+      '#maxlength' => 40,
+      '#description' => t("If you don't have direct file access to the server, use this field to upload your image."),
+      '#upload_validators' => [
+        'file_validate_is_image' => [],
+      ],
+    ];
+    $default = '.svg';
     // Inject human-friendly values and form element descriptions for image.
-    foreach (['image' => 'image.svg'] as $type => $default) {
+    foreach (['locked_image', 'unlocked_image'] as $type) {
       if (isset($form[$type]['settings'][$type . '_path'])) {
         $element = &$form[$type]['settings'][$type . '_path'];
 
@@ -139,33 +154,27 @@ class AchievementEntityForm extends EntityForm {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
-    if ($this->moduleHandler->moduleExists('file')) {
-
-      // Check for a new uploaded image..
+    foreach (['locked', 'unlocked'] as $type) {
+      // Check for a new uploaded image.
       if (isset($form['image'])) {
-        $file = _file_save_upload_from_form($form['image']['settings']['image_upload'], $form_state, 0);
+        $file = _file_save_upload_from_form($form['image']['settings'][$type . '_image_upload'], $form_state, 0);
         if ($file) {
           // Put the temporary file in form_values so we can save it on submit.
-          $form_state->setValue('image_upload', $file);
+          $form_state->setValue($type . '_image_upload', $file);
         }
       }
 
       // When intending to use the default image, unset the image_path.
-      if ($form_state->getValue('default_image')) {
-        $form_state->unsetValue('image_path');
-      }
-
-      // When intending to use the default favicon, unset the favicon_path.
-      if ($form_state->getValue('default_image')) {
-        $form_state->unsetValue('image_path');
+      if ($form_state->getValue('use_default_image')) {
+        $form_state->unsetValue($type . '_image_path');
       }
 
       // If the user provided a path for an image file, make sure a file
       // exists at that path.
-      if ($form_state->getValue('image_path')) {
-        $path = $this->validatePath($form_state->getValue('image_path'));
+      if ($form_state->getValue($type . '_image_path')) {
+        $path = $this->validatePath($form_state->getValue($type . '_image_path'));
         if (!$path) {
-          $form_state->setErrorByName('image_path', $this->t('The custom image path is invalid.'));
+          $form_state->setErrorByName($type . '_image_path', $this->t("The custom image path for $type is invalid."));
         }
       }
     }
@@ -211,19 +220,21 @@ class AchievementEntityForm extends EntityForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
 
-    // If the user uploaded a new logo or favicon, save it to a permanent location
-    // and use it in place of the default theme-provided file.
-    if (!empty($values['image_upload'])) {
-      $filename = file_unmanaged_copy($values['image_upload']->getFileUri());
-      $values['use_default_image'] = 0;
-      $values['image_path'] = $filename;
-    }
-    unset($values['image_upload']);
+    foreach (['locked', 'unlocked'] as $type) {
+      // If the user uploaded a new logo or favicon, save it to a permanent location
+      // and use it in place of the default theme-provided file.
+      if (!empty($values[$type .'_image_upload'])) {
+        $filename = file_unmanaged_copy($values[$type .'_image_upload']->getFileUri());
+        $values['use_default_image'] = 0;
+        $values[$type .'_image_path'] = $filename;
+      }
+      unset($values[$type .'_image_upload']);
 
-    // If the user entered a path relative to the system files directory for
-    // a logo or favicon, store a public:// URI so the theme system can handle it.
-    if (!empty($values['image_path'])) {
-      $values['image_path'] = $this->validatePath($values['image_path']);
+      // If the user entered a path relative to the system files directory for
+      // a logo or favicon, store a public:// URI so the theme system can handle it.
+      if (!empty($values[$type .'_image_path'])) {
+        $values[$type .'_image_path'] = $this->validatePath($values[$type .'_image_path']);
+      }
     }
 
     $form_state->setValues($values);

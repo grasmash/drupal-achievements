@@ -95,7 +95,14 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
    *
    * @var string
    */
-  protected $image_path;
+  protected $locked_image_path;
+
+  /**
+   *
+   *
+   * @var string
+   */
+  protected $unlocked_image_path;
 
   /**
    * The number of points an achievement is worth.
@@ -149,32 +156,30 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
   /**
    * {@inheritdoc}
    */
-  public function getImagePath($type = 'locked') {
+  public function getImagePath($type = 'locked', $ignore_default) {
+    switch ($type) {
+      case 'locked':
+        if (!$ignore_default && !isset($this->locked_image_path)) {
+          $this->getDefaultImagePath('default-locked-70.jpg');
+        }
+        else {
+          return $this->locked_image_path;
+        }
+        break;
 
-    if (!isset($this->image_path)) {
-      switch ($type) {
-        case 'locked':
-          if ($this->isSecret()) {
-            $filename = 'default-secret-70.jpg';
-          }
-          else {
-            $filename = 'default-locked-70.jpg';
-          }
-          break;
+      case 'unlocked':
+        if (!$ignore_default && !isset($this->unlocked_image_path)) {
+          return $this->getDefaultImagePath('default-unlocked-70.jpg');
+        }
+        else {
+          return $this->unlocked_image_path;
+        }
+        break;
 
-        case 'unlocked':
-          $filename = 'default-unlocked-70.jpg';
-          break;
-
-        default:
-          $filename = 'default-locked-70.jpg';
-      }
-
-      $module_path = "/" . \Drupal::moduleHandler()->getModule('achievements')->getPath();
-      return $module_path . '/images/' . $filename;
+      case 'secret':
+        return $this->getDefaultImagePath('default-secret-70.jpg');
+        break;
     }
-
-    return $this->image_path;
   }
 
   /**
@@ -182,6 +187,16 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
    */
   public function isDefaultRevision() {
     return TRUE;
+  }
+
+  /**
+   * @param $filename
+   *
+   * @return string
+   */
+  public function getDefaultImagePath($filename) {
+    $module_path = "/" . \Drupal::moduleHandler()->getModule('achievements')->getPath();
+    return $module_path . '/images/' . $filename;
   }
 
 }

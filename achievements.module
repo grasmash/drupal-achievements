@@ -93,20 +93,21 @@ function achievements_template_shared_variables(&$variables) {
   // Add rounded rects for tabs.
   $variables['classes'][] = 'ui-corner-all';
   $variables['achievement_url'] = $url = Url::fromUri('internal:/achievements/leaderboard/' . $achievement->id());
+  $already_unlocked = achievements_unlocked_already($achievement->id());
 
   if ($achievement->isSecret()
-    && !achievements_unlocked_already($achievement->id())) {
+    && !$already_unlocked) {
     $achievement->set('points', t('???'));
     $achievement->set('title', t('Secret achievement'));
     $achievement->set('destcription', t('Continue playing to unlock this secret achievement.'));
     $variables['state'] = 'secret';
   }
 
+  $image_type = $already_unlocked ? 'unlocked' : 'locked';
   $variables['image'] = [
     '#theme' => 'image_formatter',
     '#item' => (object) [
-      // @todo Add path dynamically!
-      'uri'   => $achievement->getImagePath(),
+      'uri'   => $achievement->getImagePath($image_type),
       'alt'   => $achievement->label(),
       'title' => $achievement->label(),
       'width' => 70,

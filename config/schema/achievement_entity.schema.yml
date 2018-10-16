@@ -31,6 +31,9 @@ achievements.achievement_entity.*:
     use_default_image:
       type: boolean
       label: 'Use default image'
-    image_path:
+    locked_image_path:
       type: string
-      label: 'Image path'
+      label: 'Locked image path'
+    unlocked_image_path:
+      type: string
+      label: 'Unloced image path'

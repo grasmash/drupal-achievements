@@ -47,12 +47,6 @@ Current features and design:
    achievements (and some are provided with the module), or you can override
    them on a per-achievement basis.
 
- * Achievements can be grouped into categories and tabbed with jQuery UI.
-
- * An adminterface allows you to manually grant or remove achievements. If
-   the user is offline, unlocked achievements will display the next time
-   the user visits the site.
-
  * Achievement unlocks fade-in and out at the window's bottom right corner.
 
  * Your code decides whether achievements are retroactively applied or not.
@@ -93,7 +87,11 @@ cookie-cutter gamification on Drupal sites everywhere.
 
 To begin creating achievements:
 
- 1. You'll need to create or use a custom module to implement the API. Further
+ 1. Create the achievement in the admin UI at
+    /admin/structure/achievement_entity/add.
+
+ 2. To actually implement the ability for users to achieve the achievements,
+    you'll need to create or use a custom module and implement the API. Further
     information about module development and the Drupal APIs you can listen on
     to trigger your achievements is available in the "Develop for Drupal" docs
     at http://drupal.org/documentation/develop. At the minimum, read:
@@ -102,9 +100,9 @@ To begin creating achievements:
      * Telling Drupal about your module: http://drupal.org/node/1075072
      * Implementing your first hook: http://drupal.org/node/1095546
 
- 2. Read about the Achievements API, and examples, in achievements.api.php.
+ 3. Read about the Achievements API, and examples, in achievements.api.php.
 
- 3. Adding new achievements (or changing the info of existing ones) will
+ 4. Adding new achievements (or changing the info of existing ones) will
     require you to rebuild the internal cache, which you can refresh from
     admin/config/people/achievements.
 
