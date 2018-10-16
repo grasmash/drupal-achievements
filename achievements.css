@@ -1,6 +1,10 @@
 /**
  * Single achievement full display.
  */
+.achievements .achievement {
+  margin: 1em auto;
+}
+
 .achievement {
   border: 1px solid #bbb;
   height: 86px !important;
