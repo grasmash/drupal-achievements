@@ -3,8 +3,9 @@
  */
 .achievement {
   border: 1px solid #bbb;
-  height: 86px;
-  margin: 0.8em auto;
+  height: 86px !important;
+  overflow: visible !important;
+  margin: 0 auto;
 }
 
 .achievement-secret,

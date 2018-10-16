@@ -8,10 +8,10 @@
   Drupal.behaviors.achievements = {
     attach: function (context, settings) {
 
-      console.log('hi');
-
-      var height = 104, margin = 10, timeout,
-        notifications = $('.achievement-notification').dialog({
+      var height = 104;
+      var margin = 10;
+      var timeout;
+      var notifications = $('.achievement-notification', context).once('processed').dialog({
           dialogClass:    'achievement-notification-dialog',
           autoOpen:       false,
           show:           'fade',
@@ -24,11 +24,16 @@
           position:       {
             my: "right bottom",
             at: "right bottom",
-            of: window
+            of: window,
+            collision: "none"
           },
           closeText:      '',
           close:          onClose
         });
+
+      if (notifications.length) {
+        setTimeout(showDialogs, 500);
+      }
 
       function showDialogs() {
         var length = notifications.length;
@@ -44,6 +49,8 @@
             else {
               top -= height + margin;
               notification.css('top', top + 'px');
+              notification.css('display', 'block');
+              notification.position.at = "right top+" + top;
             }
           }
 
@@ -90,8 +97,6 @@
       function closeDialog() {
         notifications.eq(0).dialog('close');
       }
-
-      setTimeout(showDialogs, 500);
 
     }
   };

@@ -240,8 +240,8 @@ function achievements_unlocked($achievement_id, $uid = NULL, $timestamp = REQUES
 
     \Drupal::logger('achievements')
       ->info('Unlocked: @achievement (+@points), user @uid', [
-        '@achievement' => $achievement['title'],
-        '@points' => $achievement['points'],
+        '@achievement' => $achievement->label(),
+        '@points' => $achievement->getPoints(),
         '@uid' => $uid,
       ]
     );

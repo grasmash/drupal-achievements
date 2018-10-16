@@ -3,6 +3,7 @@
 namespace Drupal\achievements\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * Defines the Achievement entity entity.
@@ -155,7 +156,7 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
   public function getImagePath($type = 'locked', $ignore_default = FALSE) {
     switch ($type) {
       case 'locked':
-        if (!$ignore_default && !isset($this->locked_image_path)) {
+        if (!$ignore_default && empty($this->locked_image_path)) {
           $this->getDefaultImagePath('default-locked-70.jpg');
         }
         else {
@@ -164,7 +165,7 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
         break;
 
       case 'unlocked':
-        if (!$ignore_default && !isset($this->unlocked_image_path)) {
+        if (!$ignore_default && empty($this->unlocked_image_path)) {
           return $this->getDefaultImagePath('default-unlocked-70.jpg');
         }
         else {
