@@ -105,20 +105,3 @@ To begin creating achievements:
  4. Adding new achievements (or changing the info of existing ones) will
     require you to rebuild the internal cache, which you can refresh from
     admin/config/people/achievements.
-
-
-OPTIONAL MODULES
-----------------
-
-Achievements ships with some tweaky and entirely optional modules:
-
- * OPTOUT: Some folks just plain ol' hate gamification. With the Opt-out
-   module, a new checkbox field is added to the user's edit screen that allows
-   them to opt-out (and back in, if they so desire) from earning achievements.
-
- * POINTLESS: The Pointless module removes all the explicit competitive
-   elements of achievements. Milestones will no longer display a user's
-   unlock rank or the number of points, and access to the leaderboards is
-   disabled. This creates an environment where the user unlocks achievements
-   for their own gratification, not to simply one-up another user or to get
-   noticed on a nebulous high-score table.

@@ -61,7 +61,7 @@ function achievements_views_data() {
   ];
   $timestamp = [
     'title' => t('Timestamp'),
-    'help' => t('The date the node was last updated.'),
+    'help' => t('The date of the achievement unlock.'),
     'field' => [
       'id' => 'date',
     ],
@@ -79,7 +79,7 @@ function achievements_views_data() {
   $data['achievement_storage']['table']['base'] = [
     'field' => 'uid',
     'title' => t('User achievement storage data'),
-    'help' => t(''),
+    'help' => t('This contains storage data that is used to typically only used implementations of the Achievements API.'),
     'weight' => -10,
   ];
   $data['achievement_storage']['table']['join'] = $join;
@@ -98,7 +98,7 @@ function achievements_views_data() {
   $data['achievement_totals']['table']['base'] = [
     'field' => 'uid',
     'title' => t('User achievement totals'),
-    'help' => t(''),
+    'help' => t('Totals are used to create the Achievements leaderboard.'),
     'weight' => -10,
   ];
   $data['achievement_totals']['table']['join'] = $join;
@@ -106,9 +106,10 @@ function achievements_views_data() {
   $data['achievement_totals']['timestamp'] = $timestamp;
   $data['achievement_totals']['config'] = $config;
   $data['achievement_totals']['achievement_id'] = $achievement_id;
+  $data['achievement_totals']['achievement_id']['title'] = t('Latest achievement ID');
   $data['achievement_totals']['points'] = [
     'title' => t('Points'),
-    'help' => t('Just a numeric field.'),
+    'help' => t('The total points earned by the user.'),
     'field' => [
       'id' => 'numeric',
       'click sortable' => TRUE,
@@ -125,7 +126,7 @@ function achievements_views_data() {
   ];
   $data['achievement_totals']['unlocks'] = [
     'title' => t('Unlocks'),
-    'help' => t('Just a numeric field.'),
+    'help' => t('The total number of achievements unlocked by the user.'),
     'field' => [
       'id' => 'numeric',
       'click sortable' => TRUE,
@@ -142,7 +143,7 @@ function achievements_views_data() {
   ];
   $data['achievement_totals']['latest_achievement'] = [
     'title' => t('Latest achievement for user'),
-    'help' => t(''),
+    'help' => t('The most recent achievement for a given user.'),
     'real field' => 'uid',
     'field' => [
       'id' => 'latest_achievement',
@@ -171,7 +172,7 @@ function achievements_views_data() {
   $data['achievement_unlocks']['timestamp']      = $timestamp;
   $data['achievement_unlocks']['rank']           = [
     'title' => t('Rank'),
-    'help' => t('Just a numeric field.'),
+    'help' => t('The rank of a given user for a given achievement. E.g., the rank would be 2 if the user was the second user to ever unlock a given achievement.'),
     'field' => [
       'id' => 'numeric',
       'click sortable' => TRUE,

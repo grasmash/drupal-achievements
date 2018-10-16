@@ -1,7 +1,0 @@
-name: Achievements Example
-description: 'Example implementation of achievements module.'
-package: Achievements
-core: 8.x
-type: module
-dependencies:
-  - achievements

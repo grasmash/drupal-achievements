@@ -84,21 +84,21 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
   protected $secret;
 
   /**
-   *
+   * Whether to use the default (rather than custom) image.
    *
    * @var bool
    */
   protected $use_default_image = TRUE;
 
   /**
-   *
+   * The path of the custom image for the locked achievement.
    *
    * @var string
    */
   protected $locked_image_path;
 
   /**
-   *
+   * The path of the custom image for the unlocked achievement.
    *
    * @var string
    */
@@ -112,51 +112,47 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
   protected $points;
 
   /**
-   * {@inheritdoc}
+   * @return string
    */
   public function getDescription() {
     return $this->description;
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getStorage() {
-    return $this->storage;
-  }
-
-  /**
-   * {@inheritdoc}
+   * @return int
    */
   public function getPoints() {
     return $this->points;
   }
 
   /**
-   * {@inheritdoc}
+   * @return bool
    */
   public function isSecret() {
     return $this->secret;
   }
 
   /**
-   * {@inheritdoc}
+   * @return bool
    */
   public function isInvisible() {
     return $this->invisible;
   }
 
   /**
-   * {@inheritdoc}
+   * @return bool
    */
   public function useDefaultImage() {
     return $this->use_default_image;
   }
 
   /**
-   * {@inheritdoc}
+   * @param string $type
+   * @param bool $ignore_default
+   *
+   * @return string
    */
-  public function getImagePath($type = 'locked', $ignore_default) {
+  public function getImagePath($type = 'locked', $ignore_default = FALSE) {
     switch ($type) {
       case 'locked':
         if (!$ignore_default && !isset($this->locked_image_path)) {
@@ -183,7 +179,7 @@ class AchievementEntity extends ConfigEntityBase implements AchievementEntityInt
   }
 
   /**
-   *
+   * Required by EntityViewBuilder. Achievements are never revisioned.
    */
   public function isDefaultRevision() {
     return TRUE;
